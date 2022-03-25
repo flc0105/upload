@@ -1,0 +1,44 @@
+.header {
+    padding-bottom: 9px;
+    margin: 40px 0 20px;
+}
+
+.breadcrumb {
+    margin-bottom: 0;
+}
+
+.input-group {
+    padding: 1px 0;
+}
+
+.table > tbody > tr > td {
+    vertical-align: middle;
+}
+
+tr td:nth-child(2) {
+    max-width: 200px;
+}
+
+.dropdown-menu {
+    min-width: 120px;
+}
+
+.dropdown-menu > li > a {
+    font-size: 12px;
+    padding: 3px 10px;
+}
+
+.image {
+    display: block;
+    margin: 30px auto;
+    max-width: 80%;
+}
+
+.text {
+    margin: 30px auto;
+    width: 50%;
+    min-height: 100%;
+    padding: 10px;
+    background-color: #fff;
+    white-space: pre-wrap;
+}
