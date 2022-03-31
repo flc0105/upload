@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>文件列表</title>
     <script src="js/jquery.min.js"></script>
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -21,7 +21,7 @@
             <ol class="breadcrumb pull-left">
                 <li></li>
             </ol>
-            <div class="input-group pull-right col-xs-3">
+            <div class="input-group pull-right">
                 <input class="form-control" id="find">
                 <div class="input-group-btn">
                     <input type="button" value="搜索" class="btn btn-default" onclick="find()">
@@ -32,16 +32,16 @@
             <form id="form" action="upload" method="post" enctype="multipart/form-data">
                 <input type="file" name="file" id="file" style="display: none" onchange="upload('upload')" multiple>
                 <input type="button" value="上传文件" class="btn btn-default"
-                       onclick="document.getElementById('file').click()">
+                       onclick="document.getElementById('file').value=null;document.getElementById('file').click()">
                 <input type="file" name="folder" id="folder" style="display: none" onchange="upload('uploadFolder')"
                        multiple webkitdirectory>
                 <input type="button" value="上传文件夹" class="btn btn-default"
-                       onclick="document.getElementById('folder').click()">
+                       onclick="document.getElementById('folder').value=null;document.getElementById('folder').click()">
                 <input type="button" value="新建文件夹" class="btn btn-default" onclick="showCreateFolderModal()">
                 <input type="button" value="刷新" class="btn btn-default" onclick="refresh()">
                 <input type="button" value="粘贴" class="btn btn-default hidden" id="paste">
-                <input type="button" value="多选" class="btn btn-default pull-right" id="multiSelect">
-                <div class="hidden pull-right" id="hidden">
+                <input type="button" value="多选" class="btn btn-default" id="multiSelect">
+                <div class="hidden" id="hidden">
                     <input type="button" value="剪切" class="btn disabled btn-default" id="cutSelected" disabled>
                     <input type="button" value="下载" class="btn disabled btn-default" id="downloadSelected" disabled>
                     <input type="button" value="删除" class="btn disabled btn-danger" id="deleteSelected" disabled>
@@ -124,6 +124,22 @@
         <div class="modal-content">
             <div class="modal-body"></div>
             <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="authModal">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">请输入密码</h4>
+            </div>
+            <div class="modal-body">
+                <input type="password" class="form-control" id="password" value="">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-ok">确定</button>
                 <button class="btn btn-default" data-dismiss="modal">取消</button>
             </div>
         </div>

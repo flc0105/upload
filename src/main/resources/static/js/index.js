@@ -115,6 +115,17 @@ function find() {
 }
 
 function upload(action) {
+    if (!hasToken()) {
+        const func = function () {
+            uploadFile(action);
+        };
+        showAuth(func);
+    } else {
+        uploadFile(action);
+    }
+}
+
+function uploadFile(action) {
     $('#progressModal').modal('show');
     const xhr = new XMLHttpRequest();
     xhr.open('post', action);
@@ -136,7 +147,7 @@ function upload(action) {
     };
     xhr.upload.onerror = function () {
         $('#progressModal').modal('hide');
-        showMessage("上传失败");
+        showMessage('上传失败');
     };
     const formData = new FormData(document.getElementById('form'));
     formData.append('dir', dir);
@@ -178,12 +189,27 @@ $('#confirmModal').on('show.bs.modal', function (e) {
     $('.btn-danger', this).data('filename', $(e.relatedTarget).data('filename'));
 });
 
-$('#confirmModal').on('click', '.btn-danger', function (e) {
+function deleteFile(filename) {
     $.post('delete', {
-        'fn': $(this).data('filename')
-    }, function () {
+        'fn': filename
+    }, function (data) {
+        if (!data.success) {
+            showMessage(data.msg);
+            return;
+        }
         list();
     });
+}
+
+$('#confirmModal').on('click', '.btn-danger', function (e) {
+    if (!hasToken()) {
+        const func = function () {
+            deleteFile($('#confirmModal .btn-danger').data('filename'));
+        };
+        showAuth(func);
+    } else {
+        deleteFile($(this).data('filename'));
+    }
     $(e.delegateTarget).modal('hide');
 });
 
@@ -269,6 +295,17 @@ $('#downloadSelected').on('click', function () {
 });
 
 $('#deleteSelected').on('click', function () {
+    if (!hasToken()) {
+        const func = function () {
+            deleteSelected();
+        };
+        showAuth(func);
+    } else {
+        deleteSelected();
+    }
+});
+
+function deleteSelected() {
     const checked = $('input[name="checkbox"]:checked');
     if (checked.length === 0) return;
     const files = new Array();
@@ -278,12 +315,16 @@ $('#deleteSelected').on('click', function () {
     const confirmModal = $('#confirmModal').clone();
     confirmModal.modal('show');
     confirmModal.on('click', '.btn-danger', function (e) {
-        $.post('multiDelete', {'files': JSON.stringify(files)}, function () {
+        $.post('multiDelete', {'files': JSON.stringify(files)}, function (data) {
+            if (!data.success) {
+                showMessage(data.msg);
+                return;
+            }
             list();
         });
         $(e.delegateTarget).modal('hide');
     });
-});
+}
 
 $('#cutSelected').on('click', function () {
     files.length = 0;
@@ -344,7 +385,7 @@ function preview(fn, type) {
     if (type === 'text') {
         $.post('previewText', {fn: fn}, function (data) {
             if (data.length === 0) {
-                showMessage("文件为空");
+                showMessage('文件为空');
                 return;
             }
             const text = $('<div class="text"></div>');
@@ -371,4 +412,35 @@ function readableSize(bytes) {
 function showMessage(message) {
     $('#messageModal .modal-body').html(message);
     $('#messageModal').modal('show');
+}
+
+function auth() {
+    return new Promise(function (resolve, reject) {
+        $.post('/getToken', {
+            'password': $('#password').val()
+        }, function (data) {
+            $('#authModal').modal('hide');
+            if (!data.success) {
+                showMessage(data.msg);
+                reject();
+            } else {
+                resolve();
+            }
+        })
+    })
+}
+
+function hasToken() {
+    return (document.cookie.match('(^|;)\\s*token\\s*=\\s*([^;]+)')?.pop() || '') !== ''
+}
+
+function showAuth(func) {
+    $('#authModal').modal('show');
+    $('#authModal .btn-ok').off('click');
+    $('#authModal .btn-ok').on('click', function () {
+        auth().then(function () {
+            func();
+        }).catch(function () {
+        });
+    })
 }
