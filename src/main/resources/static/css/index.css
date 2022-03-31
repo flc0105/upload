@@ -11,12 +11,50 @@
     padding: 1px 0;
 }
 
+#hidden, #multiSelect {
+    float: right;
+}
+
 .table > tbody > tr > td {
     vertical-align: middle;
 }
 
 tr td:nth-child(2) {
     max-width: 200px;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+@media screen and (max-width: 768px) {
+    #hidden, #multiSelect {
+        float: none;
+    }
+
+    th {
+        white-space: nowrap;
+    }
+
+    tr td:nth-child(2) {
+        max-width: 100px;
+        min-width: 100px;
+        word-wrap: break-word;
+        word-break: break-all;
+    }
+
+    .panel-body .btn {
+        margin: 2px 0;
+    }
+
+    tr td:nth-child(5) .btn {
+        margin: 2px 0;
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .input-group {
+        width: 250px;
+        padding: 1px 0;
+    }
 }
 
 .dropdown-menu {
@@ -32,13 +70,15 @@ tr td:nth-child(2) {
     display: block;
     margin: 30px auto;
     max-width: 80%;
+    box-shadow: 1px 1px 10px #666;
 }
 
 .text {
     margin: 30px auto;
-    width: 50%;
-    min-height: 100%;
+    width: 80%;
+    min-height: 90%;
     padding: 10px;
     background-color: #fff;
+    box-shadow: 1px 1px 10px #666;
     white-space: pre-wrap;
 }

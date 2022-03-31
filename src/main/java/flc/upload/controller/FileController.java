@@ -2,6 +2,7 @@ package flc.upload.controller;
 
 import flc.upload.model.Folder;
 import flc.upload.model.Result;
+import flc.upload.util.AuthUtil;
 import flc.upload.util.FileUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.file.*;
@@ -26,6 +28,9 @@ import java.util.zip.ZipOutputStream;
 public class FileController {
     @Value("${upload.path}")
     private String uploadPath;
+
+    @Value("${password}")
+    private String password;
 
     @PostMapping("/list")
     public Result list(@RequestParam("param") String relativePath) {
@@ -115,7 +120,12 @@ public class FileController {
     }
 
     @PostMapping("/upload")
-    public Result upload(@RequestParam("file") MultipartFile[] files, @RequestParam("dir") String dir) throws Exception {
+    public Result upload(@RequestParam("file") MultipartFile[] files, @RequestParam("dir") String dir, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        Result result = new Result(false);
+        if (!AuthUtil.verifyToken(request, response)) {
+            result.setMsg("没有权限");
+            return result;
+        }
         StringBuilder fn = new StringBuilder();
         for (MultipartFile file : files) {
             File dest = new File(uploadPath + File.separator + dir + File.separator + file.getOriginalFilename());
@@ -136,7 +146,12 @@ public class FileController {
     }
 
     @PostMapping("/uploadFolder")
-    public Result uploadFolder(@RequestParam("folder") MultipartFile[] files, @RequestParam("dir") String dir) throws Exception {
+    public Result uploadFolder(@RequestParam("folder") MultipartFile[] files, @RequestParam("dir") String dir, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        Result result = new Result(false);
+        if (!AuthUtil.verifyToken(request, response)) {
+            result.setMsg("没有权限");
+            return result;
+        }
         StringBuilder fn = new StringBuilder();
         for (MultipartFile file : files) {
             if (Objects.requireNonNull(file.getOriginalFilename()).isEmpty()) {
@@ -223,18 +238,32 @@ public class FileController {
     }
 
     @PostMapping("/delete")
-    public void delete(@RequestParam("fn") String fn) {
+    public Result delete(@RequestParam("fn") String fn, HttpServletRequest request, HttpServletResponse response) {
+        Result result = new Result(false);
+        if (!AuthUtil.verifyToken(request, response)) {
+            result.setMsg("没有权限");
+            return result;
+        }
         File file = new File(uploadPath + File.separator + fn);
         FileUtil.deleteFolder(file);
+        result.setSuccess(true);
+        return result;
     }
 
     @PostMapping("/multiDelete")
-    public void multiDelete(@RequestParam("files") String files) {
+    public Result multiDelete(@RequestParam("files") String files, HttpServletRequest request, HttpServletResponse response) {
+        Result result = new Result(false);
+        if (!AuthUtil.verifyToken(request, response)) {
+            result.setMsg("没有权限");
+            return result;
+        }
         JSONArray array = JSONArray.fromObject(files);
         for (Object f : array) {
             File file = new File(uploadPath + File.separator + f.toString());
             FileUtil.deleteFolder(file);
         }
+        result.setSuccess(true);
+        return result;
     }
 
     @PostMapping("/rename")
@@ -295,4 +324,26 @@ public class FileController {
         in.close();
         return sb.toString();
     }
+
+    @PostMapping("/getToken")
+    public Result getToken(@RequestParam("password") String pass, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        Result result = new Result(false);
+        if (password.equals(pass)) {
+            UUID uuid = UUID.randomUUID();
+            File file = new File("token");
+            if (!file.isFile()) {
+                file.createNewFile();
+            }
+            FileWriter writer = new FileWriter(file, true);
+            writer.write(uuid.toString() + System.lineSeparator());
+            writer.close();
+            result.setSuccess(true);
+            result.setDetail(uuid.toString());
+            AuthUtil.addCookie("token", uuid.toString(), request, response);
+            return result;
+        }
+        result.setMsg("密码错误");
+        return result;
+    }
+
 }
