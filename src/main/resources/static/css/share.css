@@ -1,0 +1,25 @@
+.header {
+    padding-bottom: 9px;
+    margin: 40px 0 20px;
+}
+
+.post .form-control, .post .btn {
+    margin-bottom: 10px;
+}
+
+.list {
+    clear: both;
+    margin-top: 50px;
+}
+
+.list-group li {
+    word-wrap: break-word;
+}
+
+a {
+    cursor: pointer;
+}
+
+#messageModal .modal-body {
+    white-space: pre-wrap;
+}
