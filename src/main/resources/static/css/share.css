@@ -1,0 +1,11 @@
+.header {
+    margin: 30px 0;
+}
+
+#add * {
+    margin-bottom: 10px;
+}
+
+#list {
+    clear: both;
+}

@@ -1,0 +1,49 @@
+.header {
+    margin: 30px 0;
+}
+
+.breadcrumb {
+    margin: 0.5rem 0;
+}
+
+.link-primary {
+    cursor: pointer;
+}
+
+.table>tbody>tr>td {
+    vertical-align: middle;
+}
+
+tr td:nth-child(2) {
+    max-width: 200px;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+#buttons {
+    float: left;
+}
+
+#input {
+    float: right;
+}
+
+@media screen and (max-width: 768px) {
+    tr td:nth-child(2) {
+        max-width: 150px;
+    }
+
+    tr *:nth-child(3),
+    tr *:nth-child(4) {
+        display: none;
+    }
+
+    #buttons,
+    #input {
+        float: none;
+    }
+
+    #buttons .btn {
+        margin-bottom: 5px;
+    }
+}

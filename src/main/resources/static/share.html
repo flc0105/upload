@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文本共享</title>
+    <script src="js/vue.global.js"></script>
+    <script src="js/axios.min.js"></script>
+    <script src="js/qs.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/clipboard.min.js"></script>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/share.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">文件列表</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active">文本共享</a>
+                </li>
+            </ul>
+        </div>
+        <div id="add">
+            <input class="form-control" placeholder="用户名" v-model="text.author" ref="author">
+            <textarea class="form-control" rows="10" placeholder="文本内容" v-model="text.data" ref="data"></textarea>
+            <button class="btn btn-outline-primary float-end" @click="add()">发布</button>
+        </div>
+        <div id="list">
+            <ul class="list-group">
+                <li class="list-group-item" v-for="text in textList">
+                    <div class="float-end">
+                        <button class="btn btn-outline-primary btn-sm" id="btnCopy"
+                            :data-clipboard-text="text.data">复制</button>
+                        <button class="btn btn-outline-danger btn-sm" id="btnDelete"
+                            @click="confirmDelete(text.id)">删除</button>
+                    </div>
+                    <p class="text-primary">{{text.author}}</p>
+                    <p style="white-space: pre-wrap">{{text.data}}</p>
+                    <p class="text-muted">发布于 {{text.time.slice(0, -3)}}</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" ref="messageModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{message.title}}</h5>
+                    <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p style="white-space: pre-wrap">{{message.text}}</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" ref="confirmModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">删除</h5>
+                    <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>确定要删除吗？</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-danger" data-bs-dismiss="modal"
+                        @click="(event) => deleteText(event.target.getAttribute('data-id'))" ref="btnDelete">确定</button>
+                    <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/share.js"></script>
+</body>
+
+</html>
