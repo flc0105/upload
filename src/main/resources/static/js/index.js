@@ -14,7 +14,11 @@ const app = Vue.createApp({
             currentDirectory: '/',
             directories: [],
             files: [],
-            progress: 0
+            progress: 0,
+            filesToDelete: [],
+            filter: '',
+            multiSelect: false,
+            checkedFiles: []
         }
     },
     methods: {
@@ -31,7 +35,22 @@ const app = Vue.createApp({
             return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + ['B', 'kB', 'MB', 'GB'][i]
         },
         list() {
+            this.checkedFiles = []
             axios.post('/file/list', Qs.stringify({ 'currentDirectory': this.currentDirectory }))
+                .then((res) => {
+                    if (res.success) {
+                        this.files = res.detail
+                    } else {
+                        this.showModal('错误', res.msg)
+                    }
+                })
+                .catch((err) => {
+                    this.showModal('错误', err.message)
+                })
+        },
+        search(filter) {
+            this.checkedFiles = []
+            axios.post('/file/search', Qs.stringify({ 'filter': filter, 'currentDirectory': this.currentDirectory }))
                 .then((res) => {
                     if (res.success) {
                         this.files = res.detail
@@ -108,15 +127,22 @@ const app = Vue.createApp({
         createZip(relativePath) {
             location.href = '/file/createZip?relativePath=' + encodeURIComponent(relativePath)
         },
-        confirmDelete(relativePath) {
-            this.$refs.btnDelete.setAttribute('data-relative-path', relativePath)
+        bulkDownload() {
+            location.href = '/file/bulkDownload?relativePath=' + encodeURIComponent(JSON.stringify(this.checkedFiles))
+        },
+        confirmDelete(files) {
+            this.filesToDelete = files;
             new bootstrap.Modal(this.$refs.confirmModal).show()
         },
-        deleteFile(relativePath) {
-            axios.post('/file/delete', Qs.stringify({ 'relativePath': relativePath }))
+        deleteFile() {
+            axios.post('/file/delete', Qs.stringify({ 'relativePath': JSON.stringify(this.filesToDelete) }))
                 .then((res) => {
                     if (res.success) {
-                        this.list()
+                        if (this.filter.length == 0) {
+                            this.list()
+                        } else {
+                            this.search(this.filter)
+                        }
                         this.showModal('成功', '删除成功')
                     } else {
                         this.showModal('错误', res.msg)
@@ -150,6 +176,18 @@ const app = Vue.createApp({
                     this.showModal('错误', err.message)
                 })
         },
+        checkAll(event) {
+            if (event.target.checked) {
+                this.files.folders.forEach((folder) => {
+                    this.checkedFiles.push(folder.relativePath)
+                })
+                this.files.files.forEach((file) => {
+                    this.checkedFiles.push(file.relativePath)
+                })
+            } else {
+                this.checkedFiles = []
+            }
+        },
     },
     computed: {
         getParentDirectory() {
@@ -157,6 +195,15 @@ const app = Vue.createApp({
             currentDirectory.pop()
             parentDirectory = currentDirectory.join('/')
             return parentDirectory.length === 0 ? '/' : parentDirectory
+        }
+    },
+    watch: {
+        filter(newValue) {
+            if (newValue.trim().length === 0) {
+                this.list()
+                return
+            }
+            this.search(newValue)
         }
     },
     mounted() {

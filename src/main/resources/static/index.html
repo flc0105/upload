@@ -28,66 +28,73 @@
         <div class="card">
             <div class="card-header">
                 <ol class="breadcrumb float-start">
-                    <li v-for="directory in directories"
-                        :class="['breadcrumb-item', {active: (directory.relativePath == currentDirectory)}]">
+                    <li v-for="directory in directories" :class="['breadcrumb-item', {active: (directory.relativePath == currentDirectory)}]">
                         <a v-if="directory.relativePath == currentDirectory">{{directory.displayName}}</a>
-                        <a v-else class="link-primary text-decoration-none"
-                            @click="changeDirectory(directory.relativePath)">{{directory.displayName}}</a>
+                        <a v-else class="link-primary text-decoration-none" @click="changeDirectory(directory.relativePath)">{{directory.displayName}}</a>
                     </li>
                 </ol>
             </div>
             <div class="card-body">
                 <form id="form" action="upload" method="post" enctype="multipart/form-data">
                     <input type="file" name="file" id="file" class="d-none" @change="(event) => upload(event)" multiple>
-                    <input type="file" name="folder" id="folder" class="d-none" @change="(event) => upload(event)"
-                        multiple webkitdirectory>
+                    <input type="file" name="folder" id="folder" class="d-none" @change="(event) => upload(event)" multiple webkitdirectory>
                 </form>
                 <div id="buttons">
-                    <button class="btn btn-outline-primary"
-                        onclick="document.getElementById('file').value=null;document.getElementById('file').click()">上传文件</button>
-                    <button class="btn btn-outline-primary" class="btn btn-default"
-                        onclick="document.getElementById('folder').value=null;document.getElementById('folder').click()">上传文件夹</button>
+                    <button class="btn btn-outline-primary" onclick="document.getElementById('file').value=null; document.getElementById('file').click()">上传文件</button>
+                    <button class="btn btn-outline-primary" class="btn btn-default" onclick="document.getElementById('folder').value=null; document.getElementById('folder').click()">上传文件夹</button>
                     <button class="btn btn-outline-primary" @click="inputDirectoryName()">新建文件夹</button>
                     <button class="btn btn-outline-primary" @click="list()">刷新</button>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary" @click="multiSelect = !multiSelect; checkedFiles = []">多选</button>
+                        <button v-if="multiSelect" :disabled="checkedFiles.length == 0" class="btn btn-outline-primary" @click="bulkDownload()">下载</button>
+                        <button v-if="multiSelect" :disabled="checkedFiles.length == 0" class="btn btn-outline-primary" @click="confirmDelete(checkedFiles)">删除</button>
+                    </div>
                 </div>
                 <div id="input">
-                    <input class="form-control" placeholder="搜索">
+                    <input class="form-control" placeholder="搜索" v-model="filter">
                 </div>
             </div>
             <table class="table table-hover">
                 <tr>
-                    <th>序号</th>
+                    <th v-if="multiSelect" @click="(event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click()">
+                        <input type="checkbox" class="form-check-input" @click="(event) => checkAll(event)"
+                            :checked="checkedFiles.length > 0 && files.folders.length + files.files.length > 0"
+                            :indeterminate="checkedFiles.length > 0 && checkedFiles.length < files.folders.length + files.files.length"
+                            :disabled="files.folders.length + files.files.length == 0">
+                    </th>
+                    <th v-else>序号</th>
                     <th>文件名</th>
                     <th>大小</th>
                     <th>修改时间</th>
                     <th>操作</th>
                 </tr>
                 <tr v-if="currentDirectory != '/'">
-                    <td colspan="5" @click="changeDirectory(getParentDirectory)"><a
-                            class="link-primary text-decoration-none">..</a></td>
+                    <td colspan="5" @click="changeDirectory(getParentDirectory)"><a class="link-primary text-decoration-none">..</a></td>
                 </tr>
                 <tr v-for="(folder,index) in files.folders">
-                    <td>{{index + 1}}</td>
-                    <td @click="changeDirectory(folder.relativePath)"><a
-                            class="link-primary text-decoration-none">{{folder.name}}</a></td>
+                    <td v-if="multiSelect" @click="(event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click()">
+                        <input type="checkbox" class="form-check-input" :value="folder.relativePath" v-model="checkedFiles">
+                    </td>
+                    <td v-else>{{index + 1}}</td>
+                    <td @click="changeDirectory(folder.relativePath)"><a class="link-primary text-decoration-none">{{folder.name}}</a></td>
                     <td>-</td>
                     <td>{{folder.lastModified}}</td>
                     <td>
-                        <button class="btn btn-outline-primary btn-sm"
-                            @click="createZip(folder.relativePath)">下载</button>
-                        <button class="btn btn-outline-danger btn-sm"
-                            @click="confirmDelete(folder.relativePath)">删除</button>
+                        <button class="btn btn-outline-primary btn-sm" @click="createZip(folder.relativePath)">下载</button>
+                        <button class="btn btn-outline-danger btn-sm" @click="confirmDelete([folder.relativePath])">删除</button>
                     </td>
                 </tr>
                 <tr v-for="(file,index) in files.files">
-                    <td>{{files.folders.length + index + 1}}</td>
+                    <td v-if="multiSelect" @click="(event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click()">
+                        <input type="checkbox" class="form-check-input" :value="file.relativePath" v-model="checkedFiles">
+                    </td>
+                    <td v-else>{{files.folders.length + index + 1}}</td>
                     <td>{{file.name}}</td>
                     <td>{{formatBytes(file.length)}}</td>
                     <td>{{file.lastModified}}</td>
                     <td>
                         <button class="btn btn-outline-primary btn-sm" @click="download(file.relativePath)">下载</button>
-                        <button class="btn btn-outline-danger btn-sm"
-                            @click="confirmDelete(file.relativePath)">删除</button>
+                        <button class="btn btn-outline-danger btn-sm" @click="confirmDelete([file.relativePath])">删除</button>
                     </td>
                 </tr>
             </table>
@@ -134,9 +141,7 @@
                     <p>确定要删除吗？</p>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-outline-danger" data-bs-dismiss="modal"
-                        @click="(event) => deleteFile(event.target.getAttribute('data-relative-path'))"
-                        ref="btnDelete">确定</button>
+                    <button class="btn btn-outline-danger" data-bs-dismiss="modal" @click="deleteFile()">确定</button>
                     <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
                 </div>
             </div>
@@ -154,8 +159,7 @@
                     <input class="form-control" id="name" ref="directoryName">
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="createDirectory()">确定
-                    </button>
+                    <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="createDirectory()">确定</button>
                     <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
                 </div>
             </div>
