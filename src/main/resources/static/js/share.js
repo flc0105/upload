@@ -16,7 +16,9 @@ const app = Vue.createApp({
             text: {
                 author: '',
                 data: '',
-            }
+            },
+            textToDelete: '',
+            previousAct: ''
         }
     },
     methods: {
@@ -67,11 +69,14 @@ const app = Vue.createApp({
                 })
         },
         confirmDelete(id) {
-            this.$refs.btnDelete.setAttribute('data-id', id)
+            this.textToDelete = id
             new bootstrap.Modal(this.$refs.confirmModal).show()
         },
-        deleteText(id) {
-            axios.post('/text/delete', Qs.stringify({ 'id': id }))
+        deleteText() {
+            if (!this.hasToken(() => this.deleteText())) {
+                return
+            }
+            axios.post('/text/delete', Qs.stringify({ 'id': this.textToDelete }))
                 .then((res) => {
                     if (res.success) {
                         this.list()
@@ -84,6 +89,29 @@ const app = Vue.createApp({
                     this.showModal('错误', err.message)
                 })
         },
+        hasToken(func) {
+            if (!Cookies.get('token')) {
+                this.previousAct = func
+                this.$refs.password.value = ''
+                new bootstrap.Modal(this.$refs.authModal).show()
+                this.$refs.password.focus()
+                return false
+            }
+            return true
+        },
+        getToken() {
+            axios.post('/token/get', Qs.stringify({ 'password': this.$refs.password.value }))
+                .then((res) => {
+                    if (res.success) {
+                        this.previousAct()
+                    } else {
+                        this.showModal('错误', res.msg)
+                    }
+                })
+                .catch((err) => {
+                    this.showModal('错误', err.message)
+                })
+        }
     },
     mounted() {
         this.list()

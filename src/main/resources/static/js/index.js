@@ -18,7 +18,8 @@ const app = Vue.createApp({
             filesToDelete: [],
             filter: '',
             multiSelect: false,
-            checkedFiles: []
+            checkedFiles: [],
+            previousAct: null
         }
     },
     methods: {
@@ -82,6 +83,9 @@ const app = Vue.createApp({
             this.directories[0].displayName = 'Home'
         },
         upload(event) {
+            if (!this.hasToken(() => this.upload(event))) {
+                return
+            }
             const modal = new bootstrap.Modal(this.$refs.progressModal)
             modal.show()
             const formData = new FormData()
@@ -135,10 +139,13 @@ const app = Vue.createApp({
             new bootstrap.Modal(this.$refs.confirmModal).show()
         },
         deleteFile() {
+            if (!this.hasToken(() => this.deleteFile())) {
+                return
+            }
             axios.post('/file/delete', Qs.stringify({ 'relativePath': JSON.stringify(this.filesToDelete) }))
                 .then((res) => {
                     if (res.success) {
-                        if (this.filter.length == 0) {
+                        if (this.filter.length === 0) {
                             this.list()
                         } else {
                             this.search(this.filter)
@@ -188,6 +195,29 @@ const app = Vue.createApp({
                 this.checkedFiles = []
             }
         },
+        hasToken(func) {
+            if (!Cookies.get('token')) {
+                this.previousAct = func
+                this.$refs.password.value = ''
+                new bootstrap.Modal(this.$refs.authModal).show()
+                this.$refs.password.focus()
+                return false
+            }
+            return true
+        },
+        getToken() {
+            axios.post('/token/get', Qs.stringify({ 'password': this.$refs.password.value }))
+                .then((res) => {
+                    if (res.success) {
+                        this.previousAct()
+                    } else {
+                        this.showModal('错误', res.msg)
+                    }
+                })
+                .catch((err) => {
+                    this.showModal('错误', err.message)
+                })
+        }
     },
     computed: {
         getParentDirectory() {

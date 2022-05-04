@@ -9,3 +9,11 @@
 #list {
     clear: both;
 }
+
+.list-group-item {
+    padding: 1rem 1rem;
+}
+
+.text-muted {
+    margin-bottom: 0;
+}

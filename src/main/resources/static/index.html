@@ -9,6 +9,7 @@
     <script src="js/axios.min.js"></script>
     <script src="js/qs.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
+    <script src="js/js.cookie.min.js"></script>
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/index.css" rel="stylesheet">
 </head>
@@ -160,6 +161,24 @@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="createDirectory()">确定</button>
+                    <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" ref="authModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">验证</h5>
+                    <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="password" class="form-label">请输入密码</label>
+                    <input type="password" class="form-control" id="password" ref="password">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="getToken()">确定</button>
                     <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
                 </div>
             </div>
