@@ -4,6 +4,14 @@ axios.interceptors.response.use(res => {
     }
 })
 
+const routes = [
+    { 'path': '/:id(\\d+)', component: { template: '' } }
+]
+
+const router = VueRouter.createRouter({
+    history: VueRouter.createWebHashHistory(),
+    routes
+})
 
 const app = Vue.createApp({
     data() {
@@ -18,7 +26,8 @@ const app = Vue.createApp({
                 data: '',
             },
             textToDelete: '',
-            previousAct: ''
+            previousAct: '',
+            data: ''
         }
     },
     methods: {
@@ -42,11 +51,11 @@ const app = Vue.createApp({
         },
         add() {
             if (this.text.author.trim().length === 0) {
-                this.$refs.author.focus()
+                this.$refs.textAuthor.focus()
                 return
             }
             if (this.text.data.trim().length === 0) {
-                this.$refs.data.focus()
+                this.$refs.textData.focus()
                 return
             }
             axios.post('/text/add',
@@ -57,7 +66,7 @@ const app = Vue.createApp({
                 .then((res) => {
                     if (res.success) {
                         this.list()
-                        this.showModal('成功', '发布成功')
+                        this.showModal('成功', '发布成功\n' + window.location.href + res.detail.id)
                         this.text.author = ''
                         this.text.data = ''
                     } else {
@@ -81,6 +90,48 @@ const app = Vue.createApp({
                     if (res.success) {
                         this.list()
                         this.showModal('成功', '删除成功')
+                        if (this.$route.params.id) {
+                            this.$router.push('/')
+                        }
+                    } else {
+                        this.showModal('错误', res.msg)
+                    }
+                })
+                .catch((err) => {
+                    this.showModal('错误', err.message)
+                })
+        },
+        get(id) {
+            this.data = ''
+            axios.post('/text/get', Qs.stringify({ 'id': id }))
+                .then((res) => {
+                    if (res.success) {
+                        this.data = res.detail.data
+                    } else {
+                        this.$router.push('/')
+                    }
+                })
+                .catch((err) => {
+                    this.$router.push('/')
+                })
+        },
+        download() {
+            const blob = new Blob([this.data], { type: 'text/plain;charset=utf-8' })
+            saveAs(blob, this.$route.params.id + '.txt')
+        },
+        update() {
+            if (this.data.trim().length === 0) {
+                this.$refs.textShow.focus()
+                return
+            }
+            if (!this.hasToken(() => this.update())) {
+                return
+            }
+            axios.post('/text/update', Qs.stringify({ 'id': this.$route.params.id, 'data': this.data }))
+                .then((res) => {
+                    if (res.success) {
+                        this.list()
+                        this.showModal('成功', '修改成功')
                     } else {
                         this.showModal('错误', res.msg)
                     }
@@ -118,8 +169,19 @@ const app = Vue.createApp({
         new ClipboardJS('#btnCopy').on('success', () => {
             this.showModal('成功', '复制成功')
         });
+    },
+    created() {
+        this.$watch(
+            () => this.$route.params,
+            (toParams) => {
+                if (toParams.id) {
+                    this.get(toParams.id)
+                }
+            }
+        )
     }
 })
 
+app.use(router)
 app.config.compilerOptions.whitespace = 'preserve'
 app.mount('body')
