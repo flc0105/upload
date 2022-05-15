@@ -8,183 +8,231 @@
     <script src="js/vue.global.js"></script>
     <script src="js/axios.min.js"></script>
     <script src="js/qs.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/js.cookie.min.js"></script>
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-icons.css" rel="stylesheet">
     <link href="css/index.css" rel="stylesheet">
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <ul class="nav nav-tabs">
-                <li class="nav-item">
-                    <a class="nav-link active">文件列表</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="text.html">文本共享</a>
-                </li>
-            </ul>
-        </div>
-        <div class="card">
-            <div class="card-header">
-                <ol class="breadcrumb float-start">
-                    <li v-for="directory in directories" :class="['breadcrumb-item', {active: (directory.relativePath == currentDirectory)}]">
-                        <a v-if="directory.relativePath == currentDirectory">{{directory.displayName}}</a>
-                        <a v-else class="link-primary text-decoration-none" @click="changeDirectory(directory.relativePath)">{{directory.displayName}}</a>
-                    </li>
-                </ol>
-            </div>
-            <div class="card-body">
-                <form id="form" action="upload" method="post" enctype="multipart/form-data">
-                    <input type="file" name="file" id="file" class="d-none" @change="(event) => upload(event)" multiple>
-                    <input type="file" name="folder" id="folder" class="d-none" @change="(event) => upload(event)" multiple webkitdirectory>
-                </form>
-                <div id="buttons">
-                    <button class="btn btn-outline-primary" onclick="document.getElementById('file').value=null; document.getElementById('file').click()">上传文件</button>
-                    <button class="btn btn-outline-primary" class="btn btn-default" onclick="document.getElementById('folder').value=null; document.getElementById('folder').click()">上传文件夹</button>
-                    <button class="btn btn-outline-primary" @click="inputDirectoryName()">新建文件夹</button>
-                    <button class="btn btn-outline-primary" @click="list()">刷新</button>
-                    <div class="btn-group">
-                        <button class="btn btn-outline-primary" @click="multiSelect = !multiSelect; checkedFiles = []">多选</button>
-                        <button v-if="multiSelect" :disabled="checkedFiles.length == 0" class="btn btn-outline-primary" @click="bulkDownload()">下载</button>
-                        <button v-if="multiSelect" :disabled="checkedFiles.length == 0" class="btn btn-outline-primary" @click="confirmDelete(checkedFiles)">删除</button>
-                    </div>
-                </div>
-                <div id="input">
-                    <input class="form-control" placeholder="搜索" v-model="filter">
-                </div>
-            </div>
-            <table class="table table-hover">
-                <tr>
-                    <th v-if="multiSelect" @click="(event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click()">
-                        <input type="checkbox" class="form-check-input" @click="(event) => checkAll(event)"
-                            :checked="checkedFiles.length > 0 && files.folders.length + files.files.length > 0"
-                            :indeterminate="checkedFiles.length > 0 && checkedFiles.length < files.folders.length + files.files.length"
-                            :disabled="files.folders.length + files.files.length == 0">
-                    </th>
-                    <th v-else>序号</th>
-                    <th>文件名</th>
-                    <th>大小</th>
-                    <th>修改时间</th>
-                    <th>操作</th>
-                </tr>
-                <tr v-if="currentDirectory != '/'">
-                    <td colspan="5" @click="changeDirectory(getParentDirectory)"><a class="link-primary text-decoration-none">..</a></td>
-                </tr>
-                <tr v-for="(folder,index) in files.folders">
-                    <td v-if="multiSelect" @click="(event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click()">
-                        <input type="checkbox" class="form-check-input" :value="folder.relativePath" v-model="checkedFiles">
-                    </td>
-                    <td v-else>{{index + 1}}</td>
-                    <td @click="changeDirectory(folder.relativePath)"><a class="link-primary text-decoration-none">{{folder.name}}</a></td>
-                    <td>-</td>
-                    <td>{{folder.lastModified}}</td>
-                    <td>
-                        <button class="btn btn-outline-primary btn-sm" @click="createZip(folder.relativePath)">下载</button>
-                        <button class="btn btn-outline-danger btn-sm" @click="confirmDelete([folder.relativePath])">删除</button>
-                    </td>
-                </tr>
-                <tr v-for="(file,index) in files.files">
-                    <td v-if="multiSelect" @click="(event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click()">
-                        <input type="checkbox" class="form-check-input" :value="file.relativePath" v-model="checkedFiles">
-                    </td>
-                    <td v-else>{{files.folders.length + index + 1}}</td>
-                    <td>{{file.name}}</td>
-                    <td>{{formatBytes(file.length)}}</td>
-                    <td>{{file.lastModified}}</td>
-                    <td>
-                        <button class="btn btn-outline-primary btn-sm" @click="download(file.relativePath)">下载</button>
-                        <button class="btn btn-outline-danger btn-sm" @click="confirmDelete([file.relativePath])">删除</button>
-                    </td>
-                </tr>
-            </table>
-        </div>
+<div class="container">
+    <div class="header">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active">文件列表</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="text.html">文本共享</a>
+            </li>
+        </ul>
     </div>
-    <div class="modal" tabindex="-1" ref="messageModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{message.title}}</h5>
-                    <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>{{message.text}}</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
+    <div class="card">
+        <div class="card-header">
+            <ol class="breadcrumb float-start">
+                <li v-for="directory in directories" :class="['breadcrumb-item', {active: (directory.relativePath == currentDirectory)}]">
+                    <a v-if="directory.relativePath == currentDirectory">{{directory.displayName}}</a>
+                    <a v-else class="link-primary text-decoration-none" @click="changeDirectory(directory.relativePath)">{{directory.displayName}}</a>
+                </li>
+            </ol>
+        </div>
+        <div class="card-body">
+            <form id="form" action="upload" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" id="file" class="d-none" @change="(event) => upload(event)" multiple>
+                <input type="file" name="folder" id="folder" class="d-none" @change="(event) => upload(event)" multiple webkitdirectory>
+            </form>
+            <div id="left">
+                <button class="btn btn-outline-primary" onclick="document.getElementById('file').value=null; document.getElementById('file').click()">上传文件</button>
+                <button class="btn btn-outline-primary" class="btn btn-default" onclick="document.getElementById('folder').value=null; document.getElementById('folder').click()">上传文件夹</button>
+                <button class="btn btn-outline-primary" @click="inputDirectoryName()">新建文件夹</button>
+                <button class="btn btn-outline-primary" @click="list()">刷新</button>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary" @click="multiSelect = !multiSelect; checkedFiles = []">多选</button>
+                    <button v-if="multiSelect" :disabled="checkedFiles.length == 0" class="btn btn-outline-primary" @click="bulkDownload()">下载</button>
+                    <button v-if="multiSelect" :disabled="checkedFiles.length == 0" class="btn btn-outline-primary" @click="confirmDelete(checkedFiles)">删除</button>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" ref="progressModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">上传进度</h5>
-                </div>
-                <div class="modal-body">
-                    <div class="progress">
-                        <div class="progress-bar" :style="{width: progress}"></div>
+            <div id="right">
+                <div class="w-100 d-flex">
+                    <input class="form-control" id="searchInput" placeholder="搜索" v-model="filter" @keyup.enter="search()"/>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside"><i class="bi bi-grid-3x3-gap-fill"></i></button>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-item">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="size" :checked="columns.includes('size')" @click="hideColumn('size')">
+                                    <label class="form-check-label" for="size">大小</label>
+                                </div>
+                            </li>
+                            <li class="dropdown-item">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="contentType" :checked="columns.includes('contentType')" @click="hideColumn('contentType')">
+                                    <label class="form-check-label" for="contentType">类型</label>
+                                </div>
+                            </li>
+                            <li class="dropdown-item">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="lastModified" :checked="columns.includes('lastModified')" @click="hideColumn('lastModified')">
+                                    <label class="form-check-label" for="lastModified">修改日期</label>
+                                </div>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
+        <table class="table table-hover">
+            <tr>
+                <th class="checkbox" v-if="multiSelect"
+                    @click="(event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click()">
+                    <input type="checkbox" class="form-check-input" @click="(event) => checkAll(event)"
+                           :checked="checkedFiles.length > 0 && files.folders.length + files.files.length > 0"
+                           :indeterminate="checkedFiles.length > 0 && checkedFiles.length < files.folders.length + files.files.length"
+                           :disabled="files.folders.length + files.files.length == 0">
+                </th>
+                <th class="filename">文件名</th>
+                <th class="size" v-if="columns.includes('size')">大小</th>
+                <th class="contentType" v-if="columns.includes('contentType')">类型</th>
+                <th class="lastModified" v-if="columns.includes('lastModified')">修改时间</th>
+                <th class="action">操作</th>
+            </tr>
+            <tr v-if="currentDirectory != '/'">
+                <td colspan="6" @click="changeDirectory(getParentDirectory)"><a class="link-primary text-decoration-none">..</a></td>
+            </tr>
+            <tr v-for="folder in files.folders">
+                <td class="checkbox" v-show="multiSelect" @click="(event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click()">
+                    <input type="checkbox" class="form-check-input" :value="folder.relativePath" v-model="checkedFiles">
+                </td>
+                <td class="filename" @click="changeDirectory(folder.relativePath)">
+                    <i class="bi bi-folder2"></i>&nbsp;
+                    <a class="link-primary text-decoration-none">{{folder.name}}</a>
+                </td>
+                <td class="size" v-if="columns.includes('size')">-</td>
+                <td class="contentType" v-if="columns.includes('contentType')">-</td>
+                <td class="lastModified" v-if="columns.includes('lastModified')">{{folder.lastModified}}</td>
+                <td class="action">
+                    <a class="link-primary" @click="createZip(folder.relativePath)"><i class="bi bi-cloud-download"></i></a>
+                    <a class="link-danger" @click="confirmDelete([folder.relativePath])"><i class="bi bi-trash"></i></a>
+                </td>
+            </tr>
+            <tr v-for="file in files.files">
+                <td class="checkbox" v-show="multiSelect"
+                    @click="(event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click()">
+                    <input type="checkbox" class="form-check-input" :value="file.relativePath" v-model="checkedFiles">
+                </td>
+                <td class="filename">
+                    <i class="bi bi-file-earmark"></i>&nbsp;
+                    {{file.name}}
+                </td>
+                <td class="size" v-if="columns.includes('size')">{{formatBytes(file.length)}}</td>
+                <td class="contentType" v-if="columns.includes('contentType')">{{file.fileType}}</td>
+                <td class="lastModified" v-if="columns.includes('lastModified')">{{file.lastModified}}</td>
+                <td class="action">
+                    <a class="link-primary" @click="download(file.relativePath)"><i class="bi bi-cloud-download"></i></a>
+                    <a class="link-danger" @click="confirmDelete([file.relativePath])"><i class="bi bi-trash"></i></a>
+                    <a class="link-primary" v-if="file.fileType.includes('image') || file.fileType.includes('text')" @click="previewFile(file.fileType, file.relativePath)"><i class="bi bi-eye"></i></a>
+                </td>
+            </tr>
+        </table>
     </div>
-    <div class="modal" tabindex="-1" ref="confirmModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">删除</h5>
-                    <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>确定要删除吗？</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline-danger" data-bs-dismiss="modal" @click="deleteFile()">确定</button>
-                    <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
+</div>
+<div class="modal" tabindex="-1" ref="messageModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{message.title}}</h5>
+                <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p style="white-space: pre-wrap">{{message.text}}</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" tabindex="-1" ref="progressModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">上传进度</h5>
+            </div>
+            <div class="modal-body">
+                <div class="progress">
+                    <div class="progress-bar" :style="{width: progress}"></div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="modal" tabindex="-1" ref="inputModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">新建文件夹</h5>
-                    <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <label for="name" class="form-label">输入文件夹名</label>
-                    <input class="form-control" id="name" ref="directoryName">
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="createDirectory()">确定</button>
-                    <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
-                </div>
+</div>
+<div class="modal" tabindex="-1" ref="confirmModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">删除</h5>
+                <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-danger" data-bs-dismiss="modal" @click="deleteFile()">确定</button>
+                <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
             </div>
         </div>
     </div>
-    <div class="modal" tabindex="-1" ref="authModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">验证</h5>
-                    <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <label for="password" class="form-label">请输入密码</label>
-                    <input type="password" class="form-control" id="password" ref="password">
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="getToken()">确定</button>
-                    <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
-                </div>
+</div>
+<div class="modal" tabindex="-1" ref="inputModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">新建文件夹</h5>
+                <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label for="name" class="form-label">输入文件夹名</label>
+                <input class="form-control" id="name" ref="directoryName">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="createDirectory()">确定</button>
+                <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
             </div>
         </div>
     </div>
-    <script src="js/index.js"></script>
+</div>
+<div class="modal" tabindex="-1" ref="authModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">验证</h5>
+                <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label for="password" class="form-label">请输入密码</label>
+                <input type="password" class="form-control" id="password" ref="password">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="getToken()">确定</button>
+                <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div v-show="loading" class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+</div>
+<div class="modal" ref="imageModal">
+    <div class="modal-dialog text-center mw-100 h-100">
+        <img id="image" class="shadow" onclick="document.getElementById('image').classList.toggle('mh-100')">
+    </div>
+</div>
+<div class="modal" ref="textModal">
+    <div class="modal-dialog modal-dialog-scrollable mw-100">
+        <div id="text" class="shadow bg-body p-3 font-monospace mh-100"></div>
+    </div>
+</div>
+<script src="js/index.js"></script>
 </body>
 
 </html>

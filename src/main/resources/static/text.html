@@ -8,7 +8,7 @@
     <script src="js/vue.global.js"></script>
     <script src="js/axios.min.js"></script>
     <script src="js/qs.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/clipboard.min.js"></script>
     <script src="js/js.cookie.min.js"></script>
     <script src="js/vue-router.global.min.js"></script>
@@ -18,108 +18,122 @@
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <ul class="nav nav-tabs">
-                <li class="nav-item">
-                    <a class="nav-link" href="index.html">文件列表</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active">文本共享</a>
+<div class="container">
+    <div class="header">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link" href="index.html">文件列表</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active">文本共享</a>
+            </li>
+        </ul>
+    </div>
+    <div v-if="!$route.params.id">
+        <div id="add">
+            <input class="form-control" placeholder="标题" v-model="text.title" ref="textTitle">
+            <textarea class="form-control" rows="10" placeholder="正文" v-model="text.data" ref="textData"></textarea>
+            <button class="btn btn-outline-primary float-end" @click="add()">保存</button>
+        </div>
+        <div id="list">
+            <ul class="list-group">
+                <li class="list-group-item list-group-item-action" v-for="text in textList" style="cursor:pointer" @click="(event) => event.target.tagName !== 'svg' && event.target.tagName !== 'path' && $router.push('/' + text.id)">
+                    <div class="float-end">
+                        <a class="link-primary" id="btnCopy" :data-clipboard-text="text.data">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                            </svg>
+                        </a>
+                        <a class="link-danger" @click="confirmDelete(text.id)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                            </svg>
+                        </a>
+                    </div>
+                    <div>
+                        <p class="text-primary">{{text.title}}</p>
+                        <p style="white-space: pre-wrap">{{text.data}}</p>
+                        <p class="text-muted">发布于 {{text.time.slice(0, -3)}}</p>
+                    </div>
                 </li>
             </ul>
         </div>
-        <div v-if="!$route.params.id">
-            <div id="add">
-                <input class="form-control" placeholder="用户名" v-model="text.author" ref="textAuthor">
-                <textarea class="form-control" rows="10" placeholder="文本内容" v-model="text.data" ref="textData"></textarea>
-                <button class="btn btn-outline-primary float-end" @click="add()">发布</button>
-            </div>
-            <div id="list">
-                <ul class="list-group">
-                    <li class="list-group-item list-group-item-action" v-for="text in textList">
-                        <div class="float-end">
-                            <button class="btn btn-outline-primary btn-sm" id="btnCopy" :data-clipboard-text="text.data">复制</button>
-                            <button class="btn btn-outline-danger btn-sm" id="btnDelete" @click="confirmDelete(text.id)">删除</button>
-                        </div>
-                        <div @click="$router.push('/' + text.id)">
-                            <p class="text-primary">{{text.author}}</p>
-                            <p style="white-space: pre-wrap">{{text.data}}</p>
-                            <p class="text-muted">发布于 {{text.time.slice(0, -3)}}</p>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div v-if="$route.params.id">
-            <div class="card">
-                <div class="card-body border-bottom">
-                    <div class="float-start">
-                        <button class="btn btn-outline-primary" @click="$router.push('/')">返回</button>
-                        <button class="btn btn-outline-primary" id="btnCopy" data-clipboard-target="#textShow">复制</button>
-                        <button class="btn btn-outline-primary" @click="download()">下载</button>
-                    </div>
-                    <div class="float-end">
-                        <button class="btn btn-outline-primary" @click="update()">修改</button>
-                        <button class="btn btn-outline-danger" @click="confirmDelete($route.params.id)">删除</button>
+    </div>
+    <div v-if="$route.params.id">
+        <div class="card">
+            <div class="card-body border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a class="link-primary text-decoration-none" @click="$router.push('/')">返回</a>
+                    <div class="text-muted">{{data.title}}</div>
+                    <div>
+                        <a class="btn btn-outline-primary btn-sm" id="btnCopy" data-clipboard-target="#textShow">复制</a>
+                        <a class="btn btn-outline-primary btn-sm" @click="download()">下载</a>
+                        <a class="btn btn-outline-primary btn-sm" @click="update()">保存</a>
+                        <a class="btn btn-outline-danger btn-sm" @click="confirmDelete($route.params.id)">删除</a>
                     </div>
                 </div>
-                <textarea class="form-control border-0 font-monospace" rows="20" id="textShow" v-model="data" ref="textShow"></textarea>
+            </div>
+            <textarea class="form-control border-0 font-monospace" id="textShow" v-model="data.data" ref="textShow"></textarea>
+        </div>
+    </div>
+</div>
+<div class="modal" tabindex="-1" ref="messageModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{message.title}}</h5>
+                <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p style="white-space: pre-wrap">{{message.text}}</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
             </div>
         </div>
     </div>
-    <div class="modal" tabindex="-1" ref="messageModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{message.title}}</h5>
-                    <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p style="white-space: pre-wrap">{{message.text}}</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
-                </div>
+</div>
+<div class="modal" tabindex="-1" ref="confirmModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">删除</h5>
+                <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-danger" data-bs-dismiss="modal" @click="deleteText()">确定</button>
+                <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
             </div>
         </div>
     </div>
-    <div class="modal" tabindex="-1" ref="confirmModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">删除</h5>
-                    <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>确定要删除吗？</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline-danger" data-bs-dismiss="modal" @click="deleteText()">确定</button>
-                    <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
-                </div>
+</div>
+<div class="modal" tabindex="-1" ref="authModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">验证</h5>
+                <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label for="password" class="form-label">请输入密码</label>
+                <input type="password" class="form-control" id="password" ref="password">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="getToken()">确定</button>
+                <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
             </div>
         </div>
     </div>
-    <div class="modal" tabindex="-1" ref="authModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">验证</h5>
-                    <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <label for="password" class="form-label">请输入密码</label>
-                    <input type="password" class="form-control" id="password" ref="password">
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="getToken()">确定</button>
-                    <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <script src="js/text.js"></script>
+</div>
+<div v-show="loading" class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+</div>
+<script src="js/text.js"></script>
 </body>
 
 </html>

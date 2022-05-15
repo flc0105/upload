@@ -4,6 +4,9 @@ axios.interceptors.response.use(res => {
     }
 })
 
+let cancel;
+const CancelToken = axios.CancelToken;
+
 const app = Vue.createApp({
     data() {
         return {
@@ -19,7 +22,9 @@ const app = Vue.createApp({
             filter: '',
             multiSelect: false,
             checkedFiles: [],
-            previousAct: null
+            previousAct: null,
+            loading: false,
+            columns: ['size', 'lastModified']
         }
     },
     methods: {
@@ -36,8 +41,18 @@ const app = Vue.createApp({
             return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + ['B', 'kB', 'MB', 'GB'][i]
         },
         list() {
+            this.loading = true
+            this.files = []
             this.checkedFiles = []
-            axios.post('/file/list', Qs.stringify({ 'currentDirectory': this.currentDirectory }))
+            if (cancel !== undefined) {
+                cancel();
+            }
+            axios.post('/file/list', Qs.stringify({'currentDirectory': this.currentDirectory}),
+                {
+                    cancelToken: new CancelToken(function executor(c) {
+                        cancel = c;
+                    })
+                })
                 .then((res) => {
                     if (res.success) {
                         this.files = res.detail
@@ -48,18 +63,43 @@ const app = Vue.createApp({
                 .catch((err) => {
                     this.showModal('错误', err.message)
                 })
+                .finally(() => {
+                    this.loading = false
+                })
         },
-        search(filter) {
+        search() {
+            if (this.filter.trim().length === 0) {
+                this.list()
+                return
+            }
+            this.loading = true
+            this.files = []
             this.checkedFiles = []
-            axios.post('/file/search', Qs.stringify({ 'filter': filter, 'currentDirectory': this.currentDirectory }))
+            if (cancel !== undefined) {
+                cancel();
+            }
+            axios.post('/file/search', Qs.stringify({
+                    'filter': this.filter,
+                    'currentDirectory': this.currentDirectory
+                }),
+                {
+                    cancelToken: new CancelToken(function executor(c) {
+                        cancel = c;
+                    })
+                })
                 .then((res) => {
                     if (res.success) {
                         this.files = res.detail
                     } else {
                         this.showModal('错误', res.msg)
                     }
+                    this.loading = false
                 })
                 .catch((err) => {
+                    if (err.name === 'CanceledError') {
+                        return
+                    }
+                    this.loading = false
                     this.showModal('错误', err.message)
                 })
         },
@@ -92,7 +132,7 @@ const app = Vue.createApp({
             formData.append('currentDirectory', this.currentDirectory)
             const files = Array.from(event.target.files)
             files.forEach((file) => {
-                formData.append('file', file)
+                formData.append('files', file)
             })
             axios({
                 method: 'post',
@@ -126,7 +166,7 @@ const app = Vue.createApp({
             })
         },
         download(relativePath) {
-            location.href = '/file/download?relativePath=' + encodeURIComponent(relativePath)
+            location.href = '/file/downloadFile?relativePath=' + encodeURIComponent(relativePath)
         },
         createZip(relativePath) {
             location.href = '/file/createZip?relativePath=' + encodeURIComponent(relativePath)
@@ -142,7 +182,7 @@ const app = Vue.createApp({
             if (!this.hasToken(() => this.deleteFile())) {
                 return
             }
-            axios.post('/file/delete', Qs.stringify({ 'relativePath': JSON.stringify(this.filesToDelete) }))
+            axios.post('/file/delete', Qs.stringify({'relativePath': JSON.stringify(this.filesToDelete)}))
                 .then((res) => {
                     if (res.success) {
                         if (this.filter.length === 0) {
@@ -170,7 +210,7 @@ const app = Vue.createApp({
                 this.showModal('错误', '文件夹名不能为空')
                 return
             }
-            axios.post('/file/createDirectory', Qs.stringify({ 'relativePath': this.currentDirectory + '/' + directoryName }))
+            axios.post('/file/createDirectory', Qs.stringify({'relativePath': this.currentDirectory + '/' + directoryName}))
                 .then((res) => {
                     if (res.success) {
                         this.list()
@@ -195,6 +235,32 @@ const app = Vue.createApp({
                 this.checkedFiles = []
             }
         },
+        hideColumn(column) {
+            this.columns.includes(column) ? this.columns = this.columns.filter(item => item !== column) : this.columns.push(column)
+        },
+        previewFile(fileType, filename) {
+            if (fileType.includes('image')) {
+                let image = document.getElementById('image')
+                image.removeAttribute('src')
+                image.setAttribute('src', '/file/downloadFile?relativePath=' + filename)
+                new bootstrap.Modal(this.$refs.imageModal).show()
+            } else if (fileType.includes('text')) {
+                let text = document.getElementById('text')
+                text.innerText = ''
+                axios.post('/file/read', Qs.stringify({'relativePath': filename}))
+                    .then((res) => {
+                        if (res.success) {
+                            text.innerText = res.detail
+                            new bootstrap.Modal(this.$refs.textModal).show()
+                        } else {
+                            this.showModal('错误', res.msg)
+                        }
+                    })
+                    .catch((err) => {
+                        this.showModal('错误', err.message)
+                    })
+            }
+        },
         hasToken(func) {
             if (!Cookies.get('token')) {
                 this.previousAct = func
@@ -206,7 +272,7 @@ const app = Vue.createApp({
             return true
         },
         getToken() {
-            axios.post('/token/get', Qs.stringify({ 'password': this.$refs.password.value }))
+            axios.post('/token/get', Qs.stringify({'password': this.$refs.password.value}))
                 .then((res) => {
                     if (res.success) {
                         this.previousAct()
@@ -221,19 +287,10 @@ const app = Vue.createApp({
     },
     computed: {
         getParentDirectory() {
-            currentDirectory = this.currentDirectory.split('/')
+            let currentDirectory = this.currentDirectory.split('/')
             currentDirectory.pop()
-            parentDirectory = currentDirectory.join('/')
+            let parentDirectory = currentDirectory.join('/')
             return parentDirectory.length === 0 ? '/' : parentDirectory
-        }
-    },
-    watch: {
-        filter(newValue) {
-            if (newValue.trim().length === 0) {
-                this.list()
-                return
-            }
-            this.search(newValue)
         }
     },
     mounted() {

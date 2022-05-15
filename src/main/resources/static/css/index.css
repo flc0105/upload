@@ -1,49 +1,108 @@
+.link-primary,
+.link-danger {
+    cursor: pointer;
+}
+
 .header {
     margin: 30px 0;
 }
 
 .breadcrumb {
-    margin: 0.5rem 0;
+    margin: .5rem 0;
 }
 
-.link-primary {
-    cursor: pointer;
+.breadcrumb li {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.table>tbody>tr>td {
+#searchInput {
+    flex: 1 1 auto;
+    width: 1%;
+}
+
+.dropdown {
+    padding-left: 5px;
+}
+
+.table > tbody > tr > td {
     vertical-align: middle;
 }
 
-tr td:nth-child(2) {
-    max-width: 200px;
-    word-wrap: break-word;
-    word-break: break-all;
+.checkbox {
+    width: 2%;
 }
 
-#buttons {
+.filename {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#left {
     float: left;
 }
 
-#input {
+#right {
     float: right;
 }
 
-@media screen and (max-width: 768px) {
-    tr td:nth-child(2) {
-        max-width: 150px;
-    }
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+    position: fixed;
+    z-index: 1;
+    top: 50%;
+    right: 50%;
+}
 
-    tr *:nth-child(3),
-    tr *:nth-child(4) {
+#image {
+    max-width: 75%;
+    pointer-events: auto;
+}
+
+#text {
+    max-width: 75%;
+    min-height: 100%;
+    pointer-events: auto;
+    margin: 0 auto;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+@media screen and (max-width: 768px) {
+    .dropdown {
         display: none;
     }
 
-    #buttons,
-    #input {
+    .size,
+    .contentType,
+    .lastModified {
+        display: none;
+    }
+
+    .action {
+        width: 75px;
+    }
+
+    #left,
+    #right {
         float: none;
     }
 
-    #buttons .btn {
+    #left .btn {
         margin-bottom: 5px;
+    }
+
+    #image {
+        max-width: 100%;
+    }
+
+    #text {
+        max-width: 100%;
     }
 }
