@@ -47,7 +47,7 @@
                 <button class="btn btn-outline-primary" @click="inputDirectoryName()">新建文件夹</button>
                 <button class="btn btn-outline-primary" @click="list()">刷新</button>
                 <div class="btn-group">
-                    <button class="btn btn-outline-primary" @click="multiSelect = !multiSelect; checkedFiles = []">多选</button>
+                    <button class="btn btn-outline-primary" :disabled="files.length === 0" @click="multiSelect = !multiSelect; checkedFiles = []">多选</button>
                     <button v-if="multiSelect" :disabled="checkedFiles.length == 0" class="btn btn-outline-primary" @click="bulkDownload()">下载</button>
                     <button v-if="multiSelect" :disabled="checkedFiles.length == 0" class="btn btn-outline-primary" @click="confirmDelete(checkedFiles)">删除</button>
                 </div>

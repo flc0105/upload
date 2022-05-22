@@ -37,7 +37,7 @@
         </div>
         <div id="list">
             <ul class="list-group">
-                <li class="list-group-item list-group-item-action" v-for="text in textList" style="cursor:pointer" @click="(event) => event.target.tagName !== 'svg' && event.target.tagName !== 'path' && $router.push('/' + text.id)">
+                <li class="list-group-item list-group-item-action" v-for="text in textList" style="cursor:pointer" @click="(event) => event.target.tagName !== 'A' && event.target.tagName !== 'svg' && event.target.tagName !== 'path' && $router.push('/' + text.id)">
                     <div class="float-end">
                         <a class="link-primary" id="btnCopy" :data-clipboard-text="text.data">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
@@ -53,7 +53,7 @@
                         </a>
                     </div>
                     <div>
-                        <p class="text-primary">{{text.title}}</p>
+                        <p class="text-primary overflow-ellipsis" id="listTitle">{{text.title}}</p>
                         <p style="white-space: pre-wrap">{{text.data}}</p>
                         <p class="text-muted">发布于 {{text.time.slice(0, -3)}}</p>
                     </div>
@@ -64,9 +64,9 @@
     <div v-if="$route.params.id">
         <div class="card">
             <div class="card-body border-bottom">
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex justify-content-between flex-wrap align-items-center">
                     <a class="link-primary text-decoration-none" @click="$router.push('/')">返回</a>
-                    <div class="text-muted">{{data.title}}</div>
+                    <div class="text-muted overflow-ellipsis" id="textTitle">{{data.title}}</div>
                     <div>
                         <a class="btn btn-outline-primary btn-sm" id="btnCopy" data-clipboard-target="#textShow">复制</a>
                         <a class="btn btn-outline-primary btn-sm" @click="download()">下载</a>

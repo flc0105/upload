@@ -40,3 +40,27 @@
     top: 50%;
     right: 50%;
 }
+
+.overflow-ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#listTitle {
+    max-width: 75%;
+}
+
+#textTitle {
+    max-width: 50%;
+}
+
+@media screen and (max-width: 768px) {
+    #textTitle {
+        min-width: 85%;
+    }
+
+    .card-body .btn-sm {
+        margin-top: 10px;
+    }
+}
