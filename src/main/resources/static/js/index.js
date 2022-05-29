@@ -14,6 +14,7 @@ const app = Vue.createApp({
                 text: '',
                 title: ''
             },
+            loading: false,
             currentDirectory: '/',
             directories: [],
             files: [],
@@ -23,7 +24,6 @@ const app = Vue.createApp({
             multiSelect: false,
             checkedFiles: [],
             previousAct: null,
-            loading: false,
             columns: ['size', 'lastModified']
         }
     },
@@ -166,13 +166,13 @@ const app = Vue.createApp({
             })
         },
         download(relativePath) {
-            location.href = '/file/downloadFile?relativePath=' + encodeURIComponent(relativePath)
+            location.href = '/file/download?relativePath=' + encodeURIComponent(relativePath)
         },
         createZip(relativePath) {
-            location.href = '/file/createZip?relativePath=' + encodeURIComponent(relativePath)
+            location.href = '/file/zip?relativePath=' + encodeURIComponent(relativePath)
         },
         bulkDownload() {
-            location.href = '/file/bulkDownload?relativePath=' + encodeURIComponent(JSON.stringify(this.checkedFiles))
+            location.href = '/file/bulk?relativePath=' + encodeURIComponent(JSON.stringify(this.checkedFiles))
         },
         confirmDelete(files) {
             this.filesToDelete = files;
@@ -210,7 +210,7 @@ const app = Vue.createApp({
                 this.showModal('错误', '文件夹名不能为空')
                 return
             }
-            axios.post('/file/createDirectory', Qs.stringify({'relativePath': this.currentDirectory + '/' + directoryName}))
+            axios.post('/file/mkdir', Qs.stringify({'relativePath': this.currentDirectory + '/' + directoryName}))
                 .then((res) => {
                     if (res.success) {
                         this.list()
@@ -242,7 +242,7 @@ const app = Vue.createApp({
             if (fileType.includes('image')) {
                 let image = document.getElementById('image')
                 image.removeAttribute('src')
-                image.setAttribute('src', '/file/downloadFile?relativePath=' + filename)
+                image.setAttribute('src', '/file/download?relativePath=' + filename)
                 new bootstrap.Modal(this.$refs.imageModal).show()
             } else if (fileType.includes('text')) {
                 let text = document.getElementById('text')

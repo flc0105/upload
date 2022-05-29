@@ -1,6 +1,7 @@
 .link-primary,
 .link-danger {
     cursor: pointer;
+    text-decoration: none;
 }
 
 .header {
@@ -24,12 +25,12 @@
     margin-bottom: 0;
 }
 
-.card-body {
-    padding: .781rem 1rem;
+#pasteListTitle {
+    max-width: 75%;
 }
 
-#textShow {
-    min-height: 75vh;
+.card-body {
+    padding: .781rem 1rem;
 }
 
 .spinner-border {
@@ -47,16 +48,16 @@
     text-overflow: ellipsis;
 }
 
-#listTitle {
-    max-width: 75%;
-}
-
-#textTitle {
+#pasteShowTitle {
     max-width: 50%;
 }
 
+#pasteShowText {
+    min-height: 75vh;
+}
+
 @media screen and (max-width: 768px) {
-    #textTitle {
+    #pasteShowTitle {
         min-width: 85%;
     }
 

@@ -16,22 +16,22 @@ const router = VueRouter.createRouter({
 const app = Vue.createApp({
     data() {
         return {
-            textList: [],
             message: {
                 text: '',
                 title: ''
             },
-            text: {
+            loading: false,
+            pasteList: [],
+            pasteAdd: {
                 title: '',
-                data: '',
+                text: '',
+            },
+            pasteShow: {
+                title: '',
+                text: '',
             },
             textToDelete: '',
-            previousAct: '',
-            data: {
-                title: '',
-                data: '',
-            },
-            loading: false
+            previousAct: ''
         }
     },
     methods: {
@@ -42,10 +42,10 @@ const app = Vue.createApp({
         },
         list() {
             this.loading = true
-            axios.post('/text/list')
+            axios.post('/paste/list')
                 .then((res) => {
                     if (res.success) {
-                        this.textList = res.detail
+                        this.pasteList = res.detail
                     } else {
                         this.showModal('错误', res.msg)
                     }
@@ -58,25 +58,25 @@ const app = Vue.createApp({
                 })
         },
         add() {
-            if (this.text.title.trim().length === 0) {
-                this.$refs.textTitle.focus()
+            if (this.pasteAdd.title.trim().length === 0) {
+                this.$refs.pasteAddTitle.focus()
                 return
             }
-            if (this.text.data.trim().length === 0) {
-                this.$refs.textData.focus()
+            if (this.pasteAdd.text.trim().length === 0) {
+                this.$refs.pasteAddText.focus()
                 return
             }
-            axios.post('/text/add',
+            axios.post('/paste/add',
                 Qs.stringify({
-                    'title': this.text.title,
-                    'data': this.text.data
+                    'title': this.pasteAdd.title,
+                    'text': this.pasteAdd.text
                 }))
                 .then((res) => {
                     if (res.success) {
                         this.list()
                         this.showModal('成功', '保存成功\n' + window.location.href + res.detail.id)
-                        this.text.title = ''
-                        this.text.data = ''
+                        this.pasteAdd.title = ''
+                        this.pasteAdd.text = ''
                     } else {
                         this.showModal('错误', res.msg)
                     }
@@ -89,11 +89,11 @@ const app = Vue.createApp({
             this.textToDelete = id
             new bootstrap.Modal(this.$refs.confirmModal).show()
         },
-        deleteText() {
-            if (!this.hasToken(() => this.deleteText())) {
+        deletePaste() {
+            if (!this.hasToken(() => this.deletePaste())) {
                 return
             }
-            axios.post('/text/delete', Qs.stringify({'id': this.textToDelete}))
+            axios.post('/paste/delete', Qs.stringify({'id': this.textToDelete}))
                 .then((res) => {
                     if (res.success) {
                         this.list()
@@ -110,14 +110,14 @@ const app = Vue.createApp({
                 })
         },
         get(id) {
-            this.data.title = ''
-            this.data.data = ''
+            this.pasteShow.title = ''
+            this.pasteShow.text = ''
             this.loading = true
-            axios.post('/text/get', Qs.stringify({'id': id}))
+            axios.post('/paste/get', Qs.stringify({'id': id}))
                 .then((res) => {
                     if (res.success) {
-                        this.data.title = res.detail.title
-                        this.data.data = res.detail.data
+                        this.pasteShow.title = res.detail.title
+                        this.pasteShow.text = res.detail.text
                     } else {
                         this.$router.push('/')
                     }
@@ -130,14 +130,14 @@ const app = Vue.createApp({
                 })
         },
         update() {
-            if (this.data.data.trim().length === 0) {
-                this.$refs.textShow.focus()
+            if (this.pasteShow.text.trim().length === 0) {
+                this.$refs.pasteShowText.focus()
                 return
             }
             if (!this.hasToken(() => this.update())) {
                 return
             }
-            axios.post('/text/update', Qs.stringify({'id': this.$route.params.id, 'data': this.data.data}))
+            axios.post('/paste/update', Qs.stringify({'id': this.$route.params.id, 'text': this.pasteShow.text}))
                 .then((res) => {
                     if (res.success) {
                         this.list()
@@ -149,10 +149,6 @@ const app = Vue.createApp({
                 .catch((err) => {
                     this.showModal('错误', err.message)
                 })
-        },
-        download() {
-            const blob = new Blob([this.data.data], {type: 'text/plain;charset=utf-8'})
-            saveAs(blob, this.$route.params.id + '.txt')
         },
         hasToken(func) {
             if (!Cookies.get('token')) {
