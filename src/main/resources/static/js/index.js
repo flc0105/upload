@@ -261,6 +261,19 @@ const app = Vue.createApp({
                     })
             }
         },
+        getIcon(fileType) {
+            const dict = {
+                'text': 'bi-file-earmark-text',
+                'image': 'bi-file-earmark-image',
+                'audio': 'bi-file-earmark-music',
+                'video': 'bi-file-earmark-play',
+            };
+            let icon = dict[fileType.split('/')[0]]
+            if (icon == null) {
+                return ' bi-file-earmark'
+            }
+            return icon
+        },
         hasToken(func) {
             if (!Cookies.get('token')) {
                 this.previousAct = func

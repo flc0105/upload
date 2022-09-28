@@ -4,12 +4,145 @@ axios.interceptors.response.use(res => {
     }
 })
 
+
 const routes = [
-    {'path': '/:id(\\d+)', component: {template: ''}}
+    {
+        'path': '/p',
+        component: {
+            template: document.getElementById('home').innerHTML,
+            data() {
+                return {
+                    pastes: [],
+                    title: '',
+                    text: '',
+                }
+            },
+            methods: {
+                list() {
+                    this.$root.loading = true
+                    axios.post('/paste/list')
+                        .then((res) => {
+                            if (res.success) {
+                                this.pastes = res.detail
+                            } else {
+                                this.$root.showModal('错误', res.msg)
+                            }
+                        })
+                        .catch((err) => {
+                            this.$root.showModal('错误', err.message)
+                        })
+                        .finally(() => {
+                            this.$root.loading = false
+                        })
+                },
+                add() {
+                    if (this.title.trim().length === 0) {
+                        this.$refs.title.focus()
+                        return
+                    }
+                    if (this.text.trim().length === 0) {
+                        this.$refs.text.focus()
+                        return
+                    }
+                    axios.post('/paste/add',
+                        Qs.stringify({
+                            'title': this.title,
+                            'text': this.text
+                        }))
+                        .then((res) => {
+                            if (res.success) {
+                                this.list()
+                                this.$root.showModal('成功', '发布成功\nhttp://' + document.domain + '/p/' + res.detail.id)
+                                this.title = ''
+                                this.text = ''
+                            } else {
+                                this.$root.showModal('错误', res.msg)
+                            }
+                        })
+                        .catch((err) => {
+                            this.$root.showModal('错误', err.message)
+                        })
+                },
+            },
+            created() {
+                this.$root.list = this.list
+                this.list()
+            }
+        }
+    },
+    {
+        'path': '/p/:id(\\d+)',
+        component: {
+            template: document.getElementById('detail').innerHTML,
+            data() {
+                return {
+                    title: '',
+                    text: '',
+                }
+            },
+            methods: {
+                get(id) {
+                    this.title = ''
+                    this.text = ''
+                    this.$root.loading = true
+                    axios.post('/paste/get', Qs.stringify({ 'id': id }))
+                        .then((res) => {
+                            if (res.success) {
+                                this.title = res.detail.title
+                                this.text = res.detail.text
+                            } else {
+                                this.$router.push('/404')
+                            }
+                        })
+                        .catch((err) => {
+                            this.$router.push('/404')
+                        })
+                        .finally(() => {
+                            this.$root.loading = false
+                        })
+                },
+                update() {
+                    if (this.text.trim().length === 0) {
+                        this.$refs.text.focus()
+                        return
+                    }
+                    if (!this.$root.hasToken(() => this.update())) {
+                        return
+                    }
+                    axios.post('/paste/update', Qs.stringify({
+                        'id': this.$route.params.id,
+                        'text': this.text
+                    }))
+                        .then((res) => {
+                            if (res.success) {
+                                this.$root.showModal('成功', '修改成功')
+                            } else {
+                                this.$root.showModal('错误', res.msg)
+                            }
+                        })
+                        .catch((err) => {
+                            this.$root.showModal('错误', err.message)
+                        })
+                },
+
+            },
+            created() {
+                if (this.$route.params.id) {
+                    this.get(this.$route.params.id)
+                }
+            },
+        }
+    },
+    {
+        'path': '/:pathMatch(.*)*',
+        component: {
+            template: '当前页面不存在 <a class="text-decoration-none" href="/p">返回</a>'
+        }
+    }
 ]
 
 const router = VueRouter.createRouter({
-    history: VueRouter.createWebHashHistory(),
+    history: VueRouter.createWebHistory(),
     routes
 })
 
@@ -21,17 +154,9 @@ const app = Vue.createApp({
                 title: ''
             },
             loading: false,
-            pasteList: [],
-            pasteAdd: {
-                title: '',
-                text: '',
-            },
-            pasteShow: {
-                title: '',
-                text: '',
-            },
-            textToDelete: '',
-            previousAct: ''
+            list: '',
+            confirmDelete: '',
+            previousAct: '',
         }
     },
     methods: {
@@ -40,108 +165,22 @@ const app = Vue.createApp({
             this.message.text = text
             new bootstrap.Modal(this.$refs.messageModal).show()
         },
-        list() {
-            this.loading = true
-            axios.post('/paste/list')
-                .then((res) => {
-                    if (res.success) {
-                        this.pasteList = res.detail
-                    } else {
-                        this.showModal('错误', res.msg)
-                    }
-                })
-                .catch((err) => {
-                    this.showModal('错误', err.message)
-                })
-                .finally(() => {
-                    this.loading = false
-                })
-        },
-        add() {
-            if (this.pasteAdd.title.trim().length === 0) {
-                this.$refs.pasteAddTitle.focus()
-                return
-            }
-            if (this.pasteAdd.text.trim().length === 0) {
-                this.$refs.pasteAddText.focus()
-                return
-            }
-            axios.post('/paste/add',
-                Qs.stringify({
-                    'title': this.pasteAdd.title,
-                    'text': this.pasteAdd.text
-                }))
-                .then((res) => {
-                    if (res.success) {
-                        this.list()
-                        this.showModal('成功', '保存成功\n' + window.location.href + res.detail.id)
-                        this.pasteAdd.title = ''
-                        this.pasteAdd.text = ''
-                    } else {
-                        this.showModal('错误', res.msg)
-                    }
-                })
-                .catch((err) => {
-                    this.showModal('错误', err.message)
-                })
-        },
-        confirmDelete(id) {
-            this.textToDelete = id
+        showConfirm(func) {
             new bootstrap.Modal(this.$refs.confirmModal).show()
+            this.confirmDelete = func
         },
-        deletePaste() {
-            if (!this.hasToken(() => this.deletePaste())) {
+        del(id) {
+            if (!this.hasToken(() => this.del(id))) {
                 return
             }
-            axios.post('/paste/delete', Qs.stringify({'id': this.textToDelete}))
+            axios.post('/paste/delete', Qs.stringify({ 'id': id }))
                 .then((res) => {
                     if (res.success) {
-                        this.list()
                         this.showModal('成功', '删除成功')
                         if (this.$route.params.id) {
-                            this.$router.push('/')
+                            this.$router.push('/p')
                         }
-                    } else {
-                        this.showModal('错误', res.msg)
-                    }
-                })
-                .catch((err) => {
-                    this.showModal('错误', err.message)
-                })
-        },
-        get(id) {
-            this.pasteShow.title = ''
-            this.pasteShow.text = ''
-            this.loading = true
-            axios.post('/paste/get', Qs.stringify({'id': id}))
-                .then((res) => {
-                    if (res.success) {
-                        this.pasteShow.title = res.detail.title
-                        this.pasteShow.text = res.detail.text
-                    } else {
-                        this.$router.push('/')
-                    }
-                })
-                .catch((err) => {
-                    this.$router.push('/')
-                })
-                .finally(() => {
-                    this.loading = false
-                })
-        },
-        update() {
-            if (this.pasteShow.text.trim().length === 0) {
-                this.$refs.pasteShowText.focus()
-                return
-            }
-            if (!this.hasToken(() => this.update())) {
-                return
-            }
-            axios.post('/paste/update', Qs.stringify({'id': this.$route.params.id, 'text': this.pasteShow.text}))
-                .then((res) => {
-                    if (res.success) {
                         this.list()
-                        this.showModal('成功', '保存成功')
                     } else {
                         this.showModal('错误', res.msg)
                     }
@@ -161,7 +200,7 @@ const app = Vue.createApp({
             return true
         },
         getToken() {
-            axios.post('/token/get', Qs.stringify({'password': this.$refs.password.value}))
+            axios.post('/token/get', Qs.stringify({ 'password': this.$refs.password.value }))
                 .then((res) => {
                     if (res.success) {
                         this.previousAct()
@@ -175,20 +214,9 @@ const app = Vue.createApp({
         }
     },
     mounted() {
-        this.list()
         new ClipboardJS('#btnCopy').on('success', () => {
-            this.showModal('成功', '复制成功')
-        });
-    },
-    created() {
-        this.$watch(
-            () => this.$route.params,
-            (toParams) => {
-                if (toParams.id) {
-                    this.get(toParams.id)
-                }
-            }
-        )
+            this.$root.showModal('成功', '复制成功')
+        })
     }
 })
 

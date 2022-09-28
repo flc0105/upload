@@ -5,16 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文本共享</title>
-    <script src="js/vue.global.js"></script>
-    <script src="js/axios.min.js"></script>
-    <script src="js/qs.min.js"></script>
-    <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="js/js.cookie.min.js"></script>
-    <script src="js/clipboard.min.js"></script>
-    <script src="js/vue-router.global.min.js"></script>
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/bootstrap-icons.css" rel="stylesheet">
-    <link href="css/paste.css" rel="stylesheet">
+    <script src="/lib/js/vue.global.js"></script>
+    <script src="/lib/js/axios.min.js"></script>
+    <script src="/lib/js/qs.min.js"></script>
+    <script src="/lib/js/bootstrap.bundle.min.js"></script>
+    <script src="/lib/js/js.cookie.min.js"></script>
+    <script src="/lib/js/clipboard.min.js"></script>
+    <script src="/lib/js/vue-router.global.min.js"></script>
+    <link href="/lib/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/css/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/paste.css" rel="stylesheet">
 </head>
 
 <body>
@@ -22,55 +22,52 @@
     <div class="header">
         <ul class="nav nav-tabs">
             <li class="nav-item">
-                <a class="nav-link" href="index.html">文件列表</a>
+                <a class="nav-link" href="/">文件列表</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link active">文本共享</a>
             </li>
         </ul>
     </div>
-    <div v-if="!$route.params.id">
+    <router-view></router-view>
+    <template id="home">
         <div id="add">
-            <input class="form-control" placeholder="标题" v-model="pasteAdd.title" ref="pasteAddTitle">
-            <textarea class="form-control" rows="10" placeholder="正文" v-model="pasteAdd.text" ref="pasteAddText"></textarea>
-            <button class="btn btn-outline-primary float-end" @click="add()">保存</button>
+            <input class="form-control" placeholder="标题" v-model="title" ref="title">
+            <textarea class="form-control" rows="10" placeholder="正文" v-model="text" ref="text"></textarea>
+            <button class="btn btn-outline-primary float-end" @click="add()">发布</button>
         </div>
         <div id="list">
             <ul class="list-group">
-                <li class="list-group-item list-group-item-action" v-for="paste in pasteList" style="cursor:pointer" @click="(event) => event.target.tagName !== 'A' && event.target.tagName !== 'I' && $router.push('/' + paste.id)">
+                <li class="list-group-item list-group-item-action" v-for="paste in pastes" style="cursor:pointer" @click="(event) => event.target.tagName !== 'A' && event.target.tagName !== 'I' && $router.push('/p/' + paste.id)">
                     <div class="float-end">
-                        <a class="link-primary" id="btnCopy" :data-clipboard-text="paste.text">
-                            <i class="bi bi-clipboard"></i>
-                        </a>
-                        <a class="link-danger" @click="confirmDelete(paste.id)">
-                            <i class="bi bi-trash"></i>
-                        </a>
+                        <a class="link-primary" id="btnCopy" :data-clipboard-text="paste.text"><i class="bi bi-clipboard"></i></a>
+                        <a class="link-danger" @click="$root.showConfirm(() => $root.del(paste.id))"><i class="bi bi-trash"></i></a>
                     </div>
                     <div>
-                        <p class="text-primary overflow-ellipsis" id="pasteListTitle">{{paste.title}}</p>
+                        <p class="text-primary overflow-ellipsis" style="max-width: 75%;">{{paste.title}}</p>
                         <p style="white-space: pre-wrap">{{paste.text}}</p>
                         <p class="text-muted">发布于 {{paste.time.slice(0, -3)}}</p>
                     </div>
                 </li>
             </ul>
         </div>
-    </div>
-    <div v-if="$route.params.id">
-        <div class="card">
-            <div class="card-body border-bottom">
-                <div class="d-flex justify-content-between flex-wrap align-items-center">
-                    <a class="link-primary text-decoration-none" @click="$router.push('/')">返回</a>
-                    <div class="text-muted overflow-ellipsis" id="pasteShowTitle">{{pasteShow.title}}</div>
-                    <div>
-                        <a class="btn btn-outline-primary btn-sm" id="btnCopy" data-clipboard-target="#pasteShowText">复制</a>
-                        <a class="btn btn-outline-primary btn-sm" @click="update()">保存</a>
-                        <a class="btn btn-outline-danger btn-sm" @click="confirmDelete($route.params.id)">删除</a>
+    </template>
+    <template id="detail">
+            <div class="card">
+                <div class="card-body border-bottom">
+                    <div class="d-flex justify-content-between flex-wrap align-items-center">
+                        <a class="link-primary text-decoration-none" @click="$router.push('/p')">返回</a>
+                        <div class="text-muted overflow-ellipsis" style="max-width: 50%;">{{title}}</div>
+                        <div>
+                            <a class="btn btn-outline-primary btn-sm" id="btnCopy" data-clipboard-target="#textarea">复制</a>
+                            <a class="btn btn-outline-primary btn-sm" @click="update()">提交修改</a>
+                            <a class="btn btn-outline-danger btn-sm" @click="$root.showConfirm(() => $root.del($route.params.id))">删除</a>
+                        </div>
                     </div>
                 </div>
+                <textarea class="form-control border-0" v-model="text" ref="text" id="textarea"></textarea>
             </div>
-            <textarea class="form-control border-0 font-monospace" id="pasteShowText" v-model="pasteShow.text" ref="pasteShowText"></textarea>
-        </div>
-    </div>
+    </template>
 </div>
 <div class="modal" tabindex="-1" ref="messageModal">
     <div class="modal-dialog">
@@ -99,7 +96,7 @@
                 <p>确定要删除吗？</p>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-outline-danger" data-bs-dismiss="modal" @click="deletePaste()">确定</button>
+                <button class="btn btn-outline-danger" data-bs-dismiss="modal" @click="confirmDelete()">确定</button>
                 <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
             </div>
         </div>
@@ -126,7 +123,7 @@
 <div v-show="loading" class="spinner-border text-primary" role="status">
     <span class="visually-hidden">Loading...</span>
 </div>
-<script src="js/paste.js"></script>
+<script src="/js/paste.js"></script>
 </body>
 
 </html>

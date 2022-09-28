@@ -25,10 +25,6 @@
     margin-bottom: 0;
 }
 
-#pasteListTitle {
-    max-width: 75%;
-}
-
 .card-body {
     padding: .781rem 1rem;
 }
@@ -48,16 +44,12 @@
     text-overflow: ellipsis;
 }
 
-#pasteShowTitle {
-    max-width: 50%;
-}
-
-#pasteShowText {
+#textarea {
     min-height: 75vh;
 }
 
 @media screen and (max-width: 768px) {
-    #pasteShowTitle {
+    #textarea {
         min-width: 85%;
     }
 

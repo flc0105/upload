@@ -4,10 +4,7 @@ import flc.upload.model.Paste;
 import flc.upload.model.Result;
 import flc.upload.service.PasteService;
 import flc.upload.util.CookieUtil;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 

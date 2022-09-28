@@ -5,13 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文件列表</title>
-    <script src="js/vue.global.js"></script>
-    <script src="js/axios.min.js"></script>
-    <script src="js/qs.min.js"></script>
-    <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="js/js.cookie.min.js"></script>
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/bootstrap-icons.css" rel="stylesheet">
+    <script src="lib/js/vue.global.js"></script>
+    <script src="lib/js/axios.min.js"></script>
+    <script src="lib/js/qs.min.js"></script>
+    <script src="lib/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/js/js.cookie.min.js"></script>
+    <link href="lib/css/bootstrap.min.css" rel="stylesheet">
+    <link href="lib/css/bootstrap-icons.css" rel="stylesheet">
     <link href="css/index.css" rel="stylesheet">
 </head>
 
@@ -23,7 +23,7 @@
                 <a class="nav-link active">文件列表</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="paste.html">文本共享</a>
+                <a class="nav-link" href="/p">文本共享</a>
             </li>
         </ul>
     </div>
@@ -121,7 +121,7 @@
                     <input type="checkbox" class="form-check-input" :value="file.relativePath" v-model="checkedFiles">
                 </td>
                 <td class="filename">
-                    <i class="bi bi-file-earmark"></i>&nbsp;
+                    <i class="bi" :class="getIcon(file.fileType)"></i>&nbsp;
                     {{file.name}}
                 </td>
                 <td class="size" v-if="columns.includes('size')">{{formatBytes(file.length)}}</td>
