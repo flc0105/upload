@@ -1,5 +1,7 @@
 package flc.upload.util;
 
+import flc.upload.model.Config;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,7 +23,7 @@ public class CookieUtil {
         Cookie cookie = new Cookie(name, value);
         cookie.setDomain(request.getServerName());
         cookie.setPath("/");
-        cookie.setMaxAge(7 * 24 * 60 * 60);
+        cookie.setMaxAge(Config.expirationTime);
         response.addCookie(cookie);
     }
 
