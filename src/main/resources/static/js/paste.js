@@ -4,12 +4,12 @@ axios.interceptors.response.use(res => {
     }
 })
 
-
 const routes = [
     {
+        'name': 'pasteList',
         'path': '/p',
         component: {
-            template: document.getElementById('home').innerHTML,
+            template: document.getElementById('pasteList').innerHTML,
             data() {
                 return {
                     pastes: [],
@@ -36,17 +36,13 @@ const routes = [
                         })
                 },
                 add() {
-                    if (this.title.trim().length === 0) {
-                        this.$refs.title.focus()
-                        return
-                    }
                     if (this.text.trim().length === 0) {
                         this.$refs.text.focus()
                         return
                     }
                     axios.post('/paste/add',
                         Qs.stringify({
-                            'title': this.title,
+                            'title': this.title.trim().length === 0 ? 'Untitled' : this.title,
                             'text': this.text
                         }))
                         .then((res) => {
@@ -71,9 +67,10 @@ const routes = [
         }
     },
     {
+        'name': 'pasteDetail',
         'path': '/p/:id(\\d+)',
         component: {
-            template: document.getElementById('detail').innerHTML,
+            template: document.getElementById('pasteDetail').innerHTML,
             data() {
                 return {
                     title: '',
@@ -134,6 +131,97 @@ const routes = [
         }
     },
     {
+        'name': 'shareList',
+        'path': '/s',
+        component: {
+            template: document.getElementById('shareList').innerHTML,
+            data() {
+                return {
+                    shareCodeList: {},
+                }
+            },
+            methods: {
+                list() {
+                    this.$root.loading = true
+                    axios.post('/shareCode/list')
+                        .then((res) => {
+                            if (res.success) {
+                                this.shareCodeList = res.detail
+                            } else {
+                                this.$root.showModal('错误', res.msg)
+                            }
+                        })
+                        .catch((err) => {
+                            this.$root.showModal('错误', err.message)
+                        })
+                        .finally(() => {
+                            this.$root.loading = false
+                        })
+                },
+                visit(code) {
+                    location.href = location.protocol + '//' + location.host + '/s/' + code
+                },
+                del(code) {
+                    axios.post('/shareCode/delete', Qs.stringify({ 'code': code }))
+                        .then((res) => {
+                            if (res.success) {
+                                this.list()
+                                this.$root.showModal('成功', '删除成功')
+                            } else {
+                                this.$root.showModal('错误', res.msg)
+                            }
+                        })
+                        .catch((err) => {
+                            this.$root.showModal('错误', err.message)
+                        })
+                },
+            },
+            created() {
+                this.list()
+            },
+        }
+    },
+    {
+        'name': 'shareDetail',
+        'path': '/s/:code',
+        component: {
+            template: document.getElementById('shareDetail').innerHTML,
+            data() {
+                return {
+                    file: '',
+                }
+            },
+            methods: {
+                get(code) {
+                    this.$root.loading = true
+                    axios.post('/shareCode/get', Qs.stringify({ 'code': code }))
+                        .then((res) => {
+                            if (res.success) {
+                                this.file = res.detail
+                            } else {
+                                this.$router.push('/404')
+                            }
+                        })
+                        .catch((err) => {
+                            this.$router.push('/404')
+                        })
+                        .finally(() => {
+                            this.$root.loading = false
+                        })
+                },
+                download(relativePath) {
+                    location.href = '/file/download?relativePath=' + encodeURIComponent(relativePath)
+                },
+            },
+            created() {
+                if (this.$route.params.code) {
+                    this.get(this.$route.params.code)
+                }
+            },
+        }
+    },
+    {
+        'name': '404',
         'path': '/:pathMatch(.*)*',
         component: {
             template: '当前页面不存在 <a class="text-decoration-none" href="/p">返回</a>'
@@ -157,6 +245,7 @@ const app = Vue.createApp({
             list: '',
             confirmDelete: '',
             previousAct: '',
+            file: '',
         }
     },
     methods: {

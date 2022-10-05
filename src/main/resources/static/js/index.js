@@ -47,7 +47,7 @@ const app = Vue.createApp({
             if (cancel !== undefined) {
                 cancel();
             }
-            axios.post('/file/list', Qs.stringify({'currentDirectory': this.currentDirectory}),
+            axios.post('/file/list', Qs.stringify({ 'currentDirectory': this.currentDirectory }),
                 {
                     cancelToken: new CancelToken(function executor(c) {
                         cancel = c;
@@ -79,9 +79,9 @@ const app = Vue.createApp({
                 cancel();
             }
             axios.post('/file/search', Qs.stringify({
-                    'filter': this.filter,
-                    'currentDirectory': this.currentDirectory
-                }),
+                'filter': this.filter,
+                'currentDirectory': this.currentDirectory
+            }),
                 {
                     cancelToken: new CancelToken(function executor(c) {
                         cancel = c;
@@ -182,7 +182,7 @@ const app = Vue.createApp({
             if (!this.hasToken(() => this.deleteFile())) {
                 return
             }
-            axios.post('/file/delete', Qs.stringify({'relativePath': JSON.stringify(this.filesToDelete)}))
+            axios.post('/file/delete', Qs.stringify({ 'relativePath': JSON.stringify(this.filesToDelete) }))
                 .then((res) => {
                     if (res.success) {
                         if (this.filter.length === 0) {
@@ -210,7 +210,7 @@ const app = Vue.createApp({
                 this.showModal('错误', '文件夹名不能为空')
                 return
             }
-            axios.post('/file/mkdir', Qs.stringify({'relativePath': this.currentDirectory + '/' + directoryName}))
+            axios.post('/file/mkdir', Qs.stringify({ 'relativePath': this.currentDirectory + '/' + directoryName }))
                 .then((res) => {
                     if (res.success) {
                         this.list()
@@ -247,7 +247,7 @@ const app = Vue.createApp({
             } else if (fileType.includes('text')) {
                 let text = document.getElementById('text')
                 text.innerText = ''
-                axios.post('/file/read', Qs.stringify({'relativePath': filename}))
+                axios.post('/file/read', Qs.stringify({ 'relativePath': filename }))
                     .then((res) => {
                         if (res.success) {
                             text.innerText = res.detail
@@ -261,18 +261,46 @@ const app = Vue.createApp({
                     })
             }
         },
-        getIcon(fileType) {
-            const dict = {
+        getIcon(filename, fileType) {
+            const ext = filename.split('.').pop()
+            const exts = {
+                'bi-file-earmark-binary': ['exe'],
+                'bi-file-earmark-zip': ['zip', '7z', 'rar'],
+                'bi-file-earmark-code': ['py', 'java', 'c', 'cpp', 'html', 'js', 'css'],
+                'bi-file-earmark-pdf': ['pdf'],
+                'bi-file-earmark-word': ['doc', 'docx'],
+                'bi-file-earmark-excel': ['xls', 'xlsx'],
+                'bi-file-earmark-ppt': ['ppt', 'pptx'],
+            }
+            for (const [key, value] of Object.entries(exts)) {
+                if (value.includes(ext)) {
+                    return key
+                }
+            }
+            const type = {
                 'text': 'bi-file-earmark-text',
                 'image': 'bi-file-earmark-image',
                 'audio': 'bi-file-earmark-music',
                 'video': 'bi-file-earmark-play',
             };
-            let icon = dict[fileType.split('/')[0]]
-            if (icon == null) {
-                return ' bi-file-earmark'
+            let icon = type[fileType.split('/')[0]]
+            if (icon != null) {
+                return icon
             }
-            return icon
+            return ' bi-file-earmark'
+        },
+        share(path) {
+            axios.post('/shareCode/add', Qs.stringify({ 'path': path }))
+                .then((res) => {
+                    if (res.success) {
+                        this.showModal('分享成功', location.protocol + '//' + location.host + '/s/' + res.detail)
+                    } else {
+                        this.showModal('错误', res.msg)
+                    }
+                })
+                .catch((err) => {
+                    this.showModal('错误', err.message)
+                })
         },
         hasToken(func) {
             if (!Cookies.get('token')) {
@@ -285,7 +313,7 @@ const app = Vue.createApp({
             return true
         },
         getToken() {
-            axios.post('/token/get', Qs.stringify({'password': this.$refs.password.value}))
+            axios.post('/token/get', Qs.stringify({ 'password': this.$refs.password.value }))
                 .then((res) => {
                     if (res.success) {
                         this.previousAct()

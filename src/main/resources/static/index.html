@@ -121,7 +121,7 @@
                     <input type="checkbox" class="form-check-input" :value="file.relativePath" v-model="checkedFiles">
                 </td>
                 <td class="filename">
-                    <i class="bi" :class="getIcon(file.fileType)"></i>&nbsp;
+                    <i class="bi" :class="getIcon(file.name, file.fileType)"></i>&nbsp;
                     {{file.name}}
                 </td>
                 <td class="size" v-if="columns.includes('size')">{{formatBytes(file.length)}}</td>
@@ -130,6 +130,7 @@
                 <td class="action">
                     <a class="link-primary" @click="download(file.relativePath)"><i class="bi bi-cloud-download"></i></a>
                     <a class="link-danger" @click="confirmDelete([file.relativePath])"><i class="bi bi-trash"></i></a>
+                    <a class="link-primary" @click="share(file.relativePath)"><i class="bi bi-link-45deg"></i></a>
                     <a class="link-primary" v-if="file.fileType.includes('image') || file.fileType.includes('text')" @click="previewFile(file.fileType, file.relativePath)"><i class="bi bi-eye"></i></a>
                 </td>
             </tr>
@@ -192,10 +193,10 @@
             </div>
             <div class="modal-body">
                 <label for="name" class="form-label">输入文件夹名</label>
-                <input class="form-control" id="name" ref="directoryName">
+                <input class="form-control" id="name" ref="directoryName" @keyup.enter="$refs.btnInput.click()">
             </div>
             <div class="modal-footer">
-                <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="createDirectory()">确定</button>
+                <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="createDirectory()" ref="btnInput">确定</button>
                 <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
             </div>
         </div>
@@ -210,10 +211,10 @@
             </div>
             <div class="modal-body">
                 <label for="password" class="form-label">请输入密码</label>
-                <input type="password" class="form-control" id="password" ref="password">
+                <input type="password" class="form-control" id="password" ref="password" @keyup.enter="$refs.btnAuth.click()">
             </div>
             <div class="modal-footer">
-                <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="getToken()">确定</button>
+                <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="getToken()" ref="btnAuth">确定</button>
                 <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
             </div>
         </div>

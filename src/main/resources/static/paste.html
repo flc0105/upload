@@ -25,12 +25,12 @@
                 <a class="nav-link" href="/">文件列表</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active">文本共享</a>
+                <a class="nav-link" href="/p" :class="{active: ($route.name == 'pasteList' || $route.name == 'pasteDetail')}">文本共享</a>
             </li>
         </ul>
     </div>
     <router-view></router-view>
-    <template id="home">
+    <template id="pasteList">
         <div id="add">
             <input class="form-control" placeholder="标题" v-model="title" ref="title">
             <textarea class="form-control" rows="10" placeholder="正文" v-model="text" ref="text"></textarea>
@@ -52,7 +52,7 @@
             </ul>
         </div>
     </template>
-    <template id="detail">
+    <template id="pasteDetail">
             <div class="card">
                 <div class="card-body border-bottom">
                     <div class="d-flex justify-content-between flex-wrap align-items-center">
@@ -67,6 +67,37 @@
                 </div>
                 <textarea class="form-control border-0" v-model="text" ref="text" id="textarea"></textarea>
             </div>
+    </template>
+    <template id="shareList">
+        <table class="table table-hover">
+            <tr>
+                <th>文件分享码</th>
+                <th>文件路径</th>
+                <th>操作</th>
+            </tr>
+            <tr v-for="shareCode in shareCodeList">
+                <td>{{shareCode.code}}</td>
+                <td>{{shareCode.path}}</td>
+                <td>
+                    <a class="link-primary" @click="visit(shareCode.code)">访问</a>&nbsp;
+                    <a class="link-danger" @click="del(shareCode.code)">删除</a>
+                </td>
+            </tr>
+        </table>
+    </template>
+    <template id="shareDetail">
+        <div class="card">
+            <div class="card-header">文件分享</div>
+            <div class="card-body text-center">
+                <p>
+                    文件名：{{file.name}}<br>
+                    文件大小：{{file.length}}<br>
+                    修改时间：{{file.lastModified}}<br>
+                    文件类型：{{file.fileType}}<br>
+                </p>
+                <button class="btn btn-sm btn-outline-primary" @click="download(file.relativePath)">下载</button>
+            </div>
+        </div>
     </template>
 </div>
 <div class="modal" tabindex="-1" ref="messageModal">
@@ -111,10 +142,10 @@
             </div>
             <div class="modal-body">
                 <label for="password" class="form-label">请输入密码</label>
-                <input type="password" class="form-control" id="password" ref="password">
+                <input type="password" class="form-control" id="password" ref="password" @keyup.enter="$refs.btnAuth.click()">
             </div>
             <div class="modal-footer">
-                <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="getToken()">确定</button>
+                <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="getToken()" ref="btnAuth">确定</button>
                 <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
             </div>
         </div>
