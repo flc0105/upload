@@ -27,6 +27,9 @@
             <li class="nav-item">
                 <a class="nav-link" href="/p" :class="{active: ($route.name == 'pasteList' || $route.name == 'pasteDetail')}">文本共享</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/task.html">任务列表</a>
+            </li>
         </ul>
     </div>
     <router-view></router-view>
@@ -71,8 +74,8 @@
     <template id="shareList">
         <table class="table table-hover">
             <tr>
-                <th>文件分享码</th>
-                <th>文件路径</th>
+                <th>分享码</th>
+                <th>路径</th>
                 <th>操作</th>
             </tr>
             <tr v-for="shareCode in shareCodeList">

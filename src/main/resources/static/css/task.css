@@ -1,0 +1,33 @@
+.header {
+    margin: 30px 0;
+}
+
+.form-check-input:checked+.form-checked-content {
+    text-decoration: line-through;
+    opacity: .5;
+}
+
+.form-check-input-placeholder {
+    border-style: dashed;
+}
+
+[contenteditable]:focus {
+    outline: 0;
+}
+
+.form-check-input {
+    font-size: 1.1rem;
+}
+
+.list-group-item {
+    padding: 10px;
+    cursor: pointer;
+}
+
+a {
+    text-decoration: none;
+}
+
+.editable {
+    cursor: text;
+}

@@ -48,7 +48,7 @@ const routes = [
                         .then((res) => {
                             if (res.success) {
                                 this.list()
-                                this.$root.showModal('成功', '发布成功\nhttp://' + document.domain + '/p/' + res.detail.id)
+                                this.$root.showModal('发布成功', location.protocol + '//' + location.host + '/p/' + res.detail.id)
                                 this.title = ''
                                 this.text = ''
                             } else {

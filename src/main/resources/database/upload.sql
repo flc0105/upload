@@ -19,3 +19,12 @@ create table share_code
 
 create unique index share_code_code_uindex
 	on share_code (code);
+
+create table task
+(
+	id integer not null
+		constraint task_pk
+			primary key autoincrement,
+	text text not null,
+	checked boolean not null
+);
