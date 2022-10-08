@@ -4,14 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>任务列表</title>
+    <title>书签列表</title>
     <script src="lib/js/vue.global.js"></script>
     <script src="lib/js/axios.min.js"></script>
     <script src="lib/js/qs.min.js"></script>
     <script src="lib/js/bootstrap.bundle.min.js"></script>
+    <script src="/lib/js/clipboard.min.js"></script>
     <link href="lib/css/bootstrap.min.css" rel="stylesheet">
     <link href="lib/css/bootstrap-icons.css" rel="stylesheet">
-    <link href="css/task.css" rel="stylesheet">
+    <link href="css/bookmark.css" rel="stylesheet">
 </head>
 
 <body>
@@ -25,35 +26,37 @@
                     <a class="nav-link" href="/p">文本共享</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active">任务列表</a>
+                    <a class="nav-link" href="/task.html">任务列表</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/bookmark.html">书签列表</a>
+                    <a class="nav-link active" href="/bookmark.html">书签列表</a>
                 </li>
             </ul>
         </div>
-        <div class="list-group w-auto shadow-sm">
-            <div class="list-group-item list-group-item-action d-flex justify-content-between" v-for="task in tasks">
-                <label class="w-100">
-                    <div>
-                        <input class="form-check-input" type="checkbox" :checked="task.checked"
-                            @click="(event) => update(task.id, event.target.checked)" onclick="return false;">
-                        <span class="form-checked-content" style="padding-left: 10px">{{task.text}}</span>
-                    </div>
-                </label>
-                <a class="link-danger bi bi-trash" @click="del(task.id)"></a>
-            </div>
-            <div class="list-group-item bg-light">
-                <div class="d-flex">
-                    <input class="form-check-input form-check-input-placeholder bg-light flex-shrink-0 pe-none"
-                        type="checkbox" checked>
-                    <span class="editable" id="editable" contenteditable="true"
-                        style="padding-left: 10px; min-width: 100%" @keyup.enter="add()">
-                        <span style="opacity: .5">添加新任务</span>
-                    </span>
-                </div>
-            </div>
+
+        <div class="input-group" style="margin-bottom: 20px">
+            <input class="form-control" v-model="url" ref="url">
+            <button class="btn btn-outline-secondary" @click="add()">添加</button>
         </div>
+        <table class="table table-hover table-borderless border shadow-sm" style="table-layout:fixed">
+            <tr v-for="bookmark in bookmarks">
+                <td class="td">
+                    <img class="img align-middle" v-bind:src="'data:image/jpeg;base64,'+bookmark.icon">
+                    <span class="align-middle">{{bookmark.title}}</span>
+                </td>
+                <td class="td url">
+                    {{bookmark.url}}
+                </td>
+                <td class="text-end" style="width: 10%">
+                    <i class="bi bi-three-dots-vertical link-primary" data-bs-toggle="dropdown"></i>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" :href="bookmark.url" target="_blank">访问</a></li>
+                        <li><a class="dropdown-item" id="btnCopy" :data-clipboard-text="bookmark.url">复制</a></li>
+                        <li><a class="dropdown-item" @click="del(bookmark.id)">删除</a></li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
     </div>
     <div class="modal" tabindex="-1" ref="messageModal">
         <div class="modal-dialog">
@@ -71,7 +74,7 @@
             </div>
         </div>
     </div>
-    <script src="js/task.js"></script>
+    <script src="js/bookmark.js"></script>
 </body>
 
 </html>

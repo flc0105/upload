@@ -28,3 +28,14 @@ create table task
 	text text not null,
 	checked boolean not null
 );
+
+create table bookmark
+(
+	id integer not null
+		constraint bookmark_pk
+			primary key autoincrement,
+	url text not null,
+	title text,
+	icon text
+);
+

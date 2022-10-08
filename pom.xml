@@ -10,7 +10,7 @@
     </parent>
     <groupId>flc</groupId>
     <artifactId>upload</artifactId>
-    <version>0.0.8-SNAPSHOT</version>
+    <version>0.0.9-SNAPSHOT</version>
     <name>upload</name>
     <description>Demo project for Spring Boot</description>
 
@@ -82,6 +82,13 @@
             <artifactId>java-jwt</artifactId>
             <version>4.0.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.15.3</version>
+        </dependency>
+
     </dependencies>
 
     <build>

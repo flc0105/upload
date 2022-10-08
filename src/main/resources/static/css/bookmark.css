@@ -1,0 +1,31 @@
+.header {
+    margin: 30px 0;
+}
+
+a {
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.link-primary {
+    cursor: pointer;
+}
+
+.td {
+    width: 45%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.img {
+    height: 18px;
+    width: auto;
+    margin-right: 5px;
+}
+
+@media screen and (max-width: 768px) {
+    .url {
+        display: none;
+    }
+}
