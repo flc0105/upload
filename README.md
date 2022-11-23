@@ -24,6 +24,7 @@ yum install -y java-1.8.0-openjdk
 # 添加配置
 vim /etc/supervisord.d/upload.ini
 
+[program:upload]
 command=/usr/bin/java -jar /root/upload/upload-0.0.10-SNAPSHOT.jar
 redirect_stderr=true
 stdout_logfile=/root/upload/upload.stdout.log
@@ -45,6 +46,6 @@ cd upload/
 docker build -t flc/upload .
 
 # 启动容器
-docker run --restart=always -p <本地端口>:80 -v <本地目录>:/root/upload/files --env PASSWORD=<密码> -d flc/upload
+docker run --restart=always -p <本地端口>:80 -v <本地目录>:/root/upload/files --env PASSWORD=<密码> --env PORT=80 -d flc/upload
 ```
 

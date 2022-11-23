@@ -272,7 +272,7 @@ const app = Vue.createApp({
       if (fileType.includes("image")) {
         let image = document.getElementById("image");
         image.removeAttribute("src");
-        image.setAttribute("src", "/file/download?relativePath=" + filename);
+        image.setAttribute("src", "/file/download?relativePath=" + encodeURIComponent(filename));
         new bootstrap.Modal(this.$refs.imageModal).show();
       } else if (fileType.includes("text")) {
         let text = document.getElementById("text");
