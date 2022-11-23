@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class ShareCodeService {
@@ -41,7 +43,18 @@ public class ShareCodeService {
     }
 
     public Result findAll() throws Exception {
-        return new Result<>(true, null, shareCodeMapper.findAll());
+        List<ShareCode> shareCodeList = shareCodeMapper.findAll();
+        List<ShareCode> newShareCodeList = new ArrayList<>();
+        for (ShareCode shareCode: shareCodeList) {
+            File file = new File(uploadPath, shareCode.getPath());
+            if (file.isFile()) {
+                shareCode.setValid(true);
+            } else {
+                shareCode.setValid(false);
+            }
+            newShareCodeList.add(shareCode);
+        }
+        return new Result<>(true, null, newShareCodeList);
     }
 
     public Result findByCode(String code) throws Exception {

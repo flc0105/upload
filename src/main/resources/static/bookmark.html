@@ -1,80 +1,107 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>书签列表</title>
-    <script src="lib/js/vue.global.js"></script>
-    <script src="lib/js/axios.min.js"></script>
-    <script src="lib/js/qs.min.js"></script>
-    <script src="lib/js/bootstrap.bundle.min.js"></script>
+    <script src="/lib/js/vue.global.js"></script>
+    <script src="/lib/js/axios.min.js"></script>
+    <script src="/lib/js/qs.min.js"></script>
+    <script src="/lib/js/bootstrap.bundle.min.js"></script>
     <script src="/lib/js/clipboard.min.js"></script>
-    <link href="lib/css/bootstrap.min.css" rel="stylesheet">
-    <link href="lib/css/bootstrap-icons.css" rel="stylesheet">
-    <link href="css/bookmark.css" rel="stylesheet">
-</head>
+    <link href="/lib/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/lib/css/bootstrap-icons.css" rel="stylesheet" />
+    <link href="/css/common.css" rel="stylesheet" />
+    <link href="/css/bookmark.css" rel="stylesheet" />
+  </head>
 
-<body>
+  <body>
     <div class="container">
-        <div class="header">
-            <ul class="nav nav-tabs">
-                <li class="nav-item">
-                    <a class="nav-link" href="/">文件列表</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/p">文本共享</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/task.html">任务列表</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="/bookmark.html">书签列表</a>
-                </li>
+      <div class="header">
+        <ul class="nav nav-tabs">
+          <li class="nav-item">
+            <a class="nav-link" href="/">文件列表</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/p">文本共享</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/task.html">任务列表</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/bookmark.html">书签列表</a>
+          </li>
+        </ul>
+      </div>
+      <input
+        class="form-control"
+        style="margin-bottom: 10px"
+        v-model="url"
+        ref="url"
+        @keyup.enter="add()"
+      />
+      <table
+        class="table table-hover table-borderless border shadow-sm"
+        style="table-layout: fixed"
+      >
+        <tr v-for="bookmark in bookmarks">
+          <td class="text-truncate w-45">
+            <img
+              class="img align-middle"
+              v-bind:src="'data:image/jpeg;base64,' + bookmark.icon"
+            />
+            <span class="align-middle">{{bookmark.title}}</span>
+          </td>
+          <td class="text-truncate w-45 url">{{bookmark.url}}</td>
+          <td class="text-end" style="width: 10%">
+            <i
+              class="bi bi-three-dots-vertical link-primary"
+              data-bs-toggle="dropdown"
+            ></i>
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" :href="bookmark.url" target="_blank"
+                  >访问</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  id="btnCopy"
+                  :data-clipboard-text="bookmark.url"
+                  >复制</a
+                >
+              </li>
+              <li>
+                <a class="dropdown-item" @click="del(bookmark.id)">删除</a>
+              </li>
             </ul>
-        </div>
-
-        <div class="input-group" style="margin-bottom: 20px">
-            <input class="form-control" v-model="url" ref="url">
-            <button class="btn btn-outline-secondary" @click="add()">添加</button>
-        </div>
-        <table class="table table-hover table-borderless border shadow-sm" style="table-layout:fixed">
-            <tr v-for="bookmark in bookmarks">
-                <td class="td">
-                    <img class="img align-middle" v-bind:src="'data:image/jpeg;base64,'+bookmark.icon">
-                    <span class="align-middle">{{bookmark.title}}</span>
-                </td>
-                <td class="td url">
-                    {{bookmark.url}}
-                </td>
-                <td class="text-end" style="width: 10%">
-                    <i class="bi bi-three-dots-vertical link-primary" data-bs-toggle="dropdown"></i>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" :href="bookmark.url" target="_blank">访问</a></li>
-                        <li><a class="dropdown-item" id="btnCopy" :data-clipboard-text="bookmark.url">复制</a></li>
-                        <li><a class="dropdown-item" @click="del(bookmark.id)">删除</a></li>
-                    </ul>
-                </td>
-            </tr>
-        </table>
+          </td>
+        </tr>
+      </table>
     </div>
     <div class="modal" tabindex="-1" ref="messageModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{message.title}}</h5>
-                    <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p style="white-space: pre-wrap">{{message.text}}</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
-                </div>
-            </div>
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{message.title}}</h5>
+            <button
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p style="white-space: pre-wrap">{{message.text}}</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline-primary" data-bs-dismiss="modal">
+              关闭
+            </button>
+          </div>
         </div>
+      </div>
     </div>
-    <script src="js/bookmark.js"></script>
-</body>
-
+    <script src="/js/bookmark.js"></script>
+  </body>
 </html>

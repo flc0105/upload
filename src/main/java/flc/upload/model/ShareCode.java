@@ -4,6 +4,7 @@ public class ShareCode {
     private Integer id;
     private String code;
     private String path;
+    private boolean isValid;
 
     public Integer getId() {
         return id;
@@ -27,5 +28,13 @@ public class ShareCode {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public boolean isValid() {
+        return isValid;
+    }
+
+    public void setValid(boolean valid) {
+        isValid = valid;
     }
 }

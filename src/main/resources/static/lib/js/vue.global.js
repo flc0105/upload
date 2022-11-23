@@ -6779,7 +6779,7 @@ var Vue = (function (exports) {
               e1--;
               e2--;
           }
-          // 3. common sequence + mount
+          // 3. common.css sequence + mount
           // (a b)
           // (a b) c
           // i = 2, e1 = 1, e2 = 2
@@ -6798,7 +6798,7 @@ var Vue = (function (exports) {
                   }
               }
           }
-          // 4. common sequence + unmount
+          // 4. common.css sequence + unmount
           // (a b) c
           // (a b)
           // i = 2, e1 = 2, e2 = 1
@@ -7882,7 +7882,7 @@ var Vue = (function (exports) {
           child.slice());
       }
       else if (typeof child === 'object') {
-          // already vnode, this should be the most common since compiled templates
+          // already vnode, this should be the most common.css since compiled templates
           // always produce all-vnode children arrays
           return cloneIfMounted(child);
       }
