@@ -4,8 +4,272 @@ axios.interceptors.response.use((res) => {
   }
 });
 
-let cancel;
-const CancelToken = axios.CancelToken;
+const path = "/";
+
+const pasteListComponent = {
+  template: document.getElementById("paste-list").innerHTML,
+  data() {
+    return {
+      pastes: [],
+      title: "",
+      text: "",
+    };
+  },
+  methods: {
+    list() {
+      this.$root.loading = true;
+      axios
+        .post(path + "paste/list")
+        .then((res) => {
+          if (res.success) {
+            this.pastes = res.detail;
+          } else {
+            this.$root.showModal("错误", res.msg);
+          }
+        })
+        .catch((err) => {
+          this.$root.showModal("错误", err.message);
+        })
+        .finally(() => {
+          this.$root.loading = false;
+        });
+    },
+    add() {
+      if (this.text.trim().length === 0) {
+        return;
+      }
+      axios
+        .post(
+          path + "paste/add",
+          Qs.stringify({
+            title: this.title.trim().length === 0 ? "Untitled" : this.title,
+            text: this.text,
+          })
+        )
+        .then((res) => {
+          if (res.success) {
+            this.list();
+            this.$root.showModal(
+              "发布成功",
+              location.protocol +
+                "//" +
+                location.host +
+                path +
+                "p/" +
+                res.detail.id
+            );
+            this.title = "";
+            this.text = "";
+          } else {
+            this.$root.showModal("错误", res.msg);
+          }
+        })
+        .catch((err) => {
+          this.$root.showModal("错误", err.message);
+        });
+    },
+  },
+  created() {
+    this.$root.list = this.list;
+    this.list();
+  },
+};
+
+const pasteDetailComponent = {
+  template: document.getElementById("paste-detail").innerHTML,
+  data() {
+    return {
+      title: "",
+      text: "",
+    };
+  },
+  methods: {
+    get(id) {
+      this.title = "";
+      this.text = "";
+      this.$root.loading = true;
+      axios
+        .post(path + "paste/get", Qs.stringify({ id: id }))
+        .then((res) => {
+          if (res.success) {
+            this.title = res.detail.title;
+            this.text = res.detail.text;
+          } else {
+            this.$router.push("/p");
+          }
+        })
+        .catch((err) => {
+          this.$router.push("/p");
+        })
+        .finally(() => {
+          this.$root.loading = false;
+        });
+    },
+    update() {
+      if (this.text.trim().length === 0) {
+        return;
+      }
+      if (!this.$root.hasToken(() => this.update())) {
+        return;
+      }
+      axios
+        .post(
+          path + "paste/update",
+          Qs.stringify({
+            id: this.$route.params.id,
+            text: this.text,
+          })
+        )
+        .then((res) => {
+          if (res.success) {
+            this.$root.showModal("成功", "修改成功");
+          } else {
+            this.$root.showModal("错误", res.msg);
+          }
+        })
+        .catch((err) => {
+          this.$root.showModal("错误", err.message);
+        });
+    },
+  },
+  created() {
+    if (this.$route.params.id) {
+      this.get(this.$route.params.id);
+    }
+  },
+};
+
+const shareListComponent = {
+  template: document.getElementById("share-list").innerHTML,
+  data() {
+    return {
+      shareCodeList: {},
+    };
+  },
+  methods: {
+    list() {
+      this.$root.loading = true;
+      axios
+        .post(path + "shareCode/list")
+        .then((res) => {
+          if (res.success) {
+            this.shareCodeList = res.detail;
+          } else {
+            this.$root.showModal("错误", res.msg);
+          }
+        })
+        .catch((err) => {
+          this.$root.showModal("错误", err.message);
+        })
+        .finally(() => {
+          this.$root.loading = false;
+        });
+    },
+    remove(code) {
+      axios
+        .post(path + "shareCode/delete", Qs.stringify({ code: code }))
+        .then((res) => {
+          if (res.success) {
+            this.list();
+            this.$root.showModal("成功", "删除成功");
+          } else {
+            this.$root.showModal("错误", res.msg);
+          }
+        })
+        .catch((err) => {
+          this.$root.showModal("错误", err.message);
+        });
+    },
+    visit(code) {
+      this.$router.push("/s/" + code);
+    },
+  },
+  created() {
+    this.list();
+  },
+};
+
+const shareDetailComponent = {
+  template: document.getElementById("share-detail").innerHTML,
+  data() {
+    return {
+      file: "",
+    };
+  },
+  methods: {
+    get(code) {
+      this.$root.loading = true;
+      axios
+        .post(path + "shareCode/get", Qs.stringify({ code: code }))
+        .then((res) => {
+          if (res.success) {
+            this.file = res.detail;
+          } else {
+            this.$router.push("/404");
+          }
+        })
+        .catch((err) => {
+          this.$router.push("/404");
+        })
+        .finally(() => {
+          this.$root.loading = false;
+        });
+    },
+    download(relativePath) {
+      location.href =
+        path + "file/download?relativePath=" + encodeURIComponent(relativePath);
+    },
+  },
+  created() {
+    if (this.$route.params.code) {
+      this.get(this.$route.params.code);
+    }
+  },
+};
+
+const routes = [
+  {
+    name: "index",
+    path: "/",
+    component: {
+      created() {
+        location.href = path + "files.html";
+      },
+    },
+  },
+  {
+    name: "pasteList",
+    path: "/p",
+    component: pasteListComponent,
+  },
+  {
+    name: "pasteDetail",
+    path: "/p/:id(\\d+)",
+    component: pasteDetailComponent,
+  },
+  {
+    name: "shareList",
+    path: "/s",
+    component: shareListComponent,
+  },
+  {
+    name: "shareDetail",
+    path: "/s/:code",
+    component: shareDetailComponent,
+  },
+  {
+    name: "404",
+    path: "/:pathMatch(.*)*",
+    component: {
+      template: "当前页面不存在",
+    },
+  },
+];
+
+const router = VueRouter.createRouter({
+  history: VueRouter.createWebHistory(path),
+  routes,
+});
 
 const app = Vue.createApp({
   data() {
@@ -15,16 +279,10 @@ const app = Vue.createApp({
         title: "",
       },
       loading: false,
-      currentDirectory: "/",
-      directories: [],
-      files: [],
-      progress: 0,
-      filesToDelete: [],
-      filter: "",
-      multiSelect: false,
-      checkedFiles: [],
-      previousAct: null,
-      columns: ["size", "lastModified"],
+      list: "",
+      confirmDelete: "",
+      previousAct: "",
+      file: "",
     };
   },
   methods: {
@@ -33,302 +291,23 @@ const app = Vue.createApp({
       this.message.text = text;
       new bootstrap.Modal(this.$refs.messageModal).show();
     },
-    formatBytes(bytes) {
-      if (bytes === 0) {
-        return "0 B";
-      }
-      const i = Math.floor(Math.log(bytes) / Math.log(1024));
-      return (
-        parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) +
-        " " +
-        ["B", "kB", "MB", "GB"][i]
-      );
-    },
-    list() {
-      this.loading = true;
-      this.files = [];
-      this.checkedFiles = [];
-      if (cancel !== undefined) {
-        cancel();
-      }
-      axios
-        .post(
-          "/file/list",
-          Qs.stringify({ currentDirectory: this.currentDirectory }),
-          {
-            cancelToken: new CancelToken(function executor(c) {
-              cancel = c;
-            }),
-          }
-        )
-        .then((res) => {
-          if (res.success) {
-            this.files = res.detail;
-          } else {
-            this.showModal("错误", res.msg);
-          }
-        })
-        .catch((err) => {
-          this.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.loading = false;
-        });
-    },
-    search() {
-      if (this.filter.trim().length === 0) {
-        this.list();
-        return;
-      }
-      this.loading = true;
-      this.files = [];
-      this.checkedFiles = [];
-      if (cancel !== undefined) {
-        cancel();
-      }
-      axios
-        .post(
-          "/file/search",
-          Qs.stringify({
-            filter: this.filter,
-            currentDirectory: this.currentDirectory,
-          }),
-          {
-            cancelToken: new CancelToken(function executor(c) {
-              cancel = c;
-            }),
-          }
-        )
-        .then((res) => {
-          if (res.success) {
-            this.files = res.detail;
-          } else {
-            this.showModal("错误", res.msg);
-          }
-          this.loading = false;
-        })
-        .catch((err) => {
-          if (err.name === "CanceledError") {
-            return;
-          }
-          this.loading = false;
-          this.showModal("错误", err.message);
-        });
-    },
-    changeDirectory(relativePath) {
-      this.currentDirectory = relativePath;
-      this.list();
-      this.getDirectoryHierachy();
-    },
-    getDirectoryHierachy() {
-      this.directories = [];
-      const displayNames = this.currentDirectory.split("/");
-      const relativePaths = [];
-      for (let i = 0; i < displayNames.length; i++) {
-        relativePaths.push(displayNames[i]);
-        const relativePath = relativePaths.join("/");
-        this.directories.push({
-          displayName: displayNames[i],
-          relativePath: relativePath.length === 0 ? "/" : relativePath,
-        });
-      }
-      this.directories[0].displayName = "Home";
-    },
-    upload(event) {
-      if (!this.hasToken(() => this.upload(event))) {
-        return;
-      }
-      const modal = new bootstrap.Modal(this.$refs.progressModal);
-      modal.show();
-      const formData = new FormData();
-      formData.append("currentDirectory", this.currentDirectory);
-      const files = Array.from(event.target.files);
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
-      axios({
-        method: "post",
-        url: "/file/upload",
-        data: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (e) => {
-          if (e.lengthComputable) {
-            const current = e.loaded;
-            const total = e.total;
-            this.progress = Math.round((current / total) * 100) + "%";
-          }
-        },
-      })
-        .then((res) => {
-          if (res.success) {
-            modal.hide();
-            this.list();
-            this.showModal("成功", "上传成功");
-            this.progress = 0;
-          } else {
-            modal.hide();
-            this.showModal("错误", res.msg);
-            this.progress = 0;
-          }
-        })
-        .catch((err) => {
-          modal.hide();
-          this.showModal("错误", err.message);
-          this.progress = 0;
-        });
-    },
-    download(relativePath) {
-      location.href =
-        "/file/download?relativePath=" + encodeURIComponent(relativePath);
-    },
-    createZip(relativePath) {
-      location.href =
-        "/file/zip?relativePath=" + encodeURIComponent(relativePath);
-    },
-    bulkDownload() {
-      location.href =
-        "/file/bulk?relativePath=" +
-        encodeURIComponent(JSON.stringify(this.checkedFiles));
-    },
-    confirmDelete(files) {
-      this.filesToDelete = files;
+    showConfirm(func) {
       new bootstrap.Modal(this.$refs.confirmModal).show();
+      this.confirmDelete = func;
     },
-    deleteFile() {
-      if (!this.hasToken(() => this.deleteFile())) {
+    remove(id) {
+      if (!this.hasToken(() => this.remove(id))) {
         return;
       }
       axios
-        .post(
-          "/file/delete",
-          Qs.stringify({ relativePath: JSON.stringify(this.filesToDelete) })
-        )
+        .post(path + "paste/delete", Qs.stringify({ id: id }))
         .then((res) => {
           if (res.success) {
-            if (this.filter.length === 0) {
-              this.list();
-            } else {
-              this.search(this.filter);
-            }
             this.showModal("成功", "删除成功");
-          } else {
-            this.showModal("错误", res.msg);
-          }
-        })
-        .catch((err) => {
-          this.showModal("错误", err.message);
-        });
-    },
-    inputDirectoryName() {
-      this.$refs.directoryName.value = "";
-      new bootstrap.Modal(this.$refs.inputModal).show();
-      this.$refs.directoryName.focus();
-    },
-    createDirectory() {
-      const directoryName = this.$refs.directoryName.value;
-      if (directoryName.trim().length === 0) {
-        this.showModal("错误", "文件夹名不能为空");
-        return;
-      }
-      axios
-        .post(
-          "/file/mkdir",
-          Qs.stringify({
-            relativePath: this.currentDirectory + "/" + directoryName,
-          })
-        )
-        .then((res) => {
-          if (res.success) {
-            this.list();
-            this.showModal("成功", "新建文件夹成功");
-          } else {
-            this.showModal("错误", res.msg);
-          }
-        })
-        .catch((err) => {
-          this.showModal("错误", err.message);
-        });
-    },
-    checkAll(event) {
-      if (event.target.checked) {
-        this.files.folders.forEach((folder) => {
-          this.checkedFiles.push(folder.relativePath);
-        });
-        this.files.files.forEach((file) => {
-          this.checkedFiles.push(file.relativePath);
-        });
-      } else {
-        this.checkedFiles = [];
-      }
-    },
-    hideColumn(column) {
-      this.columns.includes(column)
-        ? (this.columns = this.columns.filter((item) => item !== column))
-        : this.columns.push(column);
-    },
-    previewFile(fileType, filename) {
-      if (fileType.includes("image")) {
-        let image = document.getElementById("image");
-        image.removeAttribute("src");
-        image.setAttribute("src", "/file/download?relativePath=" + encodeURIComponent(filename));
-        new bootstrap.Modal(this.$refs.imageModal).show();
-      } else if (fileType.includes("text")) {
-        let text = document.getElementById("text");
-        text.innerText = "";
-        axios
-          .post("/file/read", Qs.stringify({ relativePath: filename }))
-          .then((res) => {
-            if (res.success) {
-              text.innerText = res.detail;
-              new bootstrap.Modal(this.$refs.textModal).show();
-            } else {
-              this.showModal("错误", res.msg);
+            if (this.$route.params.id) {
+              this.$router.push("/p");
             }
-          })
-          .catch((err) => {
-            this.showModal("错误", err.message);
-          });
-      }
-    },
-    getIcon(filename, fileType) {
-      const ext = filename.split(".").pop();
-      const exts = {
-        "bi-file-earmark-binary": ["exe"],
-        "bi-file-earmark-zip": ["zip", "7z", "rar"],
-        "bi-file-earmark-code": ["py", "java", "c", "cpp", "html", "js", "css"],
-        "bi-file-earmark-pdf": ["pdf"],
-        "bi-file-earmark-word": ["doc", "docx"],
-        "bi-file-earmark-excel": ["xls", "xlsx"],
-        "bi-file-earmark-ppt": ["ppt", "pptx"],
-      };
-      for (const [key, value] of Object.entries(exts)) {
-        if (value.includes(ext)) {
-          return key;
-        }
-      }
-      const type = {
-        text: "bi-file-earmark-text",
-        image: "bi-file-earmark-image",
-        audio: "bi-file-earmark-music",
-        video: "bi-file-earmark-play",
-      };
-      let icon = type[fileType.split("/")[0]];
-      if (icon != null) {
-        return icon;
-      }
-      return " bi-file-earmark";
-    },
-    share(path) {
-      axios
-        .post("/shareCode/add", Qs.stringify({ path: path }))
-        .then((res) => {
-          if (res.success) {
-            this.showModal(
-              "分享成功",
-              location.protocol + "//" + location.host + "/s/" + res.detail
-            );
+            this.list();
           } else {
             this.showModal("错误", res.msg);
           }
@@ -350,7 +329,7 @@ const app = Vue.createApp({
     getToken() {
       axios
         .post(
-          "/token/get",
+          path + "token/get",
           Qs.stringify({ password: this.$refs.password.value })
         )
         .then((res) => {
@@ -365,19 +344,13 @@ const app = Vue.createApp({
         });
     },
   },
-  computed: {
-    getParentDirectory() {
-      let currentDirectory = this.currentDirectory.split("/");
-      currentDirectory.pop();
-      let parentDirectory = currentDirectory.join("/");
-      return parentDirectory.length === 0 ? "/" : parentDirectory;
-    },
-  },
   mounted() {
-    this.list();
-    this.getDirectoryHierachy();
+    new ClipboardJS("#btn-copy").on("success", () => {
+      this.$root.showModal("成功", "复制成功");
+    });
   },
 });
 
+app.use(router);
 app.config.compilerOptions.whitespace = "preserve";
 app.mount("body");

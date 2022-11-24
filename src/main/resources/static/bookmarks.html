@@ -4,15 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>书签列表</title>
-    <script src="/lib/js/vue.global.js"></script>
-    <script src="/lib/js/axios.min.js"></script>
-    <script src="/lib/js/qs.min.js"></script>
-    <script src="/lib/js/bootstrap.bundle.min.js"></script>
-    <script src="/lib/js/clipboard.min.js"></script>
-    <link href="/lib/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="/lib/css/bootstrap-icons.css" rel="stylesheet" />
-    <link href="/css/common.css" rel="stylesheet" />
-    <link href="/css/bookmark.css" rel="stylesheet" />
+    <script src="lib/js/vue.global.js"></script>
+    <script src="lib/js/axios.min.js"></script>
+    <script src="lib/js/qs.min.js"></script>
+    <script src="lib/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/js/clipboard.min.js"></script>
+    <link href="lib/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="lib/css/bootstrap-icons.css" rel="stylesheet" />
+    <link href="css/index.css" rel="stylesheet" />
   </head>
 
   <body>
@@ -20,26 +19,17 @@
       <div class="header">
         <ul class="nav nav-tabs">
           <li class="nav-item">
-            <a class="nav-link" href="/">文件列表</a>
+            <a class="nav-link" href="files.html">文件列表</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/p">文本共享</a>
+            <a class="nav-link" href="p">文本共享</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/task.html">任务列表</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="/bookmark.html">书签列表</a>
+            <a class="nav-link active">书签列表</a>
           </li>
         </ul>
       </div>
-      <input
-        class="form-control"
-        style="margin-bottom: 10px"
-        v-model="url"
-        ref="url"
-        @keyup.enter="add()"
-      />
+      <input class="form-control mb-2" v-model="url" @keyup.enter="add()" />
       <table
         class="table table-hover table-borderless border shadow-sm"
         style="table-layout: fixed"
@@ -47,7 +37,7 @@
         <tr v-for="bookmark in bookmarks">
           <td class="text-truncate w-45">
             <img
-              class="img align-middle"
+              class="icon align-middle"
               v-bind:src="'data:image/jpeg;base64,' + bookmark.icon"
             />
             <span class="align-middle">{{bookmark.title}}</span>
@@ -67,13 +57,13 @@
               <li>
                 <a
                   class="dropdown-item"
-                  id="btnCopy"
+                  id="btn-copy"
                   :data-clipboard-text="bookmark.url"
                   >复制</a
                 >
               </li>
               <li>
-                <a class="dropdown-item" @click="del(bookmark.id)">删除</a>
+                <a class="dropdown-item" @click="remove(bookmark.id)">删除</a>
               </li>
             </ul>
           </td>
@@ -102,6 +92,6 @@
         </div>
       </div>
     </div>
-    <script src="/js/bookmark.js"></script>
+    <script src="js/bookmarks.js"></script>
   </body>
 </html>

@@ -13,7 +13,7 @@ public class MyCustomizer {
     @Bean
     public WebServerFactoryCustomizer<ConfigurableWebServerFactory> customizer() {
         return factory -> {
-            ErrorPage errorPage = new ErrorPage(HttpStatus.NOT_FOUND, "/paste.html");
+            ErrorPage errorPage = new ErrorPage(HttpStatus.NOT_FOUND, "/index.html");
             factory.addErrorPages(errorPage);
         };
     }

@@ -23,7 +23,7 @@ const app = Vue.createApp({
     },
     list() {
       axios
-        .post("/bookmark/list")
+        .post("bookmark/list")
         .then((res) => {
           if (res.success) {
             this.bookmarks = res.detail;
@@ -37,16 +37,15 @@ const app = Vue.createApp({
     },
     add() {
       if (this.url.trim().length === 0) {
-        this.$refs.url.focus();
         return;
       }
       axios
-        .post("/bookmark/add", Qs.stringify({ url: this.url }))
+        .post("bookmark/add", Qs.stringify({ url: this.url }))
         .then((res) => {
           if (res.success) {
             this.list();
             axios
-              .post("/bookmark/update", Qs.stringify({ id: res.detail }))
+              .post("bookmark/update", Qs.stringify({ id: res.detail }))
               .then((res) => {
                 if (res.success) {
                   this.list();
@@ -68,9 +67,9 @@ const app = Vue.createApp({
           this.url = "";
         });
     },
-    del(id) {
+    remove(id) {
       axios
-        .post("/bookmark/delete", Qs.stringify({ id: id }))
+        .post("bookmark/delete", Qs.stringify({ id: id }))
         .then((res) => {
           if (res.success) {
             this.list();
@@ -84,7 +83,7 @@ const app = Vue.createApp({
     },
   },
   mounted() {
-    new ClipboardJS("#btnCopy").on("success", () => {
+    new ClipboardJS("#btn-copy").on("success", () => {
       this.showModal("成功", "复制成功");
     });
     this.list();

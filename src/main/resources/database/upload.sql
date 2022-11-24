@@ -3,7 +3,7 @@ create table paste
 	id integer not null
 		constraint paste_pk
 			primary key autoincrement,
-	title text default 'Untitled' not null,
+	title text not null,
 	text text not null,
 	time datetime not null
 );
@@ -19,15 +19,6 @@ create table share_code
 
 create unique index share_code_code_uindex
 	on share_code (code);
-
-create table task
-(
-	id integer not null
-		constraint task_pk
-			primary key autoincrement,
-	text text not null,
-	checked boolean not null
-);
 
 create table bookmark
 (
