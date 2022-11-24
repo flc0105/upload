@@ -131,6 +131,10 @@ const pasteDetailComponent = {
           this.$root.showModal("错误", err.message);
         });
     },
+    download() {
+      var blob = new Blob([this.text], { type: "text/plain;charset=utf-8" });
+      saveAs(blob, this.$route.params.id + ".txt");
+    }
   },
   created() {
     if (this.$route.params.id) {

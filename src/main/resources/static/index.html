@@ -11,6 +11,7 @@
     <script src="/lib/js/bootstrap.bundle.min.js"></script>
     <script src="/lib/js/js.cookie.min.js"></script>
     <script src="/lib/js/clipboard.min.js"></script>
+    <script src="lib/js/FileSaver.min.js"></script>
     <link href="/lib/css/bootstrap.min.css" rel="stylesheet" />
     <link href="/lib/css/bootstrap-icons.css" rel="stylesheet" />
     <link href="/css/index.css" rel="stylesheet" />
@@ -94,6 +95,11 @@
                   id="btn-copy"
                   data-clipboard-target="#textarea"
                   >复制</a
+                >
+                <a
+                  class="btn btn-outline-primary btn-sm"
+                  @click="download()"
+                  >下载</a
                 >
                 <a class="btn btn-outline-primary btn-sm" @click="update()"
                   >提交修改</a

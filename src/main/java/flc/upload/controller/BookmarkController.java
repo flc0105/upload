@@ -1,6 +1,5 @@
 package flc.upload.controller;
 
-import flc.upload.model.Bookmark;
 import flc.upload.model.Result;
 import flc.upload.service.BookmarkService;
 import org.springframework.web.bind.annotation.*;
@@ -33,5 +32,15 @@ public class BookmarkController {
     @PostMapping("/list")
     public Result list() throws Exception {
         return bookmarkService.findAll();
+    }
+
+    @PostMapping("/bulkAdd")
+    public Result bulkAdd(@RequestParam("data") String data) throws Exception {
+        return bookmarkService.bulkAdd(data);
+    }
+
+    @PostMapping("/updateAll")
+    public Result updateAll() throws Exception {
+        return bookmarkService.updateAll();
     }
 }

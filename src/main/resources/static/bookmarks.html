@@ -9,6 +9,7 @@
     <script src="lib/js/qs.min.js"></script>
     <script src="lib/js/bootstrap.bundle.min.js"></script>
     <script src="lib/js/clipboard.min.js"></script>
+    <script src="lib/js/FileSaver.min.js"></script>
     <link href="lib/css/bootstrap.min.css" rel="stylesheet" />
     <link href="lib/css/bootstrap-icons.css" rel="stylesheet" />
     <link href="css/index.css" rel="stylesheet" />
@@ -29,6 +30,35 @@
           </li>
         </ul>
       </div>
+      <input
+        type="file"
+        name="file"
+        id="file"
+        class="d-none"
+        @change="(event) => importBookmarks(event)"
+        multiple
+      />
+      <button
+        class="btn btn-outline-primary mb-2"
+        onclick="document.getElementById('file').value=null; document.getElementById('file').click()"
+        :disabled="loading"
+      >
+        导入
+      </button>
+      <button
+        class="btn btn-outline-primary mb-2"
+        @click="exportBookmarks()"
+        :disabled="loading"
+      >
+        导出
+      </button>
+      <button
+        class="btn btn-outline-primary mb-2"
+        @click="updateAll()"
+        :disabled="loading"
+      >
+        更新
+      </button>
       <input class="form-control mb-2" v-model="url" @keyup.enter="add()" />
       <table
         class="table table-hover table-borderless border shadow-sm"
@@ -91,6 +121,9 @@
           </div>
         </div>
       </div>
+    </div>
+    <div v-show="loading" class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
     </div>
     <script src="js/bookmarks.js"></script>
   </body>

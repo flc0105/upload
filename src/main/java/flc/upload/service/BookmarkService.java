@@ -4,9 +4,12 @@ import flc.upload.mapper.BookmarkMapper;
 import flc.upload.model.Bookmark;
 import flc.upload.model.Result;
 import flc.upload.util.JsoupUtil;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.net.URL;
+import java.util.List;
 
 @Service
 public class BookmarkService {
@@ -41,5 +44,33 @@ public class BookmarkService {
 
     public Result findAll() throws Exception {
         return new Result<>(true, null, bookmarkMapper.findAll());
+    }
+
+    public Result bulkAdd(String data) throws Exception {
+        JSONArray jsonArray = JSONArray.fromObject(data);
+        int i = 0;
+        for (Object str : jsonArray) {
+            JSONObject jsonObject = JSONObject.fromObject(str);
+            String title = jsonObject.getString("title");
+            String url = jsonObject.getString("url");
+            Bookmark bookmark = new Bookmark();
+            bookmark.setTitle(title);
+            bookmark.setUrl(url.contains("://") ? url : "http://" + url);
+            if (bookmarkMapper.add(bookmark) != 0) {
+                i++;
+            }
+        }
+        return new Result(true, "成功导入" + i + "条数据");
+    }
+
+    public Result updateAll() throws Exception {
+        List<Bookmark> bookmarks = bookmarkMapper.findAll();
+        int i = 0;
+        for (Bookmark bookmark : bookmarks) {
+            if (update(bookmark.getId()).isSuccess()) {
+                i++;
+            }
+        }
+        return new Result(true, "成功更新" + i + "条数据");
     }
 }
