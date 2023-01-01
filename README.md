@@ -6,7 +6,7 @@
 
 ```shell
 # 下载
-wget https://github.com/flc0105/upload/releases/download/v0.0.11/upload.zip
+wget https://github.com/flc0105/upload/releases/download/v0.0.14/upload.zip
 
 # 解压
 unzip upload.zip
@@ -25,7 +25,7 @@ yum install -y java-1.8.0-openjdk
 vim /etc/supervisord.d/upload.ini
 
 [program:upload]
-command=/usr/bin/java -jar /root/upload/upload-0.0.10-SNAPSHOT.jar
+command=/usr/bin/java -jar /root/upload/upload-0.0.14-SNAPSHOT.jar
 redirect_stderr=true
 stdout_logfile=/root/upload/upload.stdout.log
 

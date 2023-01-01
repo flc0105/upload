@@ -65,6 +65,11 @@ const app = Vue.createApp({
           if (res.success) {
             this.files = res.detail;
           } else {
+            if (res.msg === "没有权限") {
+              if (!this.hasToken(() => this.list(this.currentDirectory))) {
+                return;
+              }
+            }
             this.showModal("错误", res.msg);
           }
         })
@@ -230,6 +235,9 @@ const app = Vue.createApp({
       const directoryName = this.$refs.directoryName.value;
       if (directoryName.trim().length === 0) {
         this.showModal("错误", "文件夹名不能为空");
+        return;
+      }
+      if (!this.hasToken(() => this.createDirectory())) {
         return;
       }
       axios

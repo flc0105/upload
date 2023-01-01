@@ -1,5 +1,6 @@
 package flc.upload.service;
 
+import flc.upload.exception.VerifyFailedException;
 import flc.upload.manager.TokenManager;
 import flc.upload.model.Folder;
 import flc.upload.model.Result;
@@ -30,11 +31,17 @@ public class FileService {
     @Value("${upload.path}")
     private String uploadPath;
 
+    @Value("#{'${private.directories}'.split(',')}")
+    private List<String> privateDirectories;
+
     private Logger logger = LoggerFactory.getLogger(FileService.class);
 
-    public Result list(String currentDirectory) {
+    public Result list(String currentDirectory, String token) {
         List<Folder> folders = new ArrayList<>();
         List<flc.upload.model.File> files = new ArrayList<>();
+        if (privateDirectories.contains(currentDirectory)) {
+            tokenManager.verify(token);
+        }
         File[] list = new File(uploadPath, currentDirectory).listFiles();
         if (list == null) {
             return new Result(false, "无法访问");
@@ -54,13 +61,21 @@ public class FileService {
         return new Result<>(true, null, jsonObject);
     }
 
-    public Result search(String filter, String currentDirectory) {
+    public Result search(String filter, String currentDirectory, String token) {
         List<Folder> folders = new ArrayList<>();
         List<flc.upload.model.File> files = new ArrayList<>();
         PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*" + filter + "*");
         Iterator<Path> iterator = null;
         try {
-            iterator = Files.walk(Paths.get(uploadPath, currentDirectory)).filter(matcher::matches).iterator();
+            try {
+                tokenManager.verify(token);
+                iterator = Files.walk(Paths.get(uploadPath, currentDirectory)).filter(matcher::matches).iterator();
+            } catch (VerifyFailedException e) {
+                iterator = Files.walk(Paths.get(uploadPath, currentDirectory))
+                        .filter(matcher::matches)
+                        .filter(p -> privateDirectories.stream().noneMatch(s -> FileUtil.relativize(uploadPath, p.toFile()).startsWith(s)))
+                        .iterator();
+            }
         } catch (IOException e) {
             logger.error(e.getLocalizedMessage());
         }
@@ -123,7 +138,8 @@ public class FileService {
         }
     }
 
-    public Result mkdir(String relativePath) {
+    public Result mkdir(String relativePath, String token) {
+        tokenManager.verify(token);
         File directory = new File(uploadPath, relativePath);
         if (directory.exists()) {
             return new Result(false, "文件已存在");
@@ -152,7 +168,10 @@ public class FileService {
         FileUtil.download(file, response);
     }
 
-    public void zip(String relativePath, HttpServletResponse response) throws Exception {
+    public void zip(String relativePath, HttpServletResponse response, String token) throws Exception {
+        if (privateDirectories.contains(relativePath)) {
+            tokenManager.verify(token);
+        }
         File file = new File(uploadPath, relativePath);
         if (!file.exists()) {
             throw new RuntimeException("文件不存在");
@@ -169,12 +188,19 @@ public class FileService {
         zipFile.delete();
     }
 
-    public void bulk(String files, HttpServletResponse response) throws Exception {
+    public void bulk(String files, HttpServletResponse response, String token) throws Exception {
         JSONArray array = JSONArray.fromObject(files);
         String zipName = uploadPath + File.separator + System.currentTimeMillis() + ".zip";
         FileOutputStream fos = new FileOutputStream(zipName);
         ZipOutputStream zos = new ZipOutputStream(fos);
         for (Object f : array) {
+            if (privateDirectories.contains(f.toString())) {
+                try {
+                    tokenManager.verify(token);
+                } catch (VerifyFailedException e) {
+                    continue;
+                }
+            }
             File file = new File(uploadPath, f.toString());
             FileUtil.zipFile(zos, file, null);
         }

@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Optional;
 
 @Service
 @RestController
@@ -22,23 +23,24 @@ public class FileController {
     }
 
     @PostMapping("/list")
-    public Result list(@RequestParam("currentDirectory") String currentDirectory) {
-        return fileService.list(currentDirectory);
+    public Result list(@RequestParam("currentDirectory") String currentDirectory, HttpServletRequest request) {
+        return fileService.list(currentDirectory, CookieUtil.getCookie("token", request));
     }
 
     @PostMapping("/search")
-    public Result search(@RequestParam("filter") String filter, @RequestParam("currentDirectory") String currentDirectory) {
-        return fileService.search(filter, currentDirectory);
+    public Result search(@RequestParam("filter") String filter, @RequestParam("currentDirectory") String currentDirectory, HttpServletRequest request) {
+        return fileService.search(filter, currentDirectory, CookieUtil.getCookie("token", request));
     }
 
     @PostMapping("/upload")
-    public Result upload(@RequestParam("files") MultipartFile[] files, @RequestParam("currentDirectory") String currentDirectory, HttpServletRequest request) throws Exception {
-        return fileService.upload(files, currentDirectory, CookieUtil.getCookie("token", request));
+    public Result upload(@RequestParam("files") MultipartFile[] files, @RequestParam("currentDirectory") Optional<String> currentDirectory, HttpServletRequest request) throws Exception {
+        String value = currentDirectory.orElse("/");
+        return fileService.upload(files, value, CookieUtil.getCookie("token", request));
     }
 
     @PostMapping("/mkdir")
-    public Result mkdir(@RequestParam("relativePath") String relativePath) {
-        return fileService.mkdir(relativePath);
+    public Result mkdir(@RequestParam("relativePath") String relativePath, HttpServletRequest request) {
+        return fileService.mkdir(relativePath, CookieUtil.getCookie("token", request));
     }
 
     @PostMapping("/delete")
@@ -52,13 +54,13 @@ public class FileController {
     }
 
     @GetMapping("/zip")
-    public void zip(@RequestParam("relativePath") String relativePath, HttpServletResponse response) throws Exception {
-        fileService.zip(relativePath, response);
+    public void zip(@RequestParam("relativePath") String relativePath, HttpServletResponse response, HttpServletRequest request) throws Exception {
+        fileService.zip(relativePath, response, CookieUtil.getCookie("token", request));
     }
 
     @GetMapping("/bulk")
-    public void bulk(@RequestParam("relativePath") String files, HttpServletResponse response) throws Exception {
-        fileService.bulk(files, response);
+    public void bulk(@RequestParam("relativePath") String files, HttpServletResponse response, HttpServletRequest request) throws Exception {
+        fileService.bulk(files, response, CookieUtil.getCookie("token", request));
     }
 
     @PostMapping("/read")

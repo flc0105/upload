@@ -8,8 +8,11 @@ import org.springframework.stereotype.Service;
 public class TokenManager {
 
     public void verify(String token) {
-        if (!JwtUtil.validateToken(token)) {
+        if (token == null) {
             throw new VerifyFailedException("没有权限");
+        }
+        if (!JwtUtil.validateToken(token)) {
+            throw new VerifyFailedException("token验证失败");
         }
     }
 }
