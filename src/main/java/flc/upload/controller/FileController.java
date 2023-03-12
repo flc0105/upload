@@ -67,4 +67,14 @@ public class FileController {
     public Result read(@RequestParam("relativePath") String relativePath) throws Exception {
         return fileService.read(relativePath);
     }
+
+    @PostMapping("/move")
+    public Result move(@RequestParam("src") String src, @RequestParam("dst") String dst, HttpServletRequest request) throws Exception {
+        return fileService.move(src, dst, CookieUtil.getCookie("token", request));
+    }
+
+    @PostMapping("/rename")
+    public Result rename(@RequestParam("src") String src, @RequestParam("dst") String dst, HttpServletRequest request) {
+        return fileService.rename(src, dst, CookieUtil.getCookie("token", request));
+    }
 }

@@ -25,6 +25,7 @@ const app = Vue.createApp({
       checkedFiles: [],
       previousAct: null,
       columns: ["size", "lastModified"],
+      filesToCut: [],
     };
   },
   methods: {
@@ -226,10 +227,40 @@ const app = Vue.createApp({
           this.showModal("错误", err.message);
         });
     },
-    inputDirectoryName() {
+    inputDirectoryName(title) {
+      this.$refs.inputModalTitle.innerText = title;
       this.$refs.directoryName.value = "";
       new bootstrap.Modal(this.$refs.inputModal).show();
       this.$refs.directoryName.focus();
+    },
+    rename(oldName) {
+      const newName = this.$refs.directoryName.value;
+      if (newName.trim().length === 0) {
+        this.showModal("错误", "不能为空");
+        return;
+      }
+      if (!this.hasToken(() => this.rename(oldName))) {
+        return;
+      }
+      axios
+        .post(
+          "file/rename",
+          Qs.stringify({
+            src: oldName,
+            dst: this.currentDirectory + "/" + newName,
+          })
+        )
+        .then((res) => {
+          if (res.success) {
+            this.showModal("重命名成功", res.msg);
+            this.list();
+          } else {
+            this.showModal("重命名失败", res.msg);
+          }
+        })
+        .catch((err) => {
+          this.showModal("错误", err.message);
+        });
     },
     createDirectory() {
       const directoryName = this.$refs.directoryName.value;
@@ -303,6 +334,38 @@ const app = Vue.createApp({
           });
       }
     },
+    cut(files) {
+      this.showModal("已剪切文件", files.join("\n"));
+      this.filesToCut = files;
+    },
+    paste() {
+      if (this.filesToCut.length === 0) return;
+      if (!this.hasToken(() => this.paste())) {
+        return;
+      }
+      axios
+        .post(
+          "file/move",
+          Qs.stringify({
+            src: JSON.stringify(this.filesToCut),
+            dst: this.currentDirectory,
+          })
+        )
+        .then((res) => {
+          if (res.success) {
+            this.showModal("移动成功", res.msg);
+            this.filesToCut = [];
+            this.list();
+          } else {
+            this.showModal("移动失败", res.msg);
+            this.filesToCut = [];
+          }
+        })
+        .catch((err) => {
+          this.showModal("错误", err.message);
+          this.filesToCut = [];
+        });
+    },
     getIcon(filename, fileType) {
       const ext = filename.split(".").pop();
       const exts = {
@@ -374,6 +437,12 @@ const app = Vue.createApp({
         .catch((err) => {
           this.showModal("错误", err.message);
         });
+    },
+    getParentDir(file) {
+      let currentDirectory = file.split("/");
+      currentDirectory.pop();
+      let parentDirectory = currentDirectory.join("/");
+      return parentDirectory.length === 0 ? "/" : parentDirectory;
     },
   },
   computed: {

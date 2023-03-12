@@ -227,4 +227,50 @@ public class FileService {
         in.close();
         return new Result<>(true, null, sb.toString());
     }
+
+    public Result move(String src, String dst, String token) {
+        tokenManager.verify(token);
+        JSONArray array = JSONArray.fromObject(src);
+        StringBuilder failedFilenames = new StringBuilder();
+        for (Object file : array) {
+            File srcFile = new File(uploadPath + File.separator + file.toString());
+            File dstFile = new File(uploadPath + File.separator + dst + File.separator + srcFile.getName());
+            if (dstFile.exists()) {
+                failedFilenames.append(dstFile.getName()).append(" (已存在)").append(System.lineSeparator());
+                continue;
+            }
+            boolean success = false;
+            try {
+                success = srcFile.renameTo(dstFile);
+            } catch (Exception e) {
+                failedFilenames.append(dstFile.getName()).append(" (").append(e.getMessage()).append(")").append(System.lineSeparator());
+            }
+            if (!success) {
+                failedFilenames.append(dstFile.getName()).append(" (移动失败)").append(System.lineSeparator());
+            }
+        }
+        if (failedFilenames.length() == 0) {
+            return new Result(true, "移动成功");
+        } else {
+            return new Result(false, "移动失败的文件：\n" + failedFilenames);
+        }
+    }
+
+    public Result rename(String oldName, String newName, String token) {
+        tokenManager.verify(token);
+        File srcFile = new File(uploadPath, oldName);
+        File dstFile = new File(uploadPath, newName);
+        if (dstFile.exists()) {
+            return new Result(false, "文件名已存在");
+        }
+        try {
+            if (srcFile.renameTo(dstFile)) {
+                return new Result(true, "重命名成功");
+            } else {
+                return new Result(false, "重命名失败");
+            }
+        } catch (Exception e) {
+            return new Result(false, e.getMessage());
+        }
+    }
 }
