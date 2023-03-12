@@ -49,7 +49,7 @@ public class JsoupUtil {
             }
             return new String(Base64.encodeBase64(out.toByteArray()), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            System.err.println(e.toString());
+            System.err.println(e);
             return "";
         }
     }

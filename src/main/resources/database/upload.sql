@@ -1,4 +1,4 @@
-create table paste
+create table if not exists paste
 (
 	id integer not null
 		constraint paste_pk
@@ -8,7 +8,7 @@ create table paste
 	time datetime not null
 );
 
-create table share_code
+create table if not exists share_code
 (
 	id integer not null
 		constraint share_code_pk
@@ -17,10 +17,10 @@ create table share_code
 	path text not null
 );
 
-create unique index share_code_code_uindex
+create unique index if not exists share_code_code_uindex
 	on share_code (code);
 
-create table bookmark
+create table if not exists bookmark
 (
 	id integer not null
 		constraint bookmark_pk
