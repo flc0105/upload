@@ -40,11 +40,86 @@ a {
 
 .list-group-item {
   word-break: break-all;
-  padding: 1rem 1rem;
+  padding: 1rem 1rem !important;
 }
 
 @media screen and (max-width: 768px) {
   .paste-title {
+    display: none;
+  }
+}
+
+.btn-group > .btn-group:not(:first-child),
+.btn-group > :not(.btn-check:first-child) + .btn {
+  margin-left: -0.9px !important;
+}
+
+.table > tbody > tr > td {
+  vertical-align: middle;
+}
+
+.files-left {
+  float: left;
+}
+
+.files-right {
+  float: right;
+}
+
+.checkbox {
+  width: 2%;
+}
+
+.filename {
+  max-width: 200px;
+}
+
+#image {
+  max-width: 75%;
+  pointer-events: auto;
+}
+
+#text {
+  max-width: 75%;
+  min-height: 100%;
+  pointer-events: auto;
+  margin: 0 auto;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+@media screen and (max-width: 768px) {
+  .size,
+  .contentType,
+  .lastModified {
+    display: none;
+  }
+
+  .action {
+    width: 80px;
+  }
+
+  #image {
+    max-width: 100%;
+  }
+
+  #text {
+    max-width: 90%;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .files-left,
+  .files-right {
+    float: none;
+  }
+
+  .files-left .btn {
+    margin-bottom: 5px;
+  }
+
+  .dropdown {
     display: none;
   }
 }

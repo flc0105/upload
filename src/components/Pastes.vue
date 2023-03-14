@@ -36,12 +36,12 @@ export default {
     list() {
       this.$root.loading = true;
       axios
-        .post("paste/list")
+        .post("/paste/list")
         .then((res) => {
           if (res.success) {
             this.pastes = res.detail;
           } else {
-            this.$root.showModal("错误", res.msg);
+            this.$root.showModal("失败", res.msg);
           }
         })
         .catch((err) => {
@@ -59,7 +59,7 @@ export default {
       }
       this.$root.loading = true;
       axios
-        .post("paste/add",
+        .post("/paste/add",
           Qs.stringify({
             title: this.title.trim().length === 0 ? "未命名" : this.title,
             text: this.text,
@@ -72,7 +72,7 @@ export default {
             this.text = ""
             this.title = ""
           } else {
-            this.$root.showModal("错误", res.msg);
+            this.$root.showModal("失败", res.msg);
           }
         })
         .catch((err) => {
@@ -89,13 +89,13 @@ export default {
       }
       this.$root.loading = true;
       axios
-        .post("paste/delete", Qs.stringify({ id: id }))
+        .post("/paste/delete", Qs.stringify({ id: id }))
         .then((res) => {
           if (res.success) {
             this.$root.showModal("成功", "删除成功");
             this.list();
           } else {
-            this.$root.showModal("错误", res.msg);
+            this.$root.showModal("失败", res.msg);
           }
         })
         .catch((err) => {

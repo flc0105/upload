@@ -35,7 +35,7 @@ export default {
       this.text = "";
       this.$root.loading = true;
       axios
-        .post("paste/get", Qs.stringify({ id: id }))
+        .post("/paste/get", Qs.stringify({ id: id }))
         .then((res) => {
           if (res.success) {
             this.title = res.detail.title;
@@ -63,7 +63,7 @@ export default {
       }
       this.$root.loading = true;
       axios
-        .post("paste/update",
+        .post("/paste/update",
           Qs.stringify({
             id: this.$route.params.id,
             text: this.text,
@@ -73,7 +73,7 @@ export default {
           if (res.success) {
             this.$root.showModal("成功", "修改成功");
           } else {
-            this.$root.showModal("错误", res.msg);
+            this.$root.showModal("失败", res.msg);
           }
         })
         .catch((err) => {
@@ -90,13 +90,13 @@ export default {
       }
       this.$root.loading = true;
       axios
-        .post("paste/delete", Qs.stringify({ id: this.$route.params.id }))
+        .post("/paste/delete", Qs.stringify({ id: this.$route.params.id }))
         .then((res) => {
           if (res.success) {
             this.$root.showModal("成功", "删除成功");
             this.$router.push("/pastes");
           } else {
-            this.$root.showModal("错误", res.msg);
+            this.$root.showModal("失败", res.msg);
           }
         })
         .catch((err) => {

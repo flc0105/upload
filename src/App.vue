@@ -4,11 +4,11 @@
       <ul class="nav nav-tabs">
         <li class="nav-item">
           <router-link to="/files"
-            :class="['nav-link', { active: ($router.currentRoute.value.path.startsWith('/file')) }]">文件列表</router-link>
+            :class="['nav-link', { active: ($router.currentRoute.value.meta.title == '文件列表') }]">文件列表</router-link>
         </li>
         <li class="nav-item">
           <router-link to="/pastes"
-            :class="['nav-link', { active: ($router.currentRoute.value.path.startsWith('/paste')) }]">文本共享</router-link>
+            :class="['nav-link', { active: ($router.currentRoute.value.meta.title == '文本共享') }]">文本共享</router-link>
         </li>
       </ul>
     </div>
@@ -74,9 +74,59 @@
     </div>
   </div>
 
+  <!-- 进度框 -->
+  <div class="modal" tabindex="-1" ref="progressModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">上传进度</h5>
+        </div>
+        <div class="modal-body">
+          <div class="progress">
+            <div class="progress-bar" :style="{ width: progress }"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 输入框 -->
+  <div class="modal" tabindex="-1" ref="inputModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ message.title }}</h5>
+          <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label for="name" class="form-label">{{ message.text }}</label>
+          <input class="form-control" id="name" ref="input" @keyup.enter="$refs.btnInput.click()" />
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-primary" data-bs-dismiss="modal" @click="func()" ref="btnInput">确定</button>
+          <button class="btn btn-outline-primary" data-bs-dismiss="modal">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 旋转器 -->
   <div v-show="loading" class="spinner-border text-primary" role="status">
     <span class="visually-hidden">Loading...</span>
+  </div>
+
+  <!-- 图片预览框 -->
+  <div class="modal" ref="imageModal">
+    <div class="modal-dialog text-center mw-100 h-100">
+      <img id="image" class="shadow" onclick="document.getElementById('image').classList.toggle('mh-100')" />
+    </div>
+  </div>
+
+  <!-- 文本预览框 -->
+  <div class="modal" ref="textModal">
+    <div class="modal-dialog modal-dialog-scrollable mw-100">
+      <div id="text" class="shadow bg-body p-3 font-monospace mh-100"></div>
+    </div>
   </div>
 </template>
 
@@ -99,6 +149,8 @@ export default {
       loading: false,
       // 回调函数
       func: null,
+      // 上传进度
+      progress: 0,
     }
   },
   methods: {
@@ -112,6 +164,15 @@ export default {
     showConfirm(func) {
       new Modal(this.$refs.confirmModal).show();
       this.func = func;
+    },
+    // 显示输入框
+    showInput(title, text, func) {
+      this.func = func
+      this.message.title = title;
+      this.message.text = text;
+      this.$refs.input.value = "";
+      new Modal(this.$refs.inputModal).show();
+      this.$refs.input.focus();
     },
     // 检查token
     hasToken(func) {
@@ -140,6 +201,18 @@ export default {
         .catch((err) => {
           this.showModal("错误", err.message);
         });
+    },
+    // 格式化文件大小
+    formatBytes(bytes) {
+      if (bytes === 0) {
+        return "0 B";
+      }
+      const i = Math.floor(Math.log(bytes) / Math.log(1024));
+      return (
+        parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) +
+        " " +
+        ["B", "kB", "MB", "GB"][i]
+      );
     },
   },
   created() {
