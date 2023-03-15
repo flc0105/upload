@@ -10,6 +10,10 @@
           <router-link to="/pastes"
             :class="['nav-link', { active: ($router.currentRoute.value.meta.title == '文本共享') }]">文本共享</router-link>
         </li>
+        <li class="nav-item">
+          <router-link to="/bookmarks"
+            :class="['nav-link', { active: ($router.currentRoute.value.meta.title == '书签列表') }]">书签列表</router-link>
+        </li>
       </ul>
     </div>
 

@@ -179,7 +179,7 @@
                 </li>
                 <li>
                   <a class="dropdown-item"
-                    @click="$root.showInput('重命名', '输入新文件名', function () { rename(folder.relativePath) })">重命名</a>
+                    @click="$root.showInput('重命名', '输入新文件名', function () { rename(file.relativePath) })">重命名</a>
                 </li>
               </ul>
             </div>
@@ -563,7 +563,7 @@ export default {
           if (res.success) {
             this.$root.showModal(
               "分享成功",
-              location.protocol + "//" + location.host + "/share/" + res.detail
+              location.protocol + "//" + location.host + "/file/" + res.detail
             );
           } else {
             this.$root.showModal("失败", res.msg);

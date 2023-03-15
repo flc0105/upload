@@ -20,6 +20,21 @@ const routes = [
     meta: { title: "文本共享" },
     component: () => import("../components/Paste.vue"),
   },
+  {
+    path: "/share",
+    meta: { title: "文件分享" },
+    component: () => import("../components/Share.vue"),
+  },
+  {
+    path: "/file/:code",
+    meta: { title: "文件分享" },
+    component: () => import("../components/File.vue"),
+  },
+  {
+    path: "/bookmarks",
+    meta: { title: "书签列表" },
+    component: () => import("../components/Bookmarks.vue"),
+  },
 ];
 const router = createRouter({
   history: createWebHistory(),
