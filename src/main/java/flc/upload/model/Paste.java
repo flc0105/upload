@@ -5,6 +5,8 @@ public class Paste {
     private String title;
     private String text;
     private String time;
+    private String expiredDate;
+    private boolean isPrivate;
 
     public Integer getId() {
         return id;
@@ -36,5 +38,21 @@ public class Paste {
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    public String getExpiredDate() {
+        return expiredDate;
+    }
+
+    public void setExpireDate(String expiredDate) {
+        this.expiredDate = expiredDate;
+    }
+
+    public boolean isPrivate() {
+        return isPrivate;
+    }
+
+    public void setPrivate(boolean aPrivate) {
+        isPrivate = aPrivate;
     }
 }

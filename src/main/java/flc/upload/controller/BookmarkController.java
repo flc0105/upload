@@ -43,4 +43,9 @@ public class BookmarkController {
     public Result updateAll() throws Exception {
         return bookmarkService.updateAll();
     }
+
+    @PostMapping("/rename")
+    public Result rename(@RequestParam("id") Integer id, @RequestParam("title") String title) throws Exception {
+        return bookmarkService.rename(id, title);
+    }
 }

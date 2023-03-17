@@ -2,6 +2,7 @@ package flc.upload.controller;
 
 import flc.upload.model.Result;
 import flc.upload.service.ShareCodeService;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

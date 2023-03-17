@@ -73,4 +73,10 @@ public class BookmarkService {
         }
         return new Result(true, "成功更新" + i + "条数据");
     }
+
+    public Result rename(Integer id, String title) throws Exception {
+        Bookmark bookmark = bookmarkMapper.findById(id);
+        bookmark.setTitle(title);
+        return new Result<>(bookmarkMapper.update(bookmark) != 0, null);
+    }
 }

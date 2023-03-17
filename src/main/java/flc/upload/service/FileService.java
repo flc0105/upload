@@ -111,7 +111,9 @@ public class FileService {
     }
 
     public Result upload(MultipartFile[] files, String currentDirectory, String token) throws Exception {
-        tokenManager.verify(token);
+        if (!currentDirectory.startsWith("/public/")) {
+            tokenManager.verify(token);
+        }
         if (files.length == 0) {
             return new Result(false, "没有文件");
         }

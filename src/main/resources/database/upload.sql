@@ -5,7 +5,9 @@ create table if not exists paste
 			primary key autoincrement,
 	title text not null,
 	text text not null,
-	time datetime not null
+	time datetime not null,
+	expiredDate datetime,
+	isPrivate boolean
 );
 
 create table if not exists share_code

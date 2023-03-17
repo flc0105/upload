@@ -5,12 +5,19 @@ import flc.upload.mapper.PasteMapper;
 import flc.upload.model.Paste;
 import flc.upload.model.Result;
 import flc.upload.util.CommonUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Service
 public class PasteService {
     private PasteMapper pasteMapper;
     private TokenManager tokenManager;
+
+    private Logger logger = LoggerFactory.getLogger(PasteService.class);
 
     public PasteService(PasteMapper pasteMapper, TokenManager tokenManager) {
         this.pasteMapper = pasteMapper;
@@ -64,5 +71,11 @@ public class PasteService {
         } else {
             return new Result<>(false, null);
         }
+    }
+
+    public Result deleteExpired() throws Exception {
+        Integer integer = pasteMapper.deleteExpired(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        logger.info("删除" + integer + "条过期数据");
+        return new Result(integer != 0, null);
     }
 }
