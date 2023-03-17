@@ -5,14 +5,19 @@
 ### 下载
 
 ```shell
-# 下载
-wget https://github.com/flc0105/upload/releases/download/v0.0.14/upload.zip
+# 创建目录
+mkdir /root/upload/
 
-# 解压
-unzip upload.zip
+# 切换目录
+cd /root/upload/
+
+# 下载
+wget https://github.com/flc0105/upload/releases/download/v0.1.2/upload-0.1.2-SNAPSHOT.jar
 ```
 
 ### supervisor
+
+#### CentOS
 
 ```shell
 # 安装supervisor
@@ -25,7 +30,7 @@ yum install -y java-1.8.0-openjdk
 vim /etc/supervisord.d/upload.ini
 
 [program:upload]
-command=/usr/bin/java -jar /root/upload/upload-0.0.14-SNAPSHOT.jar
+command=/usr/bin/java -jar /root/upload/upload-0.1.2-SNAPSHOT.jar
 redirect_stderr=true
 stdout_logfile=/root/upload/upload.stdout.log
 
@@ -37,11 +42,45 @@ systemctl enable supervisord.service
 supervisorctl start upload
 ```
 
+#### Ubuntu
+
+```shell
+# 安装openjdk
+apt-get update
+apt install openjdk-8-jdk
+
+# 安装supervisor
+apt install supervisor
+
+# 添加配置
+vim /etc/supervisor/conf.d/upload.conf
+
+[program:upload]
+command=/usr/bin/java -jar /root/upload/upload-0.1.2-SNAPSHOT.jar
+redirect_stderr=true
+stdout_logfile=/root/upload/upload.stdout.log
+
+# 使配置生效
+supervisorctl reread && supervisorctl update
+```
+
 ### docker
 
 ```shell
-cd upload/
+# 创建Dockerfile
+vim Dockerfile
+```
 
+```dockerfile
+FROM openjdk:8-jdk-alpine
+WORKDIR /root/upload
+COPY *.jar app.jar
+ENV PORT 80
+ENV PASSWORD flc
+ENTRYPOINT java -jar app.jar --server.port=$PORT --password=$PASSWORD
+```
+
+```shell
 # 构建镜像
 docker build -t flc/upload .
 

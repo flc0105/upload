@@ -17,6 +17,9 @@ import axios from "axios";
 // 拦截器
 axios.interceptors.response.use((res) => {
   if (res.status === 200) {
+    if (res.data instanceof Blob) {
+      return res;
+    }
     return res.data;
   }
 });

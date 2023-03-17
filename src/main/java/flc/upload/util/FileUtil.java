@@ -4,6 +4,7 @@ import info.monitorenter.cpdetector.io.*;
 import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.util.UriUtils;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.servlet.http.HttpServletResponse;
@@ -11,7 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
@@ -54,8 +55,11 @@ public class FileUtil {
 
     public static void download(File file, HttpServletResponse response) throws Exception {
         response.setHeader("Content-type", new MimetypesFileTypeMap().getContentType(file.getName()));
-        String filename = new String(file.getName().getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
-        response.setHeader("Content-Disposition", "attachment;filename=\"" + filename + "\"");
+        response.setHeader("Content-Length", "" + file.length());
+//        String filename = new String(file.getName().getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+//        response.setHeader("Content-Disposition", "attachment;filename=\"" + URLEncoder.encode(file.getName(), "UTF-8") + "\"");
+        response.setHeader("Content-Disposition", "attachment;filename=\"" + UriUtils.encode(file.getName(), "UTF-8") + "\"");
+        response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
         FileInputStream in = new FileInputStream(file);
         OutputStream out = response.getOutputStream();
         byte[] buffer = new byte[1024];

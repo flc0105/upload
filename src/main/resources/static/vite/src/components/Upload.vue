@@ -127,6 +127,7 @@ export default {
       });
     },
     upload() {
+      this.$root.message.title = "上传进度"
       const modal = new Modal(this.$root.$refs.progressModal);
       modal.show();
       const formData = new FormData();
@@ -134,6 +135,8 @@ export default {
       this.files.forEach((file) => {
         formData.append("files", file);
       });
+      var lastTime = new Date().getTime(); // 上次传输时的时间
+      var lastBytes = 0; // 上次传输量
       axios({
         method: "post",
         url: "file/upload",
@@ -145,6 +148,13 @@ export default {
           const current = e.loaded;
           const total = e.total;
           this.$root.progress = Math.round((current / total) * 100) + "%";
+          var now = new Date().getTime();//当前时间
+          var amount_completed = current - lastBytes; // 从上次到这次的传输量
+          var time_taken = (now - lastTime) / 1000; // 从上次到这次的传输所用秒数
+          var speed = time_taken ? amount_completed / time_taken : 0;
+          lastBytes = current;
+          lastTime = now;
+          this.$root.speed = this.$root.formatBytes(speed) + "/s";
         }
       })
         .then((res) => {
@@ -167,4 +177,4 @@ export default {
     },
   },
 }
-</script >
+</script>

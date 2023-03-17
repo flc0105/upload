@@ -194,6 +194,7 @@
 import axios from 'axios'
 import Qs from 'qs'
 
+import 'file-saver'
 import 'bootstrap/dist/js/bootstrap.bundle'
 
 let cancel;
@@ -328,9 +329,10 @@ export default {
     },
     // 上传文件
     upload(event) {
-      // if (!this.$root.hasToken(() => this.upload(event))) {
-      //   return;
-      // }
+      if (!this.$root.hasToken(() => this.upload(event))) {
+        return;
+      }
+      this.$root.message.title = "上传进度"
       const modal = new Modal(this.$root.$refs.progressModal);
       modal.show();
       const formData = new FormData();
@@ -407,8 +409,43 @@ export default {
     },
     // 下载文件
     download(relativePath) {
-      location.href =
-        axios.defaults.baseURL + "file/download?relativePath=" + encodeURIComponent(relativePath);
+      // location.href =
+      //   axios.defaults.baseURL + "file/download?relativePath=" + encodeURIComponent(relativePath);
+      this.$root.message.title = "正在下载"
+      const modal = new Modal(this.$root.$refs.progressModal);
+      modal.show();
+      var lastTime = new Date().getTime();
+      var lastBytes = 0;
+      axios({
+        method: 'post',
+        url: axios.defaults.baseURL + "file/download",
+        data: Qs.stringify({
+          relativePath: relativePath
+        }),
+        responseType: 'blob',
+        onDownloadProgress: (e) => {
+          const current = e.loaded;
+          const total = e.total;
+          this.$root.progress = Math.round((current * 100) / total) + "%";
+          var now = new Date().getTime();
+          var amount_completed = current - lastBytes;
+          var time_taken = (now - lastTime) / 1000;
+          var speed = time_taken ? amount_completed / time_taken : 0;
+          lastBytes = current;
+          lastTime = now;
+          this.$root.speed = this.$root.formatBytes(speed) + "/s";
+        }
+      }).then((response) => {
+        let filename = response.headers["content-disposition"].split("filename=")[1];
+        filename = decodeURIComponent(filename);
+        saveAs(response.data, filename);
+      }).catch((error) => {
+        modal.hide();
+        this.$root.showModal("错误", error.message);
+      }).finally(() => {
+        this.$root.progress = 0;
+        modal.hide();
+      })
     },
     // 下载文件夹
     downloadFolder(relativePath) {

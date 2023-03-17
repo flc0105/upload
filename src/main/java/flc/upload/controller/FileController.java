@@ -48,7 +48,7 @@ public class FileController {
         return fileService.delete(files, CookieUtil.getCookie("token", request));
     }
 
-    @GetMapping("/download")
+    @RequestMapping("/download")
     public void download(@RequestParam("relativePath") String relativePath, HttpServletResponse response) throws Exception {
         fileService.download(relativePath, response);
     }

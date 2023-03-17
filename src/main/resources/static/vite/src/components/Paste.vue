@@ -5,7 +5,8 @@
         <a class="link-primary" @click="$router.push('/pastes')">返回</a>
         <div class="paste-title text-muted text-truncate mw-50">
           {{ title }}
-          <span class="text-danger" v-if="expiredDate" style="font-size:0.875rem">&nbsp;&nbsp;Expired {{ getFromNow(expiredDate) }}</span>
+          <span class="text-danger" v-if="expiredDate" style="font-size:0.875rem">&nbsp;&nbsp;Expired {{
+            getFromNow(expiredDate) }}</span>
         </div>
         <div>
           <form class="form-check form-switch d-inline-block align-middle me-2"

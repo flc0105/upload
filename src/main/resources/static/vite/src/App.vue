@@ -90,11 +90,11 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">上传进度</h5>
+          <h5 class="modal-title">{{ message.title }}</h5>
         </div>
         <div class="modal-body">
           <div class="progress">
-            <div class="progress-bar" :style="{ width: progress }"></div>
+            <div class="progress-bar" :style="{ width: progress }"> {{ progress }} ({{ speed }})</div>
           </div>
         </div>
       </div>
@@ -162,6 +162,8 @@ export default {
       func: null,
       // 上传进度
       progress: 0,
+      // 传输实时速度
+      speed: '',
     }
   },
   methods: {
