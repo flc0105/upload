@@ -39,4 +39,13 @@ public class Result<T> {
     public void setDetail(T detail) {
         this.detail = detail;
     }
+
+    @Override
+    public String toString() {
+        return "Result{" +
+                "msg='" + msg + '\'' +
+                ", success=" + success +
+                ", detail=" + detail +
+                '}';
+    }
 }

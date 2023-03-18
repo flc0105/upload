@@ -26,6 +26,6 @@ public interface PasteMapper {
     @Select("select * from paste order by time desc limit 1")
     Paste findLast() throws Exception;
 
-    @Delete("delete from paste where expiredDate <= #{date}")
+    @Delete("delete from paste where expiredDate <= #{date} and expiredDate != -1")
     Integer deleteExpired(String date) throws Exception;
 }

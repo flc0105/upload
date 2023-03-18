@@ -79,16 +79,6 @@ a {
   pointer-events: auto;
 }
 
-#text {
-  max-width: 75%;
-  min-height: 100%;
-  pointer-events: auto;
-  margin: 0 auto;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
 @media screen and (max-width: 768px) {
   .size,
   .contentType,
@@ -113,6 +103,10 @@ a {
   }
 }
 
+.modal-dialog-scrollable {
+  max-width: 75% !important;
+}
+
 @media screen and (max-width: 1000px) {
   .files-left,
   .files-right {
@@ -125,5 +119,9 @@ a {
 
   .dropdown {
     display: none;
+  }
+
+  .modal-dialog-scrollable {
+    max-width: 100% !important;
   }
 }

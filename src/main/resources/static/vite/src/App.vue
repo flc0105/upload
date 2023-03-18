@@ -135,11 +135,27 @@
 
   <!-- 文本预览框 -->
   <div class="modal" ref="textModal">
-    <div class="modal-dialog modal-dialog-scrollable mw-100">
-      <div id="text" class="shadow bg-body p-3 font-monospace mh-100"></div>
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content" style="min-height: 100% !important;">
+        <div class="modal-header border-0" style="font-size: 0.875rem;">
+          <i>{{ message.title }}</i>
+          <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <highlightjs ref="hljs1" autodetect :code="message.text" class="mh-100 pe-2 ps-2"></highlightjs>
+      </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+pre,
+code,
+highlightjs,
+.hljs {
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+}
+</style>
 
 <script>
 
@@ -164,6 +180,8 @@ export default {
       progress: 0,
       // 传输实时速度
       speed: '',
+      // 预览内容
+      text: '',
     }
   },
   methods: {

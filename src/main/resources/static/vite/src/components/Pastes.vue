@@ -16,6 +16,7 @@
         <option value="60">1小时</option>
         <option value="1440">1天</option>
         <option value="10080">1周</option>
+        <option value="-1">阅后即焚</option>
         <option value="0" :selected="!$root.noToken()">永不过期</option><!-- 只要有名为token的Cookie就默认选中永不过期，但不会去验证token -->
       </select>
     </div>
@@ -36,9 +37,13 @@
       </div>
       <div>
         <p class="text-primary text-truncate mw-75">{{ paste.title }}</p>
-        <p class="text-truncate mw-75">{{ paste.text }}</p>
-        <p class="text-muted mb-0">发布于 {{ paste.time.slice(0, -3) }}<span class="text-danger" v-if="paste.expiredDate"
-            style="font-size:0.875rem">&nbsp;&nbsp;Expired {{ getFromNow(paste.expiredDate) }}</span></p>
+        <p class="text-truncate mw-75"><i>{{ paste.text }}</i></p>
+        <p class="text-muted mb-0">发布于 {{ paste.time.slice(0, -3) }}
+          <span class="text-danger" v-if="paste.expiredDate" style="font-size:0.875rem">&nbsp;&nbsp;
+            <span v-if="paste.expiredDate == -1">阅后即焚</span>
+            <span v-else>Expired {{ getFromNow(paste.expiredDate) }}</span>
+          </span>
+        </p>
       </div>
     </li>
   </ul>
@@ -67,6 +72,9 @@ export default {
     calcExpiredDate(minutes) {
       if (minutes == 0) {
         return undefined;
+      }
+      if (minutes == -1) {
+        return -1;
       }
       var dateObj = moment(new Date()).add(minutes, 'm').toDate()
       return moment(dateObj).format("YYYY-MM-DD HH:mm:ss")

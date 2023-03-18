@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 @Service
 public class PasteService {
@@ -58,6 +59,9 @@ public class PasteService {
     public Result findById(Integer id) throws Exception {
         Paste paste = pasteMapper.findById(id);
         if (paste != null) {
+            if(Objects.equals(paste.getExpiredDate(), "-1")) {
+                logger.info("删除" + pasteMapper.delete(id) + "条阅后即焚数据");
+            }
             return new Result<>(true, null, paste);
         } else {
             return new Result<>(false, null);

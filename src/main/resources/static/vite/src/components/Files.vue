@@ -449,8 +449,43 @@ export default {
     },
     // 下载文件夹
     downloadFolder(relativePath) {
-      location.href =
-        axios.defaults.baseURL + "file/zip?relativePath=" + encodeURIComponent(relativePath);
+      // location.href =
+      //   axios.defaults.baseURL + "file/zip?relativePath=" + encodeURIComponent(relativePath);
+      this.$root.message.title = "正在下载"
+      const modal = new Modal(this.$root.$refs.progressModal);
+      modal.show();
+      var lastTime = new Date().getTime();
+      var lastBytes = 0;
+      axios({
+        method: 'post',
+        url: axios.defaults.baseURL + "file/zip",
+        data: Qs.stringify({
+          relativePath: relativePath
+        }),
+        responseType: 'blob',
+        onDownloadProgress: (e) => {
+          const current = e.loaded;
+          const total = e.total;
+          this.$root.progress = Math.round((current * 100) / total) + "%";
+          var now = new Date().getTime();
+          var amount_completed = current - lastBytes;
+          var time_taken = (now - lastTime) / 1000;
+          var speed = time_taken ? amount_completed / time_taken : 0;
+          lastBytes = current;
+          lastTime = now;
+          this.$root.speed = this.$root.formatBytes(speed) + "/s";
+        }
+      }).then((response) => {
+        let filename = response.headers["content-disposition"].split("filename=")[1];
+        filename = decodeURIComponent(filename);
+        saveAs(response.data, filename);
+      }).catch((error) => {
+        modal.hide();
+        this.$root.showModal("错误", error.message);
+      }).finally(() => {
+        this.$root.progress = 0;
+        modal.hide();
+      })
     },
     // 批量下载
     bulkDownload() {
@@ -571,14 +606,14 @@ export default {
         new Modal(this.$root.$refs.imageModal).show();
       } else if (fileType.includes("text")) {
         // 预览文本文件
-        let text = document.getElementById("text");
         this.$root.loading = true;
-        text.innerText = "";
+        this.$root.message.title = filename
+        this.$root.message.text = ""
         axios
           .post("file/read", Qs.stringify({ relativePath: filename }))
           .then((res) => {
             if (res.success) {
-              text.innerText = res.detail;
+              this.$root.message.text = res.detail
               new Modal(this.$root.$refs.textModal).show();
             } else {
               this.$root.showModal("失败", res.msg);

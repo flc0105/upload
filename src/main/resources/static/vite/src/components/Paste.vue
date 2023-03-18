@@ -5,8 +5,10 @@
         <a class="link-primary" @click="$router.push('/pastes')">返回</a>
         <div class="paste-title text-muted text-truncate mw-50">
           {{ title }}
-          <span class="text-danger" v-if="expiredDate" style="font-size:0.875rem">&nbsp;&nbsp;Expired {{
-            getFromNow(expiredDate) }}</span>
+          <span class="text-danger" v-if="expiredDate" style="font-size:0.875rem">&nbsp;
+            <span v-if="expiredDate == -1">阅后即焚</span>
+            <span v-else>Expired {{ getFromNow(expiredDate) }}</span>
+          </span>
         </div>
         <div>
           <form class="form-check form-switch d-inline-block align-middle me-2"
@@ -23,7 +25,6 @@
       </div>
     </div>
     <highlightjs v-if="checked" autodetect :code="text" class="mb-0 min-vh-75"></highlightjs>
-    <!-- <highlightjs v-if="checked" language="java" :code="text" class="mb-0 min-vh-75"></highlightjs> -->
     <textarea v-else id="textarea" class="form-control border-0 min-vh-75" v-model="text"></textarea>
   </div>
 </template>
@@ -37,6 +38,12 @@ highlightjs,
   white-space: pre-wrap !important;
   word-wrap: break-word !important;
 }
+
+@media screen and (max-width: 768px) {
+  .form-check {
+    display: none !important;
+  }
+}
 </style>
 
 <script>
@@ -45,37 +52,37 @@ import Qs from 'qs'
 import 'file-saver'
 import moment from 'moment'
 
-import hljs from 'highlight.js/lib/core';
+// import hljs from 'highlight.js/lib/core';
 
-import xml from 'highlight.js/lib/languages/xml';
-import bash from 'highlight.js/lib/languages/bash';
-import c from 'highlight.js/lib/languages/c';
-import cpp from 'highlight.js/lib/languages/cpp';
-import csharp from 'highlight.js/lib/languages/csharp';
-import css from 'highlight.js/lib/languages/css';
-import markdown from 'highlight.js/lib/languages/markdown';
-import java from 'highlight.js/lib/languages/java';
-import javascript from 'highlight.js/lib/languages/javascript';
-import json from 'highlight.js/lib/languages/json';
-import python from 'highlight.js/lib/languages/python';
-import shell from 'highlight.js/lib/languages/shell';
-import sql from 'highlight.js/lib/languages/sql';
-import yaml from 'highlight.js/lib/languages/yaml';
+// import xml from 'highlight.js/lib/languages/xml';
+// import bash from 'highlight.js/lib/languages/bash';
+// import c from 'highlight.js/lib/languages/c';
+// import cpp from 'highlight.js/lib/languages/cpp';
+// import csharp from 'highlight.js/lib/languages/csharp';
+// import css from 'highlight.js/lib/languages/css';
+// import markdown from 'highlight.js/lib/languages/markdown';
+// import java from 'highlight.js/lib/languages/java';
+// import javascript from 'highlight.js/lib/languages/javascript';
+// import json from 'highlight.js/lib/languages/json';
+// import python from 'highlight.js/lib/languages/python';
+// import shell from 'highlight.js/lib/languages/shell';
+// import sql from 'highlight.js/lib/languages/sql';
+// import yaml from 'highlight.js/lib/languages/yaml';
 
-hljs.registerLanguage('xml', xml)
-hljs.registerLanguage('bash', bash)
-hljs.registerLanguage('c', c)
-hljs.registerLanguage('cpp', cpp)
-hljs.registerLanguage('csharp', csharp)
-hljs.registerLanguage('css', css)
-hljs.registerLanguage('markdown', markdown)
-hljs.registerLanguage('java', java)
-hljs.registerLanguage('javascript', javascript)
-hljs.registerLanguage('json', json)
-hljs.registerLanguage('python', python)
-hljs.registerLanguage('shell', shell)
-hljs.registerLanguage('sql', sql)
-hljs.registerLanguage('yaml', yaml)
+// hljs.registerLanguage('xml', xml)
+// hljs.registerLanguage('bash', bash)
+// hljs.registerLanguage('c', c)
+// hljs.registerLanguage('cpp', cpp)
+// hljs.registerLanguage('csharp', csharp)
+// hljs.registerLanguage('css', css)
+// hljs.registerLanguage('markdown', markdown)
+// hljs.registerLanguage('java', java)
+// hljs.registerLanguage('javascript', javascript)
+// hljs.registerLanguage('json', json)
+// hljs.registerLanguage('python', python)
+// hljs.registerLanguage('shell', shell)
+// hljs.registerLanguage('sql', sql)
+// hljs.registerLanguage('yaml', yaml)
 
 import hljsVuePlugin from "@highlightjs/vue-plugin";
 
