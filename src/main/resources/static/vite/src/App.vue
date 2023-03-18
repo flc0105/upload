@@ -126,13 +126,6 @@
     <span class="visually-hidden">Loading...</span>
   </div>
 
-  <!-- 图片预览框 -->
-  <div class="modal" ref="imageModal">
-    <div class="modal-dialog text-center mw-100 h-100">
-      <img id="image" class="shadow" onclick="document.getElementById('image').classList.toggle('mh-100')" />
-    </div>
-  </div>
-
   <!-- 文本预览框 -->
   <div class="modal" ref="textModal">
     <div class="modal-dialog modal-dialog-scrollable">
@@ -141,8 +134,24 @@
           <i>{{ message.title }}</i>
           <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <highlightjs ref="hljs1" autodetect :code="message.text" class="mh-100 pe-2 ps-2"></highlightjs>
+        <highlightjs autodetect :code="message.text" class="mh-100 pe-2 ps-2"></highlightjs>
       </div>
+    </div>
+  </div>
+
+  <!-- 图片预览框 -->
+  <div class="modal" ref="imageModal">
+    <div class="modal-dialog text-center mw-100 h-100">
+      <img id="image" :src="src" class="shadow" onclick="document.getElementById('image').classList.toggle('mh-100')" />
+    </div>
+  </div>
+
+  <!-- 视频预览框 -->
+  <div class="modal" ref="videoModal">
+    <div class="modal-dialog" style="display: flex;align-items: center;justify-content: center;">
+      <video id="video" :key="src" width="800"  autoplay loop muted playsinline controls style="pointer-events: all;">
+        <source :src="src">
+      </video>
     </div>
   </div>
 </template>
@@ -180,8 +189,8 @@ export default {
       progress: 0,
       // 传输实时速度
       speed: '',
-      // 预览内容
-      text: '',
+      // 图片或视频链接
+      src: '',
     }
   },
   methods: {
@@ -223,7 +232,7 @@ export default {
     // 获取token
     getToken() {
       axios
-        .post("token/get",
+        .post("/token/get",
           Qs.stringify({ password: this.$refs.password.value })
         )
         .then((res) => {

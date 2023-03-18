@@ -20,11 +20,11 @@
           onclick="document.getElementById('file').value=null; document.getElementById('file').click()">
           上传文件
         </button>
-        <button class="btn btn-outline-primary ms-1"
+        <button class="btn btn-outline-primary ms-1 me-1"
           onclick="document.getElementById('folder').value=null; document.getElementById('folder').click()">
           上传文件夹
         </button>
-        <button class="btn btn-outline-primary ms-1 me-1" @click="$root.showInput('新建文件夹', '输入文件夹名', createDirectory)">
+        <button class="btn btn-outline-primary me-1" @click="$root.showInput('新建文件夹', '输入文件夹名', createDirectory)">
           新建文件夹
         </button>
         <button class="btn btn-outline-primary me-1" @click="list()">
@@ -168,7 +168,8 @@
               </a>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item" v-if="file.fileType.includes('image') || file.fileType.includes('text')"
+                  <a class="dropdown-item"
+                    v-if="file.fileType.includes('image') || file.fileType.includes('text') || file.fileType.includes('video')"
                     @click="preview(file.fileType, file.relativePath)">预览</a>
                 </li>
                 <li>
@@ -189,6 +190,63 @@
     </table>
   </div>
 </template>
+
+<style scoped>
+.btn-group>.btn-group:not(:first-child),
+.btn-group> :not(.btn-check:first-child)+.btn {
+  margin-left: -0.9px !important;
+}
+
+.table>tbody>tr>td {
+  vertical-align: middle;
+}
+
+.files-left {
+  float: left;
+}
+
+.files-right {
+  float: right;
+}
+
+.checkbox {
+  width: 2%;
+}
+
+.filename {
+  max-width: 200px;
+}
+
+
+@media screen and (max-width: 768px) {
+
+  .size,
+  .contentType,
+  .lastModified {
+    display: none;
+  }
+
+  .action {
+    width: 80px;
+  }
+}
+
+
+@media screen and (max-width: 1000px) {
+  .files-left,
+  .files-right {
+    float: none;
+  }
+
+  .files-left .btn {
+    margin-bottom: 5px;
+  }
+
+  .dropdown {
+    display: none;
+  }
+}
+</style>
 
 <script>
 import axios from 'axios'
@@ -342,6 +400,8 @@ export default {
         console.log(file)
         formData.append("files", file);
       });
+      var lastTime = new Date().getTime(); // 上次传输时的时间
+      var lastBytes = 0; // 上次传输量
       axios({
         method: "post",
         url: "file/upload",
@@ -354,6 +414,13 @@ export default {
           const current = e.loaded;
           const total = e.total;
           this.$root.progress = Math.round((current / total) * 100) + "%";
+          var now = new Date().getTime();//当前时间
+          var amount_completed = current - lastBytes; // 从上次到这次的传输量
+          var time_taken = (now - lastTime) / 1000; // 从上次到这次的传输所用秒数
+          var speed = time_taken ? amount_completed / time_taken : 0;
+          lastBytes = current;
+          lastTime = now;
+          this.$root.speed = this.$root.formatBytes(speed) + "/s";
         }
         // },
       })
@@ -489,9 +556,44 @@ export default {
     },
     // 批量下载
     bulkDownload() {
-      location.href =
-        axios.defaults.baseURL + "file/bulk?relativePath=" +
-        encodeURIComponent(JSON.stringify(this.checkedFiles));
+      // location.href =
+      //   axios.defaults.baseURL + "file/bulk?relativePath=" +
+      //   encodeURIComponent(JSON.stringify(this.checkedFiles));
+      this.$root.message.title = "正在下载"
+      const modal = new Modal(this.$root.$refs.progressModal);
+      modal.show();
+      var lastTime = new Date().getTime();
+      var lastBytes = 0;
+      axios({
+        method: 'post',
+        url: axios.defaults.baseURL + "file/bulk",
+        data: Qs.stringify({
+          relativePath: JSON.stringify(this.checkedFiles),
+        }),
+        responseType: 'blob',
+        onDownloadProgress: (e) => {
+          const current = e.loaded;
+          const total = e.total;
+          this.$root.progress = Math.round((current * 100) / total) + "%";
+          var now = new Date().getTime();
+          var amount_completed = current - lastBytes;
+          var time_taken = (now - lastTime) / 1000;
+          var speed = time_taken ? amount_completed / time_taken : 0;
+          lastBytes = current;
+          lastTime = now;
+          this.$root.speed = this.$root.formatBytes(speed) + "/s";
+        }
+      }).then((response) => {
+        let filename = response.headers["content-disposition"].split("filename=")[1];
+        filename = decodeURIComponent(filename);
+        saveAs(response.data, filename);
+      }).catch((error) => {
+        modal.hide();
+        this.$root.showModal("错误", error.message);
+      }).finally(() => {
+        this.$root.progress = 0;
+        modal.hide();
+      })
     },
     // 删除文件
     deleteFile(files) {
@@ -595,16 +697,7 @@ export default {
     },
     // 预览文件
     preview(fileType, filename) {
-      if (fileType.includes("image")) {
-        // 预览图片
-        let image = document.getElementById("image");
-        image.removeAttribute("src");
-        image.setAttribute(
-          "src",
-          axios.defaults.baseURL + "file/download?relativePath=" + encodeURIComponent(filename)
-        );
-        new Modal(this.$root.$refs.imageModal).show();
-      } else if (fileType.includes("text")) {
+      if (fileType.includes("text")) {
         // 预览文本文件
         this.$root.loading = true;
         this.$root.message.title = filename
@@ -625,6 +718,15 @@ export default {
           .finally(() => {
             this.$root.loading = false;
           });
+      } else if (fileType.includes("image")) {
+        // 预览图片
+        this.$root.src = axios.defaults.baseURL + "file/download?relativePath=" + encodeURIComponent(filename);
+        new Modal(this.$root.$refs.imageModal).show();
+      } else if (fileType.includes("video")) {
+        // 预览视频
+        this.$root.src = axios.defaults.baseURL + "file/download?relativePath=" + encodeURIComponent(filename);
+        new Modal(this.$root.$refs.videoModal).show();
+        //TODO: pause video when modal close
       }
     },
     // 创建文件分享链接

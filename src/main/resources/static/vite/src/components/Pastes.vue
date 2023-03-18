@@ -25,7 +25,6 @@
       <button class="btn btn-outline-primary mb-2 col-auto" @click="add()">发布</button>
     </div>
 
-
   </div>
   <ul class="list-group clear-both">
     <li class="list-group-item list-group-item-action cursor-pointer" v-for="paste in pastes" :key="paste"
@@ -48,6 +47,13 @@
     </li>
   </ul>
 </template>
+
+<style scoped>
+.list-group-item {
+  word-break: break-all;
+  padding: 1rem 1rem !important;
+}
+</style>
 
 <script>
 import axios from 'axios'

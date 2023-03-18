@@ -1,5 +1,6 @@
 package flc.upload.controller;
 
+import flc.upload.annotation.Log;
 import flc.upload.model.Paste;
 import flc.upload.model.Result;
 import flc.upload.service.PasteService;
@@ -24,8 +25,9 @@ public class PasteController {
 //        return pasteService.add(paste);
 //    }
 
+    @Log
     @PostMapping("/add")
-    public Result add(@RequestParam("title") String title, @RequestParam("text") String text, @RequestParam(value = "expiredDate", required = false) String expiredDate, @RequestParam(value = "isPrivate", required = false) boolean isPrivate) throws Exception {
+    public Result add(@RequestParam("title") String title, @RequestParam("text") String text, @RequestParam(value = "expiredDate", required = false) String expiredDate, @RequestParam(value = "isPrivate", required = false) boolean isPrivate, HttpServletRequest request) throws Exception {
         Paste paste = new Paste();
         paste.setTitle(title);
         paste.setText(text);
@@ -34,11 +36,13 @@ public class PasteController {
         return pasteService.add(paste);
     }
 
+    @Log
     @PostMapping("/delete")
     public Result delete(Integer id, HttpServletRequest request) throws Exception {
         return pasteService.delete(id, CookieUtil.getCookie("token", request));
     }
 
+    @Log
     @PostMapping("/update")
     public Result update(Paste paste, HttpServletRequest request) throws Exception {
         return pasteService.update(paste, CookieUtil.getCookie("token", request));
@@ -50,8 +54,9 @@ public class PasteController {
         return pasteService.findAll();
     }
 
+    @Log
     @PostMapping("/get")
-    public Result get(Integer id) throws Exception {
+    public Result get(Integer id, HttpServletRequest request) throws Exception {
         pasteService.deleteExpired();
         return pasteService.findById(id);
     }

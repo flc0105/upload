@@ -67,14 +67,14 @@ public class FileController {
     }
 
     @Log
-    @GetMapping("/bulk")
+    @RequestMapping("/bulk")
     public void bulk(@RequestParam("relativePath") String files, HttpServletResponse response, HttpServletRequest request) throws Exception {
         fileService.bulk(files, response, CookieUtil.getCookie("token", request));
     }
 
     @Log
     @PostMapping("/read")
-    public Result read(@RequestParam("relativePath") String relativePath) throws Exception {
+    public Result read(@RequestParam("relativePath") String relativePath, HttpServletRequest request) throws Exception {
         return fileService.read(relativePath);
     }
 

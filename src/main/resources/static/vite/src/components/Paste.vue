@@ -11,8 +11,7 @@
           </span>
         </div>
         <div>
-          <form class="form-check form-switch d-inline-block align-middle me-2"
-            style="padding: 0.25rem 0.5rem; font-size:0.875rem">
+          <form class="form-check form-switch d-inline-block align-middle me-2">
             <input class="form-check-input" type="checkbox" role="switch" id="highlight" v-model="checked">
             <label class="form-check-label" for="highlight" style="user-select: none;">代码高亮</label>
           </form>
@@ -30,6 +29,21 @@
 </template>
   
 <style scoped>
+.form-check {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+@media screen and (max-width: 768px) {
+  .paste-title {
+    display: none;
+  }
+
+  .form-check {
+    display: none !important;
+  }
+}
+
 /* 自动换行 */
 pre,
 code,
@@ -38,12 +52,6 @@ highlightjs,
   white-space: pre-wrap !important;
   word-wrap: break-word !important;
 }
-
-@media screen and (max-width: 768px) {
-  .form-check {
-    display: none !important;
-  }
-}
 </style>
 
 <script>
@@ -51,39 +59,6 @@ import axios from 'axios'
 import Qs from 'qs'
 import 'file-saver'
 import moment from 'moment'
-
-// import hljs from 'highlight.js/lib/core';
-
-// import xml from 'highlight.js/lib/languages/xml';
-// import bash from 'highlight.js/lib/languages/bash';
-// import c from 'highlight.js/lib/languages/c';
-// import cpp from 'highlight.js/lib/languages/cpp';
-// import csharp from 'highlight.js/lib/languages/csharp';
-// import css from 'highlight.js/lib/languages/css';
-// import markdown from 'highlight.js/lib/languages/markdown';
-// import java from 'highlight.js/lib/languages/java';
-// import javascript from 'highlight.js/lib/languages/javascript';
-// import json from 'highlight.js/lib/languages/json';
-// import python from 'highlight.js/lib/languages/python';
-// import shell from 'highlight.js/lib/languages/shell';
-// import sql from 'highlight.js/lib/languages/sql';
-// import yaml from 'highlight.js/lib/languages/yaml';
-
-// hljs.registerLanguage('xml', xml)
-// hljs.registerLanguage('bash', bash)
-// hljs.registerLanguage('c', c)
-// hljs.registerLanguage('cpp', cpp)
-// hljs.registerLanguage('csharp', csharp)
-// hljs.registerLanguage('css', css)
-// hljs.registerLanguage('markdown', markdown)
-// hljs.registerLanguage('java', java)
-// hljs.registerLanguage('javascript', javascript)
-// hljs.registerLanguage('json', json)
-// hljs.registerLanguage('python', python)
-// hljs.registerLanguage('shell', shell)
-// hljs.registerLanguage('sql', sql)
-// hljs.registerLanguage('yaml', yaml)
-
 import hljsVuePlugin from "@highlightjs/vue-plugin";
 
 export default {

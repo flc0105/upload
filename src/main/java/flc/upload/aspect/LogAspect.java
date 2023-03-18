@@ -1,5 +1,6 @@
 package flc.upload.aspect;
 
+import flc.upload.annotation.Log;
 import flc.upload.model.Result;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -22,7 +23,9 @@ import java.util.Objects;
 @Aspect
 @Component
 public class LogAspect {
-    private static final Logger logger = LoggerFactory.getLogger(LogAspect.class);
+
+    // private static final Logger logger = LoggerFactory.getLogger(LogAspect.class);
+    private static Logger logger;
 
     @Pointcut("@annotation(flc.upload.annotation.Log)")
     public void logPointCut() {
@@ -34,6 +37,7 @@ public class LogAspect {
         // 获取当前方法的名称和参数
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
+        logger = LoggerFactory.getLogger(method.getDeclaringClass());
         String methodName = method.getName();
         Object[] args = joinPoint.getArgs();
         // 执行目标方法，并记录返回值

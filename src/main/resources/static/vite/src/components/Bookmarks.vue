@@ -22,13 +22,13 @@
   <table class="table table-hover table-borderless border shadow-sm">
     <tbody>
       <tr v-for="bookmark in bookmarks" :key="bookmark">
-        <td class="text-truncate w-45">
+        <td class="text-truncate" style="max-width: 200px">
           <img v-if="bookmark.icon" class="icon" v-bind:src="'data:image/jpeg;base64,' + bookmark.icon" />
           <img v-else class="icon" src="/vite.svg" />
           <span v-if="bookmark.title" class="align-middle">{{ bookmark.title }}</span>
           <span v-else class="align-middle text-muted"><i>{{ extractDomain(bookmark.url) }}</i></span>
         </td>
-        <td class="text-truncate w-45 url"><i class="text-muted">{{ bookmark.url }}</i></td>
+        <td class="text-truncate url" style="max-width: 200px"><i class="text-muted">{{ bookmark.url }}</i></td>
         <td class="text-end" style="width: 10%">
           <div class="dropdown d-inline">
             <i class="bi bi-three-dots-vertical link-primary" data-bs-toggle="dropdown"></i>
@@ -62,10 +62,6 @@
 
 
 <style scoped>
-.w-45 {
-  width: 45%;
-}
-
 .icon {
   width: auto;
   height: 15px;
@@ -105,8 +101,12 @@ export default {
     },
     // 从url中提取域名
     extractDomain(url) {
-      const { hostname } = new URL(url);
-      return hostname;
+      try {
+        const { hostname } = new URL(url);
+        return hostname;
+      } catch (e) {
+        return null;
+      }
     },
     // 获取书签列表
     list() {

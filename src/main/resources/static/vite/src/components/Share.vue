@@ -7,11 +7,11 @@
         <th class="status">状态</th>
         <th>操作</th>
       </tr>
-      </thead>
-      <tbody>
+    </thead>
+    <tbody>
       <tr v-for="code in codes" :key="code">
-        <td style="width:10%; min-width:80px"><i>{{ code.code }}</i></td>
-        <td class="text-truncate filename"><i>{{ code.path }}</i></td>
+        <td class="code"><i>{{ code.code }}</i></td>
+        <td class="text-truncate filePath"><i>{{ code.path }}</i></td>
         <td class="status">
           <span class="badge text-bg-success" v-if="code.valid">有效</span>
           <span class="badge text-bg-danger" v-else>无效</span>
@@ -28,6 +28,23 @@
     </tbody>
   </table>
 </template>
+
+<style scoped>
+.code {
+  width: 10%;
+  min-width: 80px;
+}
+
+.filePath {
+  max-width: 200px;
+}
+
+@media screen and (max-width: 768px) {
+  .status {
+    display: none;
+  }
+}
+</style>
 
 <script>
 import axios from 'axios'
