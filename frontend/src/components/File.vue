@@ -115,7 +115,7 @@ export default {
         this.$root.message.title = filename
         this.$root.message.text = ""
         axios
-          .post("file/read", Qs.stringify({ relativePath: filename }))
+          .post("/file/read", Qs.stringify({ relativePath: filename }))
           .then((res) => {
             if (res.success) {
               this.$root.message.text = res.detail
@@ -134,11 +134,11 @@ export default {
         this.$root.$refs.qrcode.innerHTML = "";
         this.$root.src = "";
         // 预览图片
-        this.$root.src = axios.defaults.baseURL + "file/download?relativePath=" + encodeURIComponent(filename);
+        this.$root.src = axios.defaults.baseURL + "/file/download?relativePath=" + encodeURIComponent(filename);
         new Modal(this.$root.$refs.imageModal).show();
       } else if (fileType.includes("video")) {
         // 预览视频
-        this.$root.src = axios.defaults.baseURL + "file/download?relativePath=" + encodeURIComponent(filename);
+        this.$root.src = axios.defaults.baseURL + "/file/download?relativePath=" + encodeURIComponent(filename);
         new Modal(this.$root.$refs.videoModal).show();
         //TODO: pause video when modal close
       }
