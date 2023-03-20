@@ -12,8 +12,28 @@ mkdir /root/upload/
 cd /root/upload/
 
 # 下载
-wget https://github.com/flc0105/upload/releases/download/v0.1.2/upload-0.1.2-SNAPSHOT.jar
+wget https://github.com/flc0105/upload/releases/download/v0.1.4/upload-0.1.4-SNAPSHOT.jar
 ```
+
+### 启动
+
+```java
+java -jar upload-0.1.4-SNAPSHOT.jar
+```
+
+参数：
+
+`--spring.config.location=application.properties` 外部配置文件
+
+`--server.port=8080` 启动端口
+
+`--upload.path` 文件存储路径
+
+`--password` 密码
+
+`--webdav.username`/`--webdav.password` webdav用户名/密码
+
+`--private.directories` 私密目录
 
 ### supervisor
 
@@ -30,7 +50,7 @@ yum install -y java-1.8.0-openjdk
 vim /etc/supervisord.d/upload.ini
 
 [program:upload]
-command=/usr/bin/java -jar /root/upload/upload-0.1.2-SNAPSHOT.jar
+command=/usr/bin/java -jar /root/upload/upload-0.1.4-SNAPSHOT.jar
 redirect_stderr=true
 stdout_logfile=/root/upload/upload.stdout.log
 
@@ -56,7 +76,7 @@ apt install supervisor
 vim /etc/supervisor/conf.d/upload.conf
 
 [program:upload]
-command=/usr/bin/java -jar /root/upload/upload-0.1.2-SNAPSHOT.jar
+command=/usr/bin/java -jar /root/upload/upload-0.1.4-SNAPSHOT.jar
 redirect_stderr=true
 stdout_logfile=/root/upload/upload.stdout.log
 
