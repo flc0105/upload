@@ -51,18 +51,10 @@ a {
   #image {
     max-width: 100%;
   }
-
-  #video {
-    width: 320px !important;
-  }
 }
 
 @media screen and (max-width: 1000px) {
   .modal-dialog-scrollable {
     max-width: 100% !important;
-  }
-
-  #video {
-    width: 640px;
   }
 }

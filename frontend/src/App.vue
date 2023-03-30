@@ -142,18 +142,7 @@
   <!-- 图片预览框 -->
   <div class="modal" ref="imageModal">
     <div class="modal-dialog text-center mw-100 h-100">
-      <div ref="qrcode" style="display: flex; justify-content: center; text-align: center;"></div>
-      <img id="image" ref="image" :src="src" class="shadow"
-        onclick="document.getElementById('image').classList.toggle('mh-100')" />
-    </div>
-  </div>
-
-  <!-- 视频预览框 -->
-  <div class="modal" ref="videoModal">
-    <div class="modal-dialog" style="display: flex;align-items: center;justify-content: center;">
-      <video id="video" :key="src" width="800" autoplay loop muted playsinline controls style="pointer-events: all;">
-        <source :src="src">
-      </video>
+      <img id="image" :src="src" class="shadow" onclick="document.getElementById('image').classList.toggle('mh-100')" />
     </div>
   </div>
 </template>
@@ -260,11 +249,18 @@ export default {
         ["B", "kB", "MB", "GB"][i]
       );
     },
+    // 关闭图片预览框后清除图片资源
+    modalClose() {
+      this.src = ""
+    }
   },
   created() {
     new ClipboardJS("#btnCopy").on("success", () => {
       this.showModal("成功", "复制成功");
     });
+  },
+  mounted() {
+    this.$refs.imageModal.addEventListener("hidden.bs.modal", this.modalClose)
   }
 }
 </script>

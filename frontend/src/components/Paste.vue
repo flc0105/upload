@@ -15,7 +15,6 @@
             <input class="form-check-input" type="checkbox" role="switch" id="highlight" v-model="checked">
             <label class="form-check-label" for="highlight" style="user-select: none;">代码高亮</label>
           </form>
-          <a class="btn btn-outline-primary btn-sm me-1" @click="generateCode()">二维码</a>
           <a class="btn btn-outline-primary btn-sm" id="btnCopy" :data-clipboard-text="text">复制</a>
           <!-- <a class="btn btn-outline-primary btn-sm" id="btnCopy" data-clipboard-target="#textarea">复制</a> -->
           <a class="btn btn-outline-primary btn-sm ms-1" @click="download()">下载</a>
@@ -62,8 +61,6 @@ import 'file-saver'
 import moment from 'moment'
 import hljsVuePlugin from "@highlightjs/vue-plugin";
 
-import QRCode from 'qrcodejs2-fix';
-
 export default {
   components: {
     highlightjs: hljsVuePlugin.component
@@ -76,15 +73,6 @@ export default {
     };
   },
   methods: {
-    generateCode() {
-      this.$root.$refs.qrcode.innerHTML = "";
-      this.$root.src = "";
-      new QRCode(this.$root.$refs.qrcode, { // TODO: 这里默认了前后端地址一样
-        text: location.href,
-        // text: location.protocol + "//" + location.host + "/paste/get/" + this.$route.params.id, // 直链
-      });
-      new Modal(this.$root.$refs.imageModal).show();
-    },
     getFromNow(date) {
       return moment(date).fromNow()
     },

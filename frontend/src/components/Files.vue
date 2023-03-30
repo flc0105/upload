@@ -96,7 +96,7 @@
     </div>
     <table class="mb-0 table table-hover">
       <tbody>
-        <tr>
+        <tr style="user-select: none;">
           <th class="checkbox" v-if="multiSelect"
             @click="(event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click()">
             <input type="checkbox" class="form-check-input" @click="(event) => checkAll(event)"
@@ -104,10 +104,23 @@
               :indeterminate="Object.keys(files).length > 0 && (checkedFiles.length > 0 && checkedFiles.length < files.folders.length + files.files.length)"
               :disabled="Object.keys(files).length > 0 && (files.folders.length + files.files.length == 0)" />
           </th>
-          <th class="filename text-truncate">文件名</th>
+          <th class="filename text-truncate cursor-pointer" @click="sortBy('name')">
+            文件名
+            <div class="sort-by-filename">
+              <i v-if="sort.key === 'name' && sort.direction === 'asc'" class="bi bi-sort-alpha-up text-muted"></i>
+              <i v-if="sort.key === 'name' && sort.direction === 'desc'" class="bi bi-sort-alpha-down-alt text-muted"></i>
+            </div>
+          </th>
           <th class="size" v-if="columns.includes('size')">大小</th>
           <th class="contentType" v-if="columns.includes('contentType')">类型</th>
-          <th class="lastModified" v-if="columns.includes('lastModified')">修改时间</th>
+          <th class="lastModified cursor-pointer" v-if="columns.includes('lastModified')" @click="sortBy('time')">
+            修改时间
+            <div class="sort-by-time">
+              <i v-if="sort.key === 'time' && sort.direction === 'asc'" class="bi bi-sort-numeric-up text-muted"></i>
+              <i v-if="sort.key === 'time' && sort.direction === 'desc'"
+                class="bi bi-sort-numeric-down-alt text-muted"></i>
+            </div>
+          </th>
           <th class="action">操作</th>
         </tr>
         <tr v-if="currentDirectory != '/'">
@@ -173,8 +186,7 @@
               </a>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item"
-                    v-if="file.fileType.includes('image') || file.fileType.includes('text') || file.fileType.includes('video')"
+                  <a class="dropdown-item" v-if="file.fileType.includes('image') || file.fileType.includes('text')"
                     @click="preview(file.fileType, file.relativePath)">预览</a>
                 </li>
                 <li>
@@ -197,6 +209,19 @@
 </template>
 
 <style scoped>
+.sort-by-filename,
+.sort-by-time {
+  display: none;
+}
+
+.filename:hover .sort-by-filename {
+  display: inline;
+}
+
+.lastModified:hover .sort-by-time {
+  display: inline;
+}
+
 .btn-group>.btn-group:not(:first-child),
 .btn-group> :not(.btn-check:first-child)+.btn {
   margin-left: -0.9px !important;
@@ -283,14 +308,32 @@ export default {
       cutFiles: [],
       // 显示的列
       columns: ["size", "lastModified"],
+      // 排序方式
+      sort: {
+        'key': 'name',
+        'direction': 'asc',
+      },
     };
   },
   methods: {
+    // 排序
+    sortBy(key) {
+      if (key !== this.sort.key) {
+        this.sort.key = key
+        this.sort.direction = 'asc'
+      } else {
+        if (this.sort.direction === 'asc') {
+          this.sort.direction = 'desc';
+        } else {
+          this.sort.direction = 'asc';
+        }
+      }
+    },
     // 获取文件列表
     list() {
       this.$root.loading = true;
       this.files = [];
-      this.checkedFiles = [];
+      this.checkedFiles = []; // 清空选中文件
       if (cancel !== undefined) {
         cancel(); // 取消之前的操作
       }
@@ -306,6 +349,7 @@ export default {
         .then((res) => {
           if (res.success) {
             this.files = res.detail;
+            this.doSort(this.sort)
           } else {
             if (res.msg === "没有权限") {
               if (!this.$root.hasToken(() => this.list())) {
@@ -349,6 +393,7 @@ export default {
         .then((res) => {
           if (res.success) {
             this.files = res.detail;
+            this.doSort(this.sort)
           } else {
             this.$root.showModal("失败", res.msg);
           }
@@ -416,7 +461,6 @@ export default {
           "Content-Type": "multipart/form-data",
         },
         onUploadProgress: (e) => {
-          // if (e.lengthComputable) {
           const current = e.loaded;
           const total = e.total;
           this.$root.progress = Math.round((current / total) * 100) + "%";
@@ -428,7 +472,6 @@ export default {
           lastTime = now;
           this.$root.speed = this.$root.formatBytes(speed) + "/s";
         }
-        // },
       })
         .then((res) => {
           if (res.success) {
@@ -676,7 +719,6 @@ export default {
     // 预览文件
     preview(fileType, filename) {
       if (fileType.includes("text")) {
-        // 预览文本文件
         this.$root.loading = true;
         this.$root.message.title = filename
         this.$root.message.text = ""
@@ -697,14 +739,9 @@ export default {
             this.$root.loading = false;
           });
       } else if (fileType.includes("image")) {
-        // 预览图片
+        this.$root.src = ""
         this.$root.src = axios.defaults.baseURL + "file/download?relativePath=" + encodeURIComponent(filename);
         new Modal(this.$root.$refs.imageModal).show();
-      } else if (fileType.includes("video")) {
-        // 预览视频
-        this.$root.src = axios.defaults.baseURL + "file/download?relativePath=" + encodeURIComponent(filename);
-        new Modal(this.$root.$refs.videoModal).show();
-        //TODO: pause video when modal close
       }
     },
     // 创建文件分享链接
@@ -777,10 +814,116 @@ export default {
       }
       return " bi-file-earmark";
     },
+    // 排序
+    doSort(sort) {
+      if (sort.key === "time") {
+        // 按时间排序
+        if (sort.direction === 'desc') {
+          // 降序
+          this.files.folders.sort((a, b) => {
+            const dateA = new Date(a.lastModified);
+            const dateB = new Date(b.lastModified);
+            const nameA = a.name.toUpperCase();
+            const nameB = b.name.toUpperCase();
+            // 如果日期不同，按日期排序
+            if (dateA < dateB) return 1;
+            if (dateA > dateB) return -1;
+            // 如果日期相同，按名称排序
+            if (nameA < nameB) return -1;
+            if (nameA > nameB) return 1;
+            return 0;
+          });
+          this.files.files.sort((a, b) => {
+            const dateA = new Date(a.lastModified);
+            const dateB = new Date(b.lastModified);
+            const nameA = a.name.toUpperCase();
+            const nameB = b.name.toUpperCase();
+            if (dateA < dateB) return 1;
+            if (dateA > dateB) return -1;
+            if (nameA < nameB) return -1;
+            if (nameA > nameB) return 1;
+            return 0;
+          });
+          // this.files.folders.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
+          // this.files.files.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
+        } else {
+          // 升序
+          this.files.folders.sort((a, b) => {
+            const dateA = new Date(a.lastModified);
+            const dateB = new Date(b.lastModified);
+            const nameA = a.name.toUpperCase();
+            const nameB = b.name.toUpperCase();
+            if (dateA < dateB) return -1;
+            if (dateA > dateB) return 1;
+            if (nameA < nameB) return -1;
+            if (nameA > nameB) return 1;
+            return 0;
+          });
+          this.files.files.sort((a, b) => {
+            const dateA = new Date(a.lastModified);
+            const dateB = new Date(b.lastModified);
+            const nameA = a.name.toUpperCase();
+            const nameB = b.name.toUpperCase();
+            if (dateA < dateB) return -1;
+            if (dateA > dateB) return 1;
+            if (nameA < nameB) return -1;
+            if (nameA > nameB) return 1;
+            return 0;
+          });
+          // this.files.folders.sort((a, b) => new Date(a.lastModified) - new Date(b.lastModified));
+          // this.files.files.sort((a, b) => new Date(a.lastModified) - new Date(b.lastModified));
+        }
+      }
+      if (sort.key == "name") {
+        // 按名称排序
+        if (sort.direction === 'desc') {
+          // 降序
+          this.files.files.sort((a, b) => {
+            const nameA = a.name.toUpperCase();
+            const nameB = b.name.toUpperCase();
+            if (nameA < nameB) return 1;
+            if (nameA > nameB) return -1;
+            return 0;
+          });
+          this.files.folders.sort((a, b) => {
+            const nameA = a.name.toUpperCase();
+            const nameB = b.name.toUpperCase();
+            if (nameA < nameB) return 1;
+            if (nameA > nameB) return -1;
+            return 0;
+          });
+        } else {
+          // 升序
+          this.files.files.sort((a, b) => {
+            const nameA = a.name.toUpperCase();
+            const nameB = b.name.toUpperCase();
+            if (nameA < nameB) return -1;
+            if (nameA > nameB) return 1;
+            return 0;
+          });
+          this.files.folders.sort((a, b) => {
+            const nameA = a.name.toUpperCase();
+            const nameB = b.name.toUpperCase();
+            if (nameA < nameB) return -1;
+            if (nameA > nameB) return 1;
+            return 0;
+          });
+        }
+      }
+    }
   },
   mounted() {
     this.list();
     this.getDirectoryHierachy();
   },
+  watch: {
+    sort: {
+      handler(newValue, oldValue) {
+        this.doSort(newValue)
+      },
+      deep: true,
+      flush: 'post',
+    }
+  }
 }
 </script>

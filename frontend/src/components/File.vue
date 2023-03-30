@@ -25,12 +25,10 @@
       <button class="btn btn-sm btn-outline-primary mt-3" @click="download(file.relativePath)">
         下载
       </button>
-      <button
-        v-if="file && (file.fileType.includes('image') || file.fileType.includes('text') || file.fileType.includes('video'))"
+      <button v-if="file && (file.fileType.includes('image') || file.fileType.includes('text'))"
         class="btn btn-sm btn-outline-primary mt-3 ms-1" @click="preview(file.fileType, file.relativePath)">
         预览
       </button>
-      <button class="btn btn-sm btn-outline-primary mt-3 ms-1" @click="generateCode">二维码</button>
     </div>
   </div>
 </template>
@@ -62,12 +60,6 @@ tr :not(:first-child) {
 import axios from 'axios'
 import Qs from 'qs'
 
-
-
-import QRCode from 'qrcodejs2-fix';
-
-
-
 export default {
   data() {
     return {
@@ -75,15 +67,6 @@ export default {
     };
   },
   methods: {
-    generateCode() {
-      this.$root.$refs.qrcode.innerHTML = "";
-      this.$root.src = "";
-      new QRCode(this.$root.$refs.qrcode, { // TODO: 这里默认了前后端地址一样
-        text: location.href,
-        // text: location.protocol + "//" + location.host + "/file/download?relativePath=" + encodeURIComponent(this.file.relativePath) // 直链
-      });
-      new Modal(this.$root.$refs.imageModal).show();
-    },
     // 获取文件
     get(code) {
       this.$root.loading = true;
@@ -110,7 +93,6 @@ export default {
     // 预览文件
     preview(fileType, filename) {
       if (fileType.includes("text")) {
-        // 预览文本文件
         this.$root.loading = true;
         this.$root.message.title = filename
         this.$root.message.text = ""
@@ -131,16 +113,9 @@ export default {
             this.$root.loading = false;
           });
       } else if (fileType.includes("image")) {
-        this.$root.$refs.qrcode.innerHTML = "";
         this.$root.src = "";
-        // 预览图片
         this.$root.src = axios.defaults.baseURL + "/file/download?relativePath=" + encodeURIComponent(filename);
         new Modal(this.$root.$refs.imageModal).show();
-      } else if (fileType.includes("video")) {
-        // 预览视频
-        this.$root.src = axios.defaults.baseURL + "/file/download?relativePath=" + encodeURIComponent(filename);
-        new Modal(this.$root.$refs.videoModal).show();
-        //TODO: pause video when modal close
       }
     },
   },
