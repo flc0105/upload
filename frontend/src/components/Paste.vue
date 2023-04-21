@@ -163,6 +163,9 @@ export default {
   created() {
     if (this.$route.params.id) {
       this.get(this.$route.params.id);
+      if (this.$route.query.highlight=='true') { // 如果url带有highlight=true的参数默认开启代码高亮
+        this.checked = true;
+      }
     }
   }
 };

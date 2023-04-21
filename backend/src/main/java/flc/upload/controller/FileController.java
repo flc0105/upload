@@ -4,6 +4,7 @@ import flc.upload.annotation.Log;
 import flc.upload.model.Result;
 import flc.upload.service.FileService;
 import flc.upload.util.CookieUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +19,9 @@ import java.util.Optional;
 @RequestMapping("/file")
 public class FileController {
     private FileService fileService;
+
+    @Value("${preview.compressImage}")
+    private boolean compressImage;
 
     public FileController(FileService fileService) {
         this.fileService = fileService;
@@ -64,6 +68,16 @@ public class FileController {
     @RequestMapping("/downloadFolder")
     public void downloadFolder(@RequestParam("relativePath") String relativePath, HttpServletResponse response, HttpServletRequest request) throws Exception {
         fileService.downloadFolder(relativePath, response, CookieUtil.getCookie("token", request));
+    }
+
+    @Log
+    @RequestMapping("/previewImage")
+    public void previewImage(@RequestParam("relativePath") String relativePath, HttpServletResponse response) throws Exception {
+        if (compressImage) {
+            fileService.compress(relativePath, response);
+        } else {
+            fileService.download(relativePath, response);
+        }
     }
 
     @Log

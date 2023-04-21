@@ -114,7 +114,7 @@ export default {
           });
       } else if (fileType.includes("image")) {
         this.$root.src = "";
-        this.$root.src = axios.defaults.baseURL + "/file/download?relativePath=" + encodeURIComponent(filename);
+        this.$root.src = axios.defaults.baseURL + "/file/previewImage?relativePath=" + encodeURIComponent(filename);
         new Modal(this.$root.$refs.imageModal).show();
       }
     },

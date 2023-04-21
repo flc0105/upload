@@ -5,6 +5,7 @@ import flc.upload.manager.TokenManager;
 import flc.upload.model.Folder;
 import flc.upload.model.Result;
 import flc.upload.util.FileUtil;
+import net.coobird.thumbnailator.Thumbnails;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.slf4j.Logger;
@@ -12,7 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriUtils;
 
+import javax.activation.MimetypesFileTypeMap;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.charset.Charset;
@@ -171,6 +174,28 @@ public class FileService {
             throw new RuntimeException("文件不存在");
         }
         FileUtil.download(file, response);
+    }
+
+    public void compress(String relativePath, HttpServletResponse response) throws Exception {
+        File file = new File(uploadPath, relativePath);
+        if (!file.exists()) {
+            throw new RuntimeException("文件不存在");
+        }
+        response.setHeader("Content-type", new MimetypesFileTypeMap().getContentType(file.getName()));
+        response.setHeader("Content-Disposition", "attachment;filename=\"" + UriUtils.encode(file.getName(), "UTF-8") + "\"");
+        OutputStream out = response.getOutputStream();
+        if (file.getName().endsWith(".png")) {
+            String jpg = file.getAbsoluteFile() + "_" + new Random().nextInt(1000) + ".jpg";
+            Thumbnails.of(file).scale(1f).toFile(jpg);
+            Thumbnails.of(jpg).scale(1f).outputQuality(0.5f).toOutputStream(out);
+            File f = new File(jpg);
+            logger.info("删除{}：{}", jpg, f.delete());
+        } else {
+            Thumbnails.of(file)
+                    .scale(1f)
+                    .outputQuality(0.5f)
+                    .toOutputStream(out);
+        }
     }
 
     public File zipFolder(String relativePath, String token) throws Exception {

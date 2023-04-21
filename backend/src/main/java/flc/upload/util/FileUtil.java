@@ -1,9 +1,12 @@
 package flc.upload.util;
 
+import flc.upload.model.MyConfigProperties;
 import info.monitorenter.cpdetector.io.*;
 import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriUtils;
 
 import javax.activation.MimetypesFileTypeMap;
@@ -12,14 +15,20 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+@Component
 public class FileUtil {
     private static Logger logger = LoggerFactory.getLogger(FileUtil.class);
+    private static MyConfigProperties myConfigProperties;
+
+    @Autowired
+    public void setMyConfigProperties(MyConfigProperties myConfigProperties) {
+        FileUtil.myConfigProperties = myConfigProperties;
+    }
 
     public static String relativize(String uploadPath, File file) {
         String path = new File(uploadPath).toURI().relativize(file.toURI()).getPath();
@@ -62,7 +71,13 @@ public class FileUtil {
         response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
         FileInputStream in = new FileInputStream(file);
         OutputStream out = response.getOutputStream();
-        byte[] buffer = new byte[1024];
+
+        int bufferSize = myConfigProperties.getBufferSize();
+        if (bufferSize == 0) {
+            bufferSize = 1024;
+        }
+
+        byte[] buffer = new byte[bufferSize];
         int len;
         while ((len = in.read(buffer)) != -1) {
             out.write(buffer, 0, len);
