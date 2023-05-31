@@ -4,6 +4,7 @@ import flc.upload.annotation.Log;
 import flc.upload.model.Paste;
 import flc.upload.model.Result;
 import flc.upload.service.PasteService;
+import flc.upload.service.impl.PasteServiceImpl;
 import flc.upload.util.CookieUtil;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;

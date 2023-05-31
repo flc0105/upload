@@ -2,13 +2,14 @@ package flc.upload.controller;
 
 import flc.upload.model.Result;
 import flc.upload.service.BookmarkService;
+import flc.upload.service.impl.BookmarkServiceImpl;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/bookmark")
 public class BookmarkController {
-    private BookmarkService bookmarkService;
+    private final BookmarkService bookmarkService;
 
     public BookmarkController(BookmarkService bookmarkService) {
         this.bookmarkService = bookmarkService;

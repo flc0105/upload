@@ -2,14 +2,14 @@ package flc.upload.controller;
 
 import flc.upload.model.Result;
 import flc.upload.service.ShareCodeService;
-import org.springframework.scheduling.annotation.Scheduled;
+import flc.upload.service.impl.ShareCodeServiceImpl;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/shareCode")
 public class ShareCodeController {
-    private ShareCodeService shareCodeService;
+    private final ShareCodeService shareCodeService;
 
     public ShareCodeController(ShareCodeService shareCodeService) {
         this.shareCodeService = shareCodeService;

@@ -3,6 +3,7 @@ package flc.upload.controller;
 import flc.upload.annotation.Log;
 import flc.upload.model.Result;
 import flc.upload.service.FileService;
+import flc.upload.service.impl.FileServiceImpl;
 import flc.upload.util.CookieUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
