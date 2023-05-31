@@ -24,44 +24,45 @@
           onclick="document.getElementById('folder').value=null; document.getElementById('folder').click()">
           上传文件夹
         </button>
-        <button class="btn btn-outline-primary me-1" @click="$root.inputValue=''; $root.showInput('新建文件夹', '输入文件夹名', createDirectory)">
+        <button class="btn btn-outline-primary me-1"
+          @click="$root.inputValue = ''; $root.showInput('新建文件夹', '输入文件夹名', createDirectory)">
           新建文件夹
         </button>
-        <button class="btn btn-outline-primary me-1" @click="list()">
+        <button class="btn btn-outline-primary me-1" @click=" list() ">
           刷新
         </button>
         <button
-          v-if="cutFiles.length !== 0 && getParentDirectory(cutFiles[0]) !== currentDirectory && !currentDirectory.startsWith(cutFiles[0])"
-          class="btn btn-outline-primary me-1" @click="paste()">
+          v-if=" cutFiles.length !== 0 && getParentDirectory(cutFiles[0]) !== currentDirectory && !currentDirectory.startsWith(cutFiles[0]) "
+          class="btn btn-outline-primary me-1" @click=" paste() ">
           粘贴
         </button>
         <div class="btn-group">
-          <button class="btn btn-outline-primary" :disabled="files.length === 0"
-            @click="multiSelect = !multiSelect; checkedFiles = []">
+          <button class="btn btn-outline-primary" :disabled=" files.length === 0 "
+            @click=" multiSelect = !multiSelect; checkedFiles = [] ">
             多选
           </button>
-          <button v-if="multiSelect" :disabled="checkedFiles.length == 0" class="btn btn-outline-primary"
-            @click="bulkDownload()">
+          <button v-if=" multiSelect " :disabled=" checkedFiles.length == 0 " class="btn btn-outline-primary"
+            @click=" bulkDownload() ">
             下载
           </button>
-          <button v-if="multiSelect" :disabled="checkedFiles.length == 0" class="btn btn-outline-primary"
-            @click="$root.showConfirm(function () { deleteFile(checkedFiles) })">
+          <button v-if=" multiSelect " :disabled=" checkedFiles.length == 0 " class="btn btn-outline-primary"
+            @click=" $root.showConfirm(function () { deleteFile(checkedFiles) }) ">
             删除
           </button>
-          <button v-if="multiSelect" :disabled="checkedFiles.length == 0" class="btn btn-outline-primary"
-            @click="cut(checkedFiles)">
+          <button v-if=" multiSelect " :disabled=" checkedFiles.length == 0 " class="btn btn-outline-primary"
+            @click=" cut(checkedFiles) ">
             剪切
           </button>
-          <button v-if="multiSelect" :disabled="checkedFiles.length == 0" class="btn btn-outline-primary"
-            @click="bulkZip()">
+          <button v-if=" multiSelect " :disabled=" checkedFiles.length == 0 " class="btn btn-outline-primary"
+            @click=" bulkZip() ">
             打包
           </button>
         </div>
       </div>
       <div class="files-right">
         <div class="w-100 d-flex">
-          <input class="form-control" style="flex: 1 1 auto; width: 1%" placeholder="搜索" v-model="filter"
-            @keyup.enter="search()" />
+          <input class="form-control" style="flex: 1 1 auto; width: 1%" placeholder="搜索" v-model=" filter "
+            @keyup.enter=" search() " />
           <div class="dropdown" style="padding-left: 5px">
             <button class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown"
               data-bs-auto-close="outside">
@@ -70,22 +71,22 @@
             <ul class="dropdown-menu">
               <li class="dropdown-item">
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="size" :checked="columns.includes('size')"
-                    @click="hideColumn('size')" />
+                  <input class="form-check-input" type="checkbox" id="size" :checked=" columns.includes('size') "
+                    @click=" hideColumn('size') " />
                   <label class="form-check-label" for="size">大小</label>
                 </div>
               </li>
               <li class="dropdown-item">
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="contentType"
-                    :checked="columns.includes('contentType')" @click="hideColumn('contentType')" />
+                    :checked=" columns.includes('contentType') " @click=" hideColumn('contentType') " />
                   <label class="form-check-label" for="contentType">类型</label>
                 </div>
               </li>
               <li class="dropdown-item">
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="lastModified"
-                    :checked="columns.includes('lastModified')" @click="hideColumn('lastModified')" />
+                    :checked=" columns.includes('lastModified') " @click=" hideColumn('lastModified') " />
                   <label class="form-check-label" for="lastModified">修改日期</label>
                 </div>
               </li>
@@ -97,88 +98,90 @@
     <table class="mb-0 table table-hover">
       <tbody>
         <tr style="user-select: none;">
-          <th class="checkbox" v-if="multiSelect"
-            @click="(event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click()">
-            <input type="checkbox" class="form-check-input" @click="(event) => checkAll(event)"
-              :checked="Object.keys(files).length > 0 && (checkedFiles.length > 0 && files.folders.length + files.files.length > 0)"
-              :indeterminate="Object.keys(files).length > 0 && (checkedFiles.length > 0 && checkedFiles.length < files.folders.length + files.files.length)"
-              :disabled="Object.keys(files).length > 0 && (files.folders.length + files.files.length == 0)" />
+          <th class="checkbox" v-if=" multiSelect "
+            @click=" (event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click() ">
+            <input type="checkbox" class="form-check-input" @click=" (event) => checkAll(event) "
+              :checked=" Object.keys(files).length > 0 && (checkedFiles.length > 0 && files.folders.length + files.files.length > 0) "
+              :indeterminate=" Object.keys(files).length > 0 && (checkedFiles.length > 0 && checkedFiles.length < files.folders.length + files.files.length) "
+              :disabled=" Object.keys(files).length > 0 && (files.folders.length + files.files.length == 0) " />
           </th>
-          <th class="filename text-truncate cursor-pointer" @click="sortBy('name')">
+          <th class="filename text-truncate cursor-pointer" @click=" sortBy('name') ">
             文件名
             <div class="sort-by-filename">
-              <i v-if="sort.key === 'name' && sort.direction === 'asc'" class="bi bi-sort-alpha-up text-muted"></i>
-              <i v-if="sort.key === 'name' && sort.direction === 'desc'" class="bi bi-sort-alpha-down-alt text-muted"></i>
+              <i v-if=" sort.key === 'name' && sort.direction === 'asc' " class="bi bi-sort-alpha-up text-muted"></i>
+              <i v-if=" sort.key === 'name' && sort.direction === 'desc' "
+                class="bi bi-sort-alpha-down-alt text-muted"></i>
             </div>
           </th>
-          <th class="size" v-if="columns.includes('size')">大小</th>
-          <th class="contentType" v-if="columns.includes('contentType')">类型</th>
-          <th class="lastModified cursor-pointer" v-if="columns.includes('lastModified')" @click="sortBy('time')">
+          <th class="size" v-if=" columns.includes('size') ">大小</th>
+          <th class="contentType" v-if=" columns.includes('contentType') ">类型</th>
+          <th class="lastModified cursor-pointer" v-if=" columns.includes('lastModified') " @click=" sortBy('time') ">
             修改时间
             <div class="sort-by-time">
-              <i v-if="sort.key === 'time' && sort.direction === 'asc'" class="bi bi-sort-numeric-up text-muted"></i>
-              <i v-if="sort.key === 'time' && sort.direction === 'desc'"
+              <i v-if=" sort.key === 'time' && sort.direction === 'asc' " class="bi bi-sort-numeric-up text-muted"></i>
+              <i v-if=" sort.key === 'time' && sort.direction === 'desc' "
                 class="bi bi-sort-numeric-down-alt text-muted"></i>
             </div>
           </th>
           <th class="action">操作</th>
         </tr>
-        <tr v-if="currentDirectory != '/'">
-          <td colspan="6" @click="changeDirectory(getParentDirectory(currentDirectory))">
+        <tr v-if=" currentDirectory != '/' ">
+          <td colspan="6" @click=" changeDirectory(getParentDirectory(currentDirectory)) ">
             <a class="link-primary">..</a>
           </td>
         </tr>
-        <tr v-for="folder in files.folders" :key="folder">
-          <td class="checkbox" v-show="multiSelect"
-            @click="(event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click()">
-            <input type="checkbox" class="form-check-input" :value="folder.relativePath" v-model="checkedFiles" />
+        <tr v-for="    folder     in     files.folders    " :key=" folder ">
+          <td class="checkbox" v-show=" multiSelect "
+            @click=" (event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click() ">
+            <input type="checkbox" class="form-check-input" :value=" folder.relativePath " v-model=" checkedFiles " />
           </td>
-          <td class="filename text-truncate" @click="changeDirectory(folder.relativePath)">
+          <td class="filename text-truncate" @click=" changeDirectory(folder.relativePath) ">
             <i class="bi bi-folder2"></i>&nbsp;
             <a class="link-primary">{{ folder.name }}</a>
           </td>
-          <td class="size" v-if="columns.includes('size')">-</td>
-          <td class="contentType" v-if="columns.includes('contentType')">-</td>
-          <td class="lastModified" v-if="columns.includes('lastModified')">{{ folder.lastModified }}</td>
+          <td class="size" v-if=" columns.includes('size') ">-</td>
+          <td class="contentType" v-if=" columns.includes('contentType') ">-</td>
+          <td class="lastModified" v-if=" columns.includes('lastModified') ">{{ folder.lastModified }}</td>
           <td class="action">
-            <a class="link-primary" @click="downloadFolder(folder.relativePath)"><i class="bi bi-cloud-download"></i></a>
-            <a class="link-danger ms-1" @click="$root.showConfirm(function () { deleteFile([folder.relativePath]) })"><i
+            <a class="link-primary" @click=" downloadFolder(folder.relativePath) "><i
+                class="bi bi-cloud-download"></i></a>
+            <a class="link-danger ms-1" @click=" $root.showConfirm(function () { deleteFile([folder.relativePath]) }) "><i
                 class="bi bi-trash"></i></a>
             <div class="dropdown d-inline">
               <a class="link-primary ms-1" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-three-dots"></i>
               </a>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" @click="zipFolder(folder.relativePath)">压缩</a></li>
-                <li><a class="dropdown-item" @click="cut([folder.relativePath])">剪切</a></li>
+                <li><a class="dropdown-item" @click=" zipFolder(folder.relativePath) ">压缩</a></li>
+                <li><a class="dropdown-item" @click=" cut([folder.relativePath]) ">剪切</a></li>
                 <li>
                   <a class="dropdown-item"
-                    @click="$root.inputValue=folder.name; $root.showInput('重命名', '输入新文件夹名', function () { rename(folder.relativePath) })">重命名</a>
+                    @click=" $root.inputValue = folder.name; $root.showInput('重命名', '输入新文件夹名', function () { rename(folder.relativePath) }) ">重命名</a>
                 </li>
               </ul>
             </div>
           </td>
         </tr>
-        <tr v-for="file in files.files" :key="file">
-          <td class="checkbox" v-show="multiSelect"
-            @click="(event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click()">
-            <input type="checkbox" class="form-check-input" :value="file.relativePath" v-model="checkedFiles" />
+        <tr v-for="    file     in     files.files    " :key=" file ">
+          <td class="checkbox" v-show=" multiSelect "
+            @click=" (event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click() ">
+            <input type="checkbox" class="form-check-input" :value=" file.relativePath " v-model=" checkedFiles " />
           </td>
           <td class="filename text-truncate">
-            <i class="bi" :class="getIcon(file.name, file.fileType)"></i>&nbsp; {{ file.name }}
+            <i class="bi" :class=" getIcon(file.name, file.fileType) "></i>&nbsp; {{ file.name }}
           </td>
-          <td class="size" v-if="columns.includes('size')">
+          <td class="size" v-if=" columns.includes('size') ">
             {{ $root.formatBytes(file.length) }}
           </td>
-          <td class="contentType" v-if="columns.includes('contentType')">
+          <td class="contentType" v-if=" columns.includes('contentType') ">
             {{ file.fileType }}
           </td>
-          <td class="lastModified" v-if="columns.includes('lastModified')">
+          <td class="lastModified" v-if=" columns.includes('lastModified') ">
             {{ file.lastModified }}
           </td>
           <td class="action">
-            <a class="link-primary" @click="downloadFile(file.relativePath)"><i class="bi bi-cloud-download"></i></a>
-            <a class="link-danger ms-1" @click="$root.showConfirm(function () { deleteFile([file.relativePath]) })"><i
+            <a class="link-primary" @click=" downloadFile(file.relativePath) "><i class="bi bi-cloud-download"></i></a>
+            <a class="link-danger ms-1" @click=" $root.showConfirm(function () { deleteFile([file.relativePath]) }) "><i
                 class="bi bi-trash"></i></a>
             <div class="dropdown d-inline">
               <a class="link-primary ms-1" data-bs-toggle="dropdown" aria-expanded="false">
@@ -186,18 +189,18 @@
               </a>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item" v-if="file.fileType.includes('image') || file.fileType.includes('text')"
-                    @click="preview(file.fileType, file.relativePath)">预览</a>
+                  <a class="dropdown-item" v-if=" file.fileType.includes('image') || file.fileType.includes('text') "
+                    @click=" preview(file.fileType, file.relativePath) ">预览</a>
                 </li>
                 <li>
-                  <a class="dropdown-item" @click="share(file.relativePath)">分享</a>
+                  <a class="dropdown-item" @click=" share(file.relativePath) ">分享</a>
                 </li>
                 <li>
-                  <a class="dropdown-item" @click="cut([file.relativePath])">剪切</a>
+                  <a class="dropdown-item" @click=" cut([file.relativePath]) ">剪切</a>
                 </li>
                 <li>
                   <a class="dropdown-item"
-                    @click="$root.inputValue=file.name; $root.showInput('重命名', '输入新文件名', function () { rename(file.relativePath) })">重命名</a>
+                    @click=" $root.inputValue = file.name; $root.showInput('重命名', '输入新文件名', function () { rename(file.relativePath) }) ">重命名</a>
                 </li>
               </ul>
             </div>
@@ -523,6 +526,12 @@ export default {
           this.$root.loading = false;
         });
     },
+    removeOuterQuotes(str) {
+      if (str.startsWith('"') && str.endsWith('"')) {
+        return str.slice(1, -1);
+      }
+      return str;
+    },
     // 下载文件
     download(relativePath, api_url) {
       this.$root.message.title = "正在下载"
@@ -552,7 +561,7 @@ export default {
       }).then((response) => {
         let filename = response.headers["content-disposition"].split("filename=")[1];
         filename = decodeURIComponent(filename);
-        saveAs(response.data, filename);
+        saveAs(response.data, this.removeOuterQuotes(filename));
       }).catch((error) => {
         modal.hide();
         this.$root.showModal("错误", error.message);
