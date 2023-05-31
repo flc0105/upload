@@ -47,7 +47,7 @@
               </li>
               <li>
                 <a class="dropdown-item"
-                  @click="$root.showInput('修改标题', '输入新标题', function () { rename(bookmark.id) })">修改</a>
+                  @click="$root.inputValue=bookmark.title; $root.showInput('修改标题', '输入新标题', function () { rename(bookmark.id) })">修改</a>
               </li>
               <li>
                 <a class="dropdown-item" @click="update(bookmark.id)">更新</a>

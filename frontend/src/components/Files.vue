@@ -24,7 +24,7 @@
           onclick="document.getElementById('folder').value=null; document.getElementById('folder').click()">
           上传文件夹
         </button>
-        <button class="btn btn-outline-primary me-1" @click="$root.showInput('新建文件夹', '输入文件夹名', createDirectory)">
+        <button class="btn btn-outline-primary me-1" @click="$root.inputValue=''; $root.showInput('新建文件夹', '输入文件夹名', createDirectory)">
           新建文件夹
         </button>
         <button class="btn btn-outline-primary me-1" @click="list()">
@@ -153,7 +153,7 @@
                 <li><a class="dropdown-item" @click="cut([folder.relativePath])">剪切</a></li>
                 <li>
                   <a class="dropdown-item"
-                    @click="$root.showInput('重命名', '输入新文件名', function () { rename(folder.relativePath) })">重命名</a>
+                    @click="$root.inputValue=folder.name; $root.showInput('重命名', '输入新文件夹名', function () { rename(folder.relativePath) })">重命名</a>
                 </li>
               </ul>
             </div>
@@ -197,7 +197,7 @@
                 </li>
                 <li>
                   <a class="dropdown-item"
-                    @click="$root.showInput('重命名', '输入新文件名', function () { rename(file.relativePath) })">重命名</a>
+                    @click="$root.inputValue=file.name; $root.showInput('重命名', '输入新文件名', function () { rename(file.relativePath) })">重命名</a>
                 </li>
               </ul>
             </div>

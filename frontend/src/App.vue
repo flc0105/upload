@@ -182,6 +182,8 @@ export default {
       speed: '',
       // 图片或视频链接
       src: '',
+      // 输入框中的默认值
+      inputValue: '',
     }
   },
   methods: {
@@ -201,7 +203,8 @@ export default {
       this.func = func
       this.message.title = title;
       this.message.text = text;
-      this.$refs.input.value = "";
+      //this.$refs.input.value = "";
+      this.$refs.input.value = this.inputValue;
       new Modal(this.$refs.inputModal).show();
       this.$refs.input.focus();
     },
