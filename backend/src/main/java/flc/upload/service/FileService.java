@@ -1,5 +1,6 @@
 package flc.upload.service;
 
+import flc.upload.exception.BusinessException;
 import flc.upload.exception.VerifyFailedException;
 import flc.upload.manager.TokenManager;
 import flc.upload.model.Folder;
@@ -207,7 +208,8 @@ public class FileService {
             throw new RuntimeException("文件不存在");
         }
         String[] pathSplit = relativePath.split("\\\\");
-        String zipName = uploadPath + File.separator + pathSplit[pathSplit.length - 1] + ".zip";
+//        String zipName = uploadPath + File.separator + pathSplit[pathSplit.length - 1] + ".zip";
+        String zipName = file.getParent() + File.separator +  System.currentTimeMillis() + ".zip";
         FileOutputStream fos = new FileOutputStream(zipName);
         ZipOutputStream zos = new ZipOutputStream(fos);
         FileUtil.zipFile(zos, file, null);
@@ -229,7 +231,12 @@ public class FileService {
 
     public File bulkZip(String files, String token) throws Exception {
         JSONArray array = JSONArray.fromObject(files);
-        String zipName = uploadPath + File.separator + System.currentTimeMillis() + ".zip";
+        if (array.isEmpty()) {
+            throw new BusinessException("没有可以压缩的文件");
+        }
+//        String zipName = uploadPath + File.separator + System.currentTimeMillis() + ".zip";
+        File firstFile = new File(uploadPath, String.valueOf(array.get(0)));
+        String zipName = firstFile.getParentFile() + File.separator + System.currentTimeMillis() + ".zip";
         FileOutputStream fos = new FileOutputStream(zipName);
         ZipOutputStream zos = new ZipOutputStream(fos);
         for (Object f : array) {
