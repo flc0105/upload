@@ -3,6 +3,7 @@ package flc.upload.service.impl;
 import flc.upload.exception.BusinessException;
 import flc.upload.exception.VerifyFailedException;
 import flc.upload.manager.TokenManager;
+import flc.upload.model.AppConfig;
 import flc.upload.model.Folder;
 import flc.upload.model.Result;
 import flc.upload.service.FileService;
@@ -12,6 +13,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,25 +31,24 @@ import java.util.zip.ZipOutputStream;
 public class FileServiceImpl implements FileService {
     private TokenManager tokenManager;
 
-    public FileServiceImpl(TokenManager tokenManager) {
+    private AppConfig config;
+
+    @Autowired
+    public FileServiceImpl(TokenManager tokenManager, AppConfig config) {
         this.tokenManager = tokenManager;
+        this.config = config;
     }
 
     @Value("${upload.path}")
     private String uploadPath;
 
-    @Value("${preview.maxFileSize}")
-    private int maxFileSize;
-
-    @Value("#{'${private.directories}'.split(',')}")
-    private List<String> privateDirectories;
 
     private final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
 
     public Result list(String currentDirectory, String token) {
         List<Folder> folders = new ArrayList<>();
         List<flc.upload.model.File> files = new ArrayList<>();
-        if (privateDirectories.contains(currentDirectory)) {
+        if (config.getPrivateDirectories().contains(currentDirectory)) {
             tokenManager.verify(token);
         }
         File[] list = new File(uploadPath, currentDirectory).listFiles();
@@ -81,7 +82,7 @@ public class FileServiceImpl implements FileService {
             } catch (VerifyFailedException e) {
                 iterator = Files.walk(Paths.get(uploadPath, currentDirectory))
                         .filter(matcher::matches)
-                        .filter(p -> privateDirectories.stream().noneMatch(s -> FileUtil.relativize(uploadPath, p.toFile()).startsWith(s)))
+                        .filter(p -> config.getPrivateDirectories().stream().noneMatch(s -> FileUtil.relativize(uploadPath, p.toFile()).startsWith(s)))
                         .iterator();
             }
         } catch (IOException e) {
@@ -201,7 +202,7 @@ public class FileServiceImpl implements FileService {
     }
 
     public File zipFolder(String relativePath, String token) throws Exception {
-        if (privateDirectories.contains(relativePath)) {
+        if (config.getPrivateDirectories().contains(relativePath)) {
             tokenManager.verify(token);
         }
         File file = new File(uploadPath, relativePath);
@@ -210,7 +211,7 @@ public class FileServiceImpl implements FileService {
         }
         String[] pathSplit = relativePath.split("\\\\");
 //        String zipName = uploadPath + File.separator + pathSplit[pathSplit.length - 1] + ".zip";
-        String zipName = file.getParent() + File.separator +  System.currentTimeMillis() + ".zip";
+        String zipName = file.getParent() + File.separator + System.currentTimeMillis() + ".zip";
         FileOutputStream fos = new FileOutputStream(zipName);
         ZipOutputStream zos = new ZipOutputStream(fos);
         FileUtil.zipFile(zos, file, null);
@@ -241,7 +242,7 @@ public class FileServiceImpl implements FileService {
         FileOutputStream fos = new FileOutputStream(zipName);
         ZipOutputStream zos = new ZipOutputStream(fos);
         for (Object f : array) {
-            if (privateDirectories.contains(f.toString())) {
+            if (config.getPrivateDirectories().contains(f.toString())) {
                 try {
                     tokenManager.verify(token);
                 } catch (VerifyFailedException e) {
@@ -268,7 +269,7 @@ public class FileServiceImpl implements FileService {
 
     public Result read(String relativePath) throws Exception {
         File file = new File(uploadPath, relativePath);
-        if (file.length() > maxFileSize) {
+        if (file.length() > config.getMaxFileSize()) {
             return new Result<>(false, "文件过大，不允许预览");
         }
         String charsetName = FileUtil.getFileEncode(file);

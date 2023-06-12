@@ -1,11 +1,11 @@
 package flc.upload.controller;
 
 import flc.upload.annotation.Log;
+import flc.upload.model.AppConfig;
 import flc.upload.model.Result;
 import flc.upload.service.FileService;
-import flc.upload.service.impl.FileServiceImpl;
 import flc.upload.util.CookieUtil;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,18 +19,21 @@ import java.util.Optional;
 @CrossOrigin(origins = "*")
 @RequestMapping("/file")
 public class FileController {
-    private FileService fileService;
+    private final FileService fileService;
 
-    @Value("${preview.compressImage}")
-    private boolean compressImage;
+    private final AppConfig config;
 
-    public FileController(FileService fileService) {
+    @Autowired
+    public FileController(FileService fileService, AppConfig config) {
         this.fileService = fileService;
+        this.config = config;
     }
+
 
     @Log
     @PostMapping("/list")
     public Result list(@RequestParam("currentDirectory") String currentDirectory, HttpServletRequest request) {
+        System.out.println(config.getMaxFileSize());
         return fileService.list(currentDirectory, CookieUtil.getCookie("token", request));
     }
 
@@ -74,7 +77,7 @@ public class FileController {
     @Log
     @RequestMapping("/previewImage")
     public void previewImage(@RequestParam("relativePath") String relativePath, HttpServletResponse response) throws Exception {
-        if (compressImage) {
+        if (config.isCompressImage()) {
             fileService.compress(relativePath, response);
         } else {
             fileService.download(relativePath, response);
