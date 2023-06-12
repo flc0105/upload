@@ -1,5 +1,6 @@
 package flc.upload.controller;
 
+import flc.upload.model.Bookmark;
 import flc.upload.model.Result;
 import flc.upload.service.BookmarkService;
 import flc.upload.service.impl.BookmarkServiceImpl;
@@ -45,8 +46,13 @@ public class BookmarkController {
         return bookmarkService.updateAll();
     }
 
+//    @PostMapping("/rename")
+//    public Result rename(@RequestParam("id") Integer id, @RequestParam("title") String title) throws Exception {
+//        return bookmarkService.rename(id, title);
+//    }
+
     @PostMapping("/rename")
-    public Result rename(@RequestParam("id") Integer id, @RequestParam("title") String title) throws Exception {
-        return bookmarkService.rename(id, title);
+    public Result rename(@RequestBody Bookmark bookmark) throws Exception {
+        return bookmarkService.rename(bookmark.getId(), bookmark.getTitle(), bookmark.getUrl());
     }
 }

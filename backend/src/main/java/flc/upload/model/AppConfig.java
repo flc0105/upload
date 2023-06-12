@@ -23,9 +23,12 @@ public class AppConfig {
 
     @Value("${preview.compressImage}")
     private boolean compressImage;
+//
+//    @Value("${password}")
+//    private String password;
 
-    @Value("${password}")
-    private String password;
+    @Value("${bookmark.timeout}")
+    private int bookmarkTimeout;
 
     public int getMaxFileSize() {
         return maxFileSize;
@@ -59,7 +62,15 @@ public class AppConfig {
         this.compressImage = compressImage;
     }
 
-//    public String getPassword() {
+    public int getBookmarkTimeout() {
+        return bookmarkTimeout;
+    }
+
+    public void setBookmarkTimeout(int bookmarkTimeout) {
+        this.bookmarkTimeout = bookmarkTimeout;
+    }
+
+    //    public String getPassword() {
 //        return password;
 //    }
 //

@@ -16,6 +16,6 @@ public interface BookmarkService {
 
     Result updateAll() throws Exception;
 
-    Result rename(Integer id, String title) throws Exception;
+    Result rename(Integer id, String title, String url) throws Exception;
 
 }

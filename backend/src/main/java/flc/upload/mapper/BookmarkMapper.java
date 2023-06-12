@@ -14,7 +14,7 @@ public interface BookmarkMapper {
     @Delete("delete from bookmark where id=#{id}")
     Integer delete(Integer id) throws Exception;
 
-    @Update("update bookmark set title=#{title}, icon=#{icon} where id=#{id}")
+    @Update("update bookmark set title=#{title}, url=#{url}, icon=#{icon} where id=#{id}")
     Integer update(Bookmark bookmark) throws Exception;
 
     @Select("select * from bookmark")
