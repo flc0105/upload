@@ -1,12 +1,15 @@
 package flc.upload.model;
 
+import javax.validation.constraints.NotNull;
+
 public class Paste {
+    @NotNull(message = "ID不能为空")
     private Integer id;
     private String title;
     private String text;
     private String time;
     private String expiredDate;
-    private boolean isPrivate;
+    private Boolean isPrivate;
 
     public Integer getId() {
         return id;
@@ -48,11 +51,23 @@ public class Paste {
         this.expiredDate = expiredDate;
     }
 
-    public boolean isPrivate() {
+    public Boolean isPrivate() {
         return isPrivate;
     }
 
-    public void setPrivate(boolean aPrivate) {
+    public void setPrivate(Boolean aPrivate) {
         isPrivate = aPrivate;
+    }
+
+    @Override
+    public String toString() {
+        return "Paste{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", text='" + text + '\'' +
+                ", time='" + time + '\'' +
+                ", expiredDate='" + expiredDate + '\'' +
+                ", isPrivate=" + isPrivate +
+                '}';
     }
 }

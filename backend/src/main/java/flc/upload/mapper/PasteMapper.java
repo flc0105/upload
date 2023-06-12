@@ -14,7 +14,7 @@ public interface PasteMapper {
     @Delete("delete from paste where id=#{id}")
     Integer delete(Integer id) throws Exception;
 
-    @Update("update paste set text=#{text} where id=#{id}")
+    @UpdateProvider(type = PasteSqlProvider.class, method = "updatePaste")
     Integer update(Paste paste) throws Exception;
 
     @Select("select * from paste where isPrivate!=true order by time desc")
@@ -26,6 +26,10 @@ public interface PasteMapper {
     @Select("select * from paste order by time desc limit 1")
     Paste findLast() throws Exception;
 
+    @Select("select * from paste where isPrivate=true order by time desc")
+    List<Paste> findUnlisted() throws Exception;
+
     @Delete("delete from paste where expiredDate <= #{date} and expiredDate != -1")
     Integer deleteExpired(String date) throws Exception;
+
 }

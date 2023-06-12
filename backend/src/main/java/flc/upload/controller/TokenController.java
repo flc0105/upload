@@ -4,6 +4,7 @@ import flc.upload.model.AppConfig;
 import flc.upload.model.Result;
 import flc.upload.util.CookieUtil;
 import flc.upload.util.JwtUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,12 +21,13 @@ public class TokenController {
         this.config = config;
     }
 
-//    @Value("${password}")
-//    private String password;
+    @Value("${password}")
+    private String password;
 
     @PostMapping("/get")
     public Result get(@RequestParam("password") String password, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        if (config.getPassword().equals(password)) {
+        if (this.password.equals(password)) {
+//        if (config.getPassword().equals(password)) {
             String token = JwtUtil.generateToken();
             CookieUtil.addCookie("token", token, request, response);
             return new Result<>(true, "获取成功", token);

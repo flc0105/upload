@@ -4,12 +4,12 @@ import flc.upload.annotation.Log;
 import flc.upload.model.Paste;
 import flc.upload.model.Result;
 import flc.upload.service.PasteService;
-import flc.upload.service.impl.PasteServiceImpl;
 import flc.upload.util.CookieUtil;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -45,9 +45,10 @@ public class PasteController {
 
     @Log
     @PostMapping("/update")
-    public Result update(Paste paste, HttpServletRequest request) throws Exception {
+    public Result update(@Valid @RequestBody Paste paste, HttpServletRequest request) throws Exception {
         return pasteService.update(paste, CookieUtil.getCookie("token", request));
     }
+
 
     @PostMapping("/list")
     public Result list() throws Exception {
@@ -82,6 +83,12 @@ public class PasteController {
             return "404";
         }
         return paste.getText();
+    }
+
+    @PostMapping("/unlisted")
+    public Result unlisted(HttpServletRequest request) throws Exception {
+        pasteService.deleteExpired();
+        return pasteService.findUnlisted(CookieUtil.getCookie("token", request));
     }
 
     @Scheduled(fixedRate = 60 * 60 * 1000)

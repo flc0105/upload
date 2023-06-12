@@ -17,4 +17,6 @@ public interface PasteService {
     Result<Object> findLast() throws Exception;
 
     Result add(Paste paste) throws Exception;
+
+    Result findUnlisted(String token) throws Exception;
 }

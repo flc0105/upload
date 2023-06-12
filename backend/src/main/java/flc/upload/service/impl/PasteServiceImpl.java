@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -60,7 +61,7 @@ public class PasteServiceImpl implements PasteService {
     public Result findById(Integer id) throws Exception {
         Paste paste = pasteMapper.findById(id);
         if (paste != null) {
-            if(Objects.equals(paste.getExpiredDate(), "-1")) {
+            if (Objects.equals(paste.getExpiredDate(), "-1")) {
                 logger.info("删除" + pasteMapper.delete(id) + "条阅后即焚数据");
             }
             return new Result<>(true, null, paste);
@@ -76,6 +77,12 @@ public class PasteServiceImpl implements PasteService {
         } else {
             return new Result<>(false, null);
         }
+    }
+
+    public Result findUnlisted(String token) throws Exception {
+        tokenManager.verify(token);
+        List<Paste> unlisted = pasteMapper.findUnlisted();
+        return new Result<>(true, null, unlisted);
     }
 
     public void deleteExpired() throws Exception {
