@@ -11,13 +11,6 @@ import flc.upload.util.FileUtil;
 import net.coobird.thumbnailator.Thumbnails;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.imaging.Imaging;
-import org.apache.commons.imaging.common.ImageMetadata;
-import org.apache.commons.imaging.common.RationalNumber;
-import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
-import org.apache.commons.imaging.formats.tiff.TiffField;
-import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
-import org.apache.commons.imaging.formats.tiff.constants.TiffTagConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriUtils;
 
 import javax.activation.MimetypesFileTypeMap;
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.*;
@@ -393,9 +384,10 @@ public class FileServiceImpl implements FileService {
             if (fileType != null) {
                 if (fileType.startsWith("image")) {
                     builder.append(FileUtil.getImageInfo(directory));
+                } else if (fileType.startsWith("audio")) {
+                    builder.append(FileUtil.getAudioInfo(directory));
                 }
             }
-
         }
         return new Result(true, builder.toString());
 

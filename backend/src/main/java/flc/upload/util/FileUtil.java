@@ -10,6 +10,16 @@ import org.apache.commons.imaging.formats.tiff.TiffField;
 import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
 import org.apache.commons.imaging.formats.tiff.constants.TiffTagConstants;
 import org.apache.tika.Tika;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.sax.BodyContentHandler;
+import org.jaudiotagger.audio.AudioFile;
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.Tag;
+import org.jaudiotagger.tag.TagField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +30,10 @@ import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -250,10 +259,41 @@ public class FileUtil {
                 String software = softwareField.getStringValue();
                 sb.append("Program name: ").append(software).append("\n");
             }
-        } else {
-
         }
         return sb.toString();
+    }
+
+    public static String getAudioInfo(File file ) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append("--------- 音乐信息 ---------").append("\n");
+            AudioFile audio = AudioFileIO.read(file);
+            long duration = audio.getAudioHeader().getTrackLength();
+            sb.append("时长: ").append(duration).append(" 秒\n");
+            Tag tag = audio.getTag();
+            if (tag != null) {
+                String artist = tag.getFirst(FieldKey.ARTIST);
+                String title = tag.getFirst(FieldKey.TITLE);
+                String album = tag.getFirst(FieldKey.ALBUM);
+                String comment = tag.getFirst(FieldKey.COMMENT);
+                sb.append("Artist: ").append(artist).append("\n");
+                sb.append("Title: ").append(title).append("\n");
+                sb.append("Album: ").append(album).append("\n");
+                sb.append("Comment: ").append(comment).append("\n");
+                return sb.toString();
+//                for (FieldKey field : FieldKey.values()) {
+//                    String value = tag.getFirst(field);
+//                    if (value != null) {
+//                        System.out.println(field.name() + ": " + value);
+//                    }
+//                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return "";
+        }
+
+        return "";
     }
 
 }

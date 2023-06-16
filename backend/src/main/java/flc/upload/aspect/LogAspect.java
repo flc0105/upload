@@ -1,7 +1,10 @@
 package flc.upload.aspect;
 
-import flc.upload.annotation.Log;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import flc.upload.model.Result;
+import flc.upload.util.CookieUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -14,8 +17,8 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Objects;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 切面类
@@ -32,6 +35,12 @@ public class LogAspect {
 
     }
 
+    private String hashMapToJson(Map<String, String> hashMap) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        return objectMapper.writeValueAsString(hashMap);
+    }
+
     @Around("logPointCut()")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         // 获取当前方法的名称和参数
@@ -40,8 +49,14 @@ public class LogAspect {
         logger = LoggerFactory.getLogger(method.getDeclaringClass());
         String methodName = method.getName();
         Object[] args = joinPoint.getArgs();
+
+        long startTime = System.nanoTime();
+
         // 执行目标方法，并记录返回值
         Object result = joinPoint.proceed();
+
+        long endTime = System.nanoTime();
+
         for (Object arg : args) {
             if (arg instanceof HttpServletRequest) {
                 HttpServletRequest request = ((HttpServletRequest) arg);
@@ -77,7 +92,30 @@ public class LogAspect {
                 String methodArguments = Arrays.toString(Arrays.stream(args)
                         .filter(e -> !(e instanceof HttpServletRequest) && !(e instanceof HttpServletResponse))
                         .toArray(Object[]::new));
-                logger.info("客户端{}执行了{}方法，参数为{}，执行结果为{}，浏览器为{}，操作系统为{}", ip, methodName, methodArguments, (result instanceof Result) ? ((Result) result).isSuccess() : null, browser, os);
+
+                logger.info("客户端 {} 执行了 {} 方法，参数为 {}，执行结果为 {}，浏览器为 {}，操作系统为 {}", ip, methodName, methodArguments, (result instanceof Result) ? ((Result) result).isSuccess() : null, browser, os);
+
+                Map<String, String> logMap = new LinkedHashMap<>();
+                String contextPath = request.getContextPath();
+                String requestURI = request.getRequestURI();
+                String path = requestURI.substring(contextPath.length());
+                logMap.put("请求地址", path);
+                logMap.put("ip", ip);
+                logMap.put("是否执行成功", String.valueOf((result instanceof Result) ? ((Result<?>) result).isSuccess() : null));
+                String className = signature.getDeclaringTypeName();
+                logMap.put("浏览器", browser);
+                logMap.put("操作系统", os);
+                logMap.put("请求方式", request.getMethod());
+                logMap.put("操作时间", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+                logMap.put("类名", className);
+                logMap.put("方法名", methodName);
+                logMap.put("请求参数", methodArguments);
+                logMap.put("参数类型", request.getContentType());
+                logMap.put("具体消息", String.valueOf((result instanceof Result) ? ((Result<?>) result).getMsg() : null));
+                logMap.put("返回结果", result.toString());
+                logMap.put("方法耗时", ((endTime - startTime) / 1_000_000) + " ms");
+                logMap.put("token", CookieUtil.getCookie("token", request));
+                logger.info("\n" + hashMapToJson(logMap));
                 break;
             }
         }
