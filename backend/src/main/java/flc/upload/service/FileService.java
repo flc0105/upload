@@ -37,5 +37,5 @@ public interface FileService {
     Result rename(String oldName, String newName, String token);
 
 
-    Result getFolderInfo(String relativePath);
+    Result getFolderInfo(String relativePath) throws Exception;
 }

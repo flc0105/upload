@@ -2,6 +2,13 @@ package flc.upload.util;
 
 import flc.upload.model.MyConfigProperties;
 import info.monitorenter.cpdetector.io.*;
+import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.common.ImageMetadata;
+import org.apache.commons.imaging.common.RationalNumber;
+import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
+import org.apache.commons.imaging.formats.tiff.TiffField;
+import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
+import org.apache.commons.imaging.formats.tiff.constants.TiffTagConstants;
 import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +17,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriUtils;
 
 import javax.activation.MimetypesFileTypeMap;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -184,18 +193,6 @@ public class FileUtil {
         return count;
     }
 
-//    public static String formatSize(long size) {
-//        final String[] units = {"B", "KB", "MB", "GB", "TB"};
-//        int unitIndex = 0;
-//
-//        while (size > 1024 && unitIndex < units.length - 1) {
-//            size /= 1024;
-//            unitIndex++;
-//        }
-//
-//        return size + " " + units[unitIndex];
-//    }
-
     public static String formatSize(long size) {
         if (size <= 0) {
             return "0 B";
@@ -210,5 +207,53 @@ public class FileUtil {
         return formattedSizeString + " " + units[unitIndex];
     }
 
+    public static String getImageInfo(File file) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append("--------- 图片信息 ---------").append("\n");
+
+        BufferedImage image = ImageIO.read(file);
+        int width = image.getWidth();
+        int height = image.getHeight();
+        sb.append("分辨率: ").append(width).append(" x ").append(height).append("\n");
+
+        ImageMetadata metadata = Imaging.getMetadata(file);
+        if (metadata instanceof JpegImageMetadata) {
+            JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
+            TiffField xResolutionField = jpegMetadata.findEXIFValue(TiffTagConstants.TIFF_TAG_XRESOLUTION);
+            TiffField yResolutionField = jpegMetadata.findEXIFValue(TiffTagConstants.TIFF_TAG_YRESOLUTION);
+            if (xResolutionField != null && yResolutionField != null) {
+                RationalNumber xResolution = (RationalNumber) xResolutionField.getValue();
+                RationalNumber yResolution = (RationalNumber) yResolutionField.getValue();
+                double xDpi = xResolution.doubleValue();
+                double yDpi = yResolution.doubleValue();
+                sb.append("水平DPI: ").append(xDpi).append("\n");
+                sb.append("垂直DPI: ").append(yDpi).append("\n");
+            }
+
+            TiffField dateTimeField = jpegMetadata.findEXIFValue(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
+            if (dateTimeField!= null) {
+                String captureTime = dateTimeField.getStringValue();
+                sb.append("拍摄时间: ").append(captureTime).append("\n");
+            }
+           TiffField makeField = jpegMetadata.findEXIFValue(TiffTagConstants.TIFF_TAG_MAKE);
+            if (makeField!= null) {
+                String make = makeField.getStringValue();
+                sb.append("Camera maker: ").append(make).append("\n");
+            }
+            TiffField modelField = jpegMetadata.findEXIFValue(TiffTagConstants.TIFF_TAG_MODEL);
+            if (modelField!= null) {
+                String model = modelField.getStringValue();
+                sb.append("Camera model: ").append(model).append("\n");
+            }
+            TiffField softwareField = jpegMetadata.findEXIFValue(TiffTagConstants.TIFF_TAG_SOFTWARE);
+            if (softwareField!= null) {
+                String software = softwareField.getStringValue();
+                sb.append("Program name: ").append(software).append("\n");
+            }
+        } else {
+
+        }
+        return sb.toString();
+    }
 
 }

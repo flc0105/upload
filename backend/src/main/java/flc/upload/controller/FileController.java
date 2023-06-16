@@ -121,7 +121,7 @@ public class FileController {
 
     @Log
     @PostMapping("/folderInfo")
-    public Result getFolderInfo(@RequestParam("relativePath") String relativePath) {
+    public Result getFolderInfo(@RequestParam("relativePath") String relativePath) throws Exception {
         return fileService.getFolderInfo(relativePath);
     }
 }

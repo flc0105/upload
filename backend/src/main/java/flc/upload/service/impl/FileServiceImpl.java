@@ -11,6 +11,13 @@ import flc.upload.util.FileUtil;
 import net.coobird.thumbnailator.Thumbnails;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.common.ImageMetadata;
+import org.apache.commons.imaging.common.RationalNumber;
+import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
+import org.apache.commons.imaging.formats.tiff.TiffField;
+import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
+import org.apache.commons.imaging.formats.tiff.constants.TiffTagConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +27,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriUtils;
 
 import javax.activation.MimetypesFileTypeMap;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.*;
@@ -339,79 +348,56 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public Result getFolderInfo(String relativePath) {
-        //DirectoryStats;
-
+    public Result getFolderInfo(String relativePath) throws Exception {
         File directory = new File(uploadPath, relativePath);
-//        if (!directory.isDirectory()) {
-//            return new Result(false, "目录不存在");
-//        }
         StringBuilder builder = new StringBuilder();
-
         if (directory.isDirectory()) {
             long totalSize = FileUtil.calculateSize(directory);
             int fileCount = FileUtil.countFiles(directory);
             int folderCount = FileUtil.countFolders(directory);
-
-
             builder.append("文件夹名: ").append(directory.getName()).append("\n");
             builder.append("大小: ").append(FileUtil.formatSize(totalSize)).append("\n");
             builder.append("包含: ").append(fileCount).append("个文件，").append(folderCount).append("个文件夹").append("\n");
-
             try {
                 Path dir = Paths.get(directory.toURI());
                 BasicFileAttributes attributes = Files.readAttributes(dir, BasicFileAttributes.class);
-
-
                 FileTime creationTime = attributes.creationTime();
                 FileTime lastModifiedTime = attributes.lastModifiedTime();
-
                 LocalDateTime creationDateTime = LocalDateTime.ofInstant(creationTime.toInstant(), ZoneId.systemDefault());
                 LocalDateTime lastModifiedDateTime = LocalDateTime.ofInstant(lastModifiedTime.toInstant(), ZoneId.systemDefault());
-
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
                 builder.append("创建时间: ").append(creationDateTime.format(formatter)).append("\n");
                 builder.append("修改时间: ").append(lastModifiedDateTime.format(formatter));
             } catch (Exception e) {
                 logger.error(e.getMessage());
             }
         } else if (directory.isFile()) {
-
-            builder.append("大小: ").append(FileUtil.formatSize(directory.length())).append("\n");
-
             builder.append("文件名: ").append(directory.getName()).append("\n");
-
+            builder.append("大小: ").append(FileUtil.formatSize(directory.length())).append("\n");
+            String fileType = FileUtil.detectFileType(directory);
+            builder.append("文件类型: ").append(fileType).append("\n");
+            builder.append("相对路径: ").append(FileUtil.relativize(uploadPath, directory)).append("\n");
             Path file = Paths.get(directory.toURI());
-
             try {
                 BasicFileAttributes attributes = Files.readAttributes(file, BasicFileAttributes.class);
-
                 FileTime creationTime = attributes.creationTime();
-
                 LocalDateTime creationDateTime = LocalDateTime.ofInstant(creationTime.toInstant(), ZoneId.systemDefault());
-
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-
                 FileTime lastModifiedTime = attributes.lastModifiedTime();
                 LocalDateTime lastModifiedDateTime = LocalDateTime.ofInstant(lastModifiedTime.toInstant(), ZoneId.systemDefault());
-
-
                 builder.append("创建时间: ").append(creationDateTime.format(formatter)).append("\n");
                 builder.append("修改时间: ").append(lastModifiedDateTime.format(formatter)).append("\n");
-
             } catch (IOException e) {
                 logger.error(e.getMessage());
             }
-//            builder.append("修改时间: ").append(FileUtil.formatDate(directory.lastModified())).append("\n");
-            builder.append("文件类型: ").append(FileUtil.detectFileType(directory)).append("\n");
-            builder.append("相对路径: ").append(FileUtil.relativize(uploadPath, directory)).append("\n");
-
+            if (fileType != null) {
+                if (fileType.startsWith("image")) {
+                    builder.append(FileUtil.getImageInfo(directory));
+                }
+            }
 
         }
-
-
         return new Result(true, builder.toString());
+
     }
 }

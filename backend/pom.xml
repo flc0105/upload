@@ -10,7 +10,7 @@
     </parent>
     <groupId>flc</groupId>
     <artifactId>upload</artifactId>
-    <version>0.1.6-SNAPSHOT</version>
+    <version>0.1.7-SNAPSHOT</version>
     <name>upload</name>
     <description>Demo project for Spring Boot</description>
 
@@ -115,6 +115,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-imaging</artifactId>
+            <version>1.0-alpha3</version>
         </dependency>
 
     </dependencies>
