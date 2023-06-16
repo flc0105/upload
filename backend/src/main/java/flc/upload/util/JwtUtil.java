@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import flc.upload.model.Config;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,27 @@ public class JwtUtil {
                 .withExpiresAt(dateMap.get("exp"))
                 .withIssuedAt(dateMap.get("iat"))
                 .sign(Algorithm.HMAC256(Config.secret));
+    }
+
+    public static String generateTokenWithUsername(String username) {
+        Map<String, Date> dateMap = JwtUtil.getDateMap(Config.expirationTime);
+        return JWT.create()
+                .withExpiresAt(dateMap.get("exp"))
+                .withIssuedAt(dateMap.get("iat"))
+                .withClaim("username", username)
+                .sign(Algorithm.HMAC256(Config.secret));
+    }
+
+    public static String getUsername(String token) {
+        try {
+            JWTVerifier verifier = JWT.require(Algorithm.HMAC256(Config.secret))
+                    .build();
+            DecodedJWT decodedJWT = verifier.verify(token);
+            return decodedJWT.getClaim("username").asString();
+        } catch (Exception e) {
+            return "invalid token";
+        }
+
     }
 
     public static boolean validateToken(String token) {

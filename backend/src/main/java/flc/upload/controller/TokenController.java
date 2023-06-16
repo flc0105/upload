@@ -35,4 +35,16 @@ public class TokenController {
             return new Result<>(false, "密码错误");
         }
     }
+
+    @PostMapping("/getWithUsername")
+    public Result getWithUsername(@RequestParam("password") String password, String username, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        if (this.password.equals(password)) {
+//        if (config.getPassword().equals(password)) {
+            String token = JwtUtil.generateTokenWithUsername(username);
+            CookieUtil.addCookie("token", token, request, response);
+            return new Result<>(true, "获取成功", token);
+        } else {
+            return new Result<>(false, "密码错误");
+        }
+    }
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import flc.upload.model.Result;
 import flc.upload.util.CookieUtil;
+import flc.upload.util.JwtUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -115,6 +116,7 @@ public class LogAspect {
                 logMap.put("返回结果", result.toString());
                 logMap.put("方法耗时", ((endTime - startTime) / 1_000_000) + " ms");
                 logMap.put("token", CookieUtil.getCookie("token", request));
+                logMap.put("username", JwtUtil.getUsername(CookieUtil.getCookie("token", request)));
                 logger.info("\n" + hashMapToJson(logMap));
                 break;
             }
