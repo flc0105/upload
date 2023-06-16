@@ -1,6 +1,7 @@
 package flc.upload.controller;
 
 import flc.upload.annotation.Log;
+import flc.upload.annotation.Token;
 import flc.upload.model.AppConfig;
 import flc.upload.model.Result;
 import flc.upload.service.FileService;
@@ -50,15 +51,19 @@ public class FileController {
     }
 
     @Log
+    @Token
     @PostMapping("/mkdir")
     public Result mkdir(@RequestParam("relativePath") String relativePath, HttpServletRequest request) {
-        return fileService.mkdir(relativePath, CookieUtil.getCookie("token", request));
+//        return fileService.mkdir(relativePath, CookieUtil.getCookie("token", request));
+        return fileService.mkdir(relativePath);
     }
 
     @Log
+    @Token
     @PostMapping("/delete")
     public Result delete(@RequestParam("relativePath") String files, HttpServletRequest request) throws Exception {
-        return fileService.delete(files, CookieUtil.getCookie("token", request));
+//        return fileService.delete(files, CookieUtil.getCookie("token", request));
+        return fileService.delete(files);
     }
 
     @Log
@@ -108,15 +113,17 @@ public class FileController {
     }
 
     @Log
+    @Token
     @PostMapping("/move")
     public Result move(@RequestParam("src") String src, @RequestParam("dst") String dst, HttpServletRequest request) throws Exception {
-        return fileService.move(src, dst, CookieUtil.getCookie("token", request));
+        return fileService.move(src, dst);
     }
 
     @Log
+    @Token
     @PostMapping("/rename")
     public Result rename(@RequestParam("src") String src, @RequestParam("dst") String dst, HttpServletRequest request) {
-        return fileService.rename(src, dst, CookieUtil.getCookie("token", request));
+        return fileService.rename(src, dst);
     }
 
     @Log

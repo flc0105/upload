@@ -14,9 +14,9 @@ public interface FileService {
 
     Result upload(MultipartFile[] files, String currentDirectory, String token) throws Exception;
 
-    Result mkdir(String relativePath, String token);
+    Result mkdir(String relativePath);
 
-    Result delete(String files, String token) throws Exception;
+    Result delete(String files) throws Exception;
 
     void download(String relativePath, HttpServletResponse response) throws Exception;
 
@@ -32,10 +32,9 @@ public interface FileService {
 
     Result read(String relativePath) throws Exception;
 
-    Result move(String src, String dst, String token);
+    Result move(String src, String dst);
 
-    Result rename(String oldName, String newName, String token);
-
+    Result rename(String oldName, String newName);
 
     Result getFolderInfo(String relativePath) throws Exception;
 }

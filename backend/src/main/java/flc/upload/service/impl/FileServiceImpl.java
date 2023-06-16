@@ -154,8 +154,8 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    public Result mkdir(String relativePath, String token) {
-        tokenManager.verify(token);
+    public Result mkdir(String relativePath) {
+//        tokenManager.verify(token);
         File directory = new File(uploadPath, relativePath);
         if (directory.exists()) {
             return new Result(false, "文件已存在");
@@ -167,8 +167,8 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    public Result delete(String files, String token) throws Exception {
-        tokenManager.verify(token);
+    public Result delete(String files) throws Exception {
+//        tokenManager.verify(token);
         JSONArray array = JSONArray.fromObject(files);
         for (Object file : array) {
             FileUtil.deleteRecursively(new File(uploadPath, file.toString()));
@@ -292,8 +292,8 @@ public class FileServiceImpl implements FileService {
         return new Result<>(true, null, sb.toString());
     }
 
-    public Result move(String src, String dst, String token) {
-        tokenManager.verify(token);
+    public Result move(String src, String dst) {
+//        tokenManager.verify(token);
         JSONArray array = JSONArray.fromObject(src);
         StringBuilder failedFilenames = new StringBuilder();
         for (Object file : array) {
@@ -320,8 +320,8 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    public Result rename(String oldName, String newName, String token) {
-        tokenManager.verify(token);
+    public Result rename(String oldName, String newName) {
+//        tokenManager.verify(token);
         File srcFile = new File(uploadPath, oldName);
         File dstFile = new File(uploadPath, newName);
         if (dstFile.exists()) {
