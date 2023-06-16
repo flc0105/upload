@@ -33,7 +33,6 @@ public class FileController {
     @Log
     @PostMapping("/list")
     public Result list(@RequestParam("currentDirectory") String currentDirectory, HttpServletRequest request) {
-        System.out.println(config.getMaxFileSize());
         return fileService.list(currentDirectory, CookieUtil.getCookie("token", request));
     }
 

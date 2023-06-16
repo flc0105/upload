@@ -1,0 +1,4 @@
+backend/.idea/
+backend/logs/
+backend/target/
+frontend/node_modules/
