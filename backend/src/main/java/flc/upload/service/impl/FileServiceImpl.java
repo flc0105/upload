@@ -24,6 +24,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.zip.ZipOutputStream;
 
@@ -331,5 +336,82 @@ public class FileServiceImpl implements FileService {
         } catch (Exception e) {
             return new Result(false, e.getMessage());
         }
+    }
+
+    @Override
+    public Result getFolderInfo(String relativePath) {
+        //DirectoryStats;
+
+        File directory = new File(uploadPath, relativePath);
+//        if (!directory.isDirectory()) {
+//            return new Result(false, "目录不存在");
+//        }
+        StringBuilder builder = new StringBuilder();
+
+        if (directory.isDirectory()) {
+            long totalSize = FileUtil.calculateSize(directory);
+            int fileCount = FileUtil.countFiles(directory);
+            int folderCount = FileUtil.countFolders(directory);
+
+
+            builder.append("文件夹名: ").append(directory.getName()).append("\n");
+            builder.append("大小: ").append(FileUtil.formatSize(totalSize)).append("\n");
+            builder.append("包含: ").append(fileCount).append("个文件，").append(folderCount).append("个文件夹").append("\n");
+
+            try {
+                Path dir = Paths.get(directory.toURI());
+                BasicFileAttributes attributes = Files.readAttributes(dir, BasicFileAttributes.class);
+
+
+                FileTime creationTime = attributes.creationTime();
+                FileTime lastModifiedTime = attributes.lastModifiedTime();
+
+                LocalDateTime creationDateTime = LocalDateTime.ofInstant(creationTime.toInstant(), ZoneId.systemDefault());
+                LocalDateTime lastModifiedDateTime = LocalDateTime.ofInstant(lastModifiedTime.toInstant(), ZoneId.systemDefault());
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+                builder.append("创建时间: ").append(creationDateTime.format(formatter)).append("\n");
+                builder.append("修改时间: ").append(lastModifiedDateTime.format(formatter));
+            } catch (Exception e) {
+                logger.error(e.getMessage());
+            }
+        } else if (directory.isFile()) {
+
+            builder.append("大小: ").append(FileUtil.formatSize(directory.length())).append("\n");
+
+            builder.append("文件名: ").append(directory.getName()).append("\n");
+
+            Path file = Paths.get(directory.toURI());
+
+            try {
+                BasicFileAttributes attributes = Files.readAttributes(file, BasicFileAttributes.class);
+
+                FileTime creationTime = attributes.creationTime();
+
+                LocalDateTime creationDateTime = LocalDateTime.ofInstant(creationTime.toInstant(), ZoneId.systemDefault());
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+
+                FileTime lastModifiedTime = attributes.lastModifiedTime();
+                LocalDateTime lastModifiedDateTime = LocalDateTime.ofInstant(lastModifiedTime.toInstant(), ZoneId.systemDefault());
+
+
+                builder.append("创建时间: ").append(creationDateTime.format(formatter)).append("\n");
+                builder.append("修改时间: ").append(lastModifiedDateTime.format(formatter)).append("\n");
+
+            } catch (IOException e) {
+                logger.error(e.getMessage());
+            }
+//            builder.append("修改时间: ").append(FileUtil.formatDate(directory.lastModified())).append("\n");
+            builder.append("文件类型: ").append(FileUtil.detectFileType(directory)).append("\n");
+            builder.append("相对路径: ").append(FileUtil.relativize(uploadPath, directory)).append("\n");
+
+
+        }
+
+
+        return new Result(true, builder.toString());
     }
 }

@@ -125,4 +125,90 @@ public class FileUtil {
             return null;
         }
     }
+
+
+
+    public static long calculateSize(File file) {
+        long size = 0;
+
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (File child : files) {
+                    size += calculateSize(child);
+                }
+            }
+        } else {
+            size = file.length();
+        }
+
+        return size;
+    }
+
+    public static int countFiles(File file) {
+        int count = 0;
+
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (File child : files) {
+                    if (child.isFile()) {
+                        count++;
+                    } else if (child.isDirectory()) {
+                        count += countFiles(child);
+                    }
+                }
+            }
+        } else if (file.isFile()) {
+            count++;
+        }
+
+        return count;
+    }
+
+    public static int countFolders(File file) {
+        int count = 0;
+
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (File child : files) {
+                    if (child.isDirectory()) {
+                        count++;
+                        count += countFolders(child);
+                    }
+                }
+            }
+        }
+
+        return count;
+    }
+
+//    public static String formatSize(long size) {
+//        final String[] units = {"B", "KB", "MB", "GB", "TB"};
+//        int unitIndex = 0;
+//
+//        while (size > 1024 && unitIndex < units.length - 1) {
+//            size /= 1024;
+//            unitIndex++;
+//        }
+//
+//        return size + " " + units[unitIndex];
+//    }
+
+    public static String formatSize(long size) {
+        if (size <= 0) {
+            return "0 B";
+        }
+
+        final String[] units = {"B", "KB", "MB", "GB", "TB"};
+        int unitIndex = (int) (Math.log10(size) / Math.log10(1024));
+
+        double formattedSize = size / Math.pow(1024, unitIndex);
+        String formattedSizeString = String.format("%.2f", formattedSize);
+
+        return formattedSizeString + " " + units[unitIndex];
+    }
+
+
 }

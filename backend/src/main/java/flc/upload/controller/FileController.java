@@ -118,4 +118,10 @@ public class FileController {
     public Result rename(@RequestParam("src") String src, @RequestParam("dst") String dst, HttpServletRequest request) {
         return fileService.rename(src, dst, CookieUtil.getCookie("token", request));
     }
+
+    @Log
+    @PostMapping("/folderInfo")
+    public Result getFolderInfo(@RequestParam("relativePath") String relativePath) {
+        return fileService.getFolderInfo(relativePath);
+    }
 }

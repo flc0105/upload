@@ -130,7 +130,7 @@
             <a class="link-primary">..</a>
           </td>
         </tr>
-        <tr v-for="    folder     in     files.folders    " :key=" folder ">
+        <tr v-for="               folder                in                files.folders               " :key=" folder ">
           <td class="checkbox" v-show=" multiSelect "
             @click=" (event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click() ">
             <input type="checkbox" class="form-check-input" :value=" folder.relativePath " v-model=" checkedFiles " />
@@ -158,11 +158,12 @@
                   <a class="dropdown-item"
                     @click=" $root.inputValue = folder.name; $root.showInput('重命名', '输入新文件夹名', function () { rename(folder.relativePath) }) ">重命名</a>
                 </li>
+                <li><a class="dropdown-item" @click=" directoryStats(folder.relativePath) ">详细信息</a></li>
               </ul>
             </div>
           </td>
         </tr>
-        <tr v-for="    file     in     files.files    " :key=" file ">
+        <tr v-for="               file                in                files.files               " :key=" file ">
           <td class="checkbox" v-show=" multiSelect "
             @click=" (event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click() ">
             <input type="checkbox" class="form-check-input" :value=" file.relativePath " v-model=" checkedFiles " />
@@ -202,6 +203,7 @@
                   <a class="dropdown-item"
                     @click=" $root.inputValue = file.name; $root.showInput('重命名', '输入新文件名', function () { rename(file.relativePath) }) ">重命名</a>
                 </li>
+                <li><a class="dropdown-item" @click=" directoryStats(file.relativePath) ">详细信息</a></li>
               </ul>
             </div>
           </td>
@@ -764,6 +766,28 @@ export default {
               "分享成功",
               location.protocol + "//" + location.host + "/files/" + res.detail
             );
+          } else {
+            this.$root.showModal("失败", res.msg);
+          }
+        })
+        .catch((err) => {
+          this.$root.showModal("错误", err.message);
+        })
+        .finally(() => {
+          this.$root.loading = false;
+        });
+    },
+
+
+
+
+    directoryStats(relativePath) {
+      this.$root.loading = true;
+      axios
+        .post("file/folderInfo", Qs.stringify({ relativePath: relativePath }))
+        .then((res) => {
+          if (res.success) {
+            this.$root.showModal("详细信息", res.msg);
           } else {
             this.$root.showModal("失败", res.msg);
           }
