@@ -5,6 +5,7 @@ import flc.upload.model.Bookmark;
 import flc.upload.model.Result;
 import flc.upload.model.Tag;
 import flc.upload.service.BookmarkService;
+import flc.upload.util.ImageGenerator;
 import flc.upload.util.JsoupUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -40,7 +41,11 @@ public class BookmarkServiceImpl implements BookmarkService {
             bookmark.setIcon(JsoupUtil.fileToBase64(iconUrl));
         } else {
             URL url = new URL(bookmark.getUrl());
-            bookmark.setIcon(JsoupUtil.fileToBase64(url.getProtocol() + "://" + url.getAuthority() + "/favicon.ico"));
+            String icon = JsoupUtil.fileToBase64(url.getProtocol() + "://" + url.getAuthority() + "/favicon.ico");
+            if (icon.isEmpty()) {
+                icon = ImageGenerator.generateImageBase64(bookmark.getTitle().charAt(0));
+            }
+            bookmark.setIcon(icon);
         }
         return new Result<>(bookmarkMapper.update(bookmark) != 0, null);
     }

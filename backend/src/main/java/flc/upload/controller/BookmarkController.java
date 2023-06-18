@@ -47,11 +47,6 @@ public class BookmarkController {
         return bookmarkService.updateAll();
     }
 
-//    @PostMapping("/rename")
-//    public Result rename(@RequestParam("id") Integer id, @RequestParam("title") String title) throws Exception {
-//        return bookmarkService.rename(id, title);
-//    }
-
     @PostMapping("/rename")
     public Result rename(@RequestBody Bookmark bookmark) throws Exception {
         return bookmarkService.rename(bookmark.getId(), bookmark.getTitle(), bookmark.getUrl());
@@ -68,7 +63,7 @@ public class BookmarkController {
     }
 
     @PostMapping("/findByTags")
-    public Result findByTags(@RequestParam  List<Integer> tagIds) throws Exception {
+    public Result findByTags(@RequestParam List<Integer> tagIds) throws Exception {
         return bookmarkService.findBookmarksByTags(tagIds);
     }
 }

@@ -21,20 +21,8 @@ public interface BookmarkMapper {
     @Select("select * from bookmark")
     List<Bookmark> findAll() throws Exception;
 
-//    @Select("SELECT b.id, b.title, t.id AS tag_id, t.title AS tag_name " +
-//            "FROM bookmark b " +
-//            "LEFT JOIN bookmark_tag bt ON b.id = bt.bookmark_id " +
-//            "LEFT JOIN tag t ON bt.tag_id = t.id GROUP BY b.id, b.title, tag_id, tag_name")
-//    @Results({
-//            @Result(property = "id", column = "id"),
-//            @Result(property = "title", column = "title"),
-//            @Result(property = "tags", column = "tag_id", javaType = List.class, many = @Many(select = "getTagsForBookmark"))
-//    })
-//    List<Bookmark> findAll() throws Exception;
-
     @Select("select * from bookmark where id=#{id}")
     Bookmark findById(Integer id) throws Exception;
-
 
     @Insert("insert into bookmark_tag (bookmark_id, tag_id) values(#{bookmarkId}, #{tagId})")
     Integer addTag(Integer bookmarkId, Integer tagId) throws Exception;
@@ -45,9 +33,7 @@ public interface BookmarkMapper {
     @Select("SELECT * FROM tag t JOIN bookmark_tag bt ON t.id = bt.tag_id WHERE bt.bookmark_id = #{bookmarkId}")
     List<Tag> getTagsForBookmark(int bookmarkId);
 
-
     @Select("SELECT b.* FROM bookmark b INNER JOIN bookmark_tag bt ON b.id = bt.bookmark_id WHERE bt.tag_id IN (${idString}) GROUP BY b.id HAVING COUNT(DISTINCT bt.tag_id) = ${tagIds.size()};")
     List<Bookmark> findBookmarksByTags(List<Integer> tagIds, String idString) throws Exception;
-
 
 }
