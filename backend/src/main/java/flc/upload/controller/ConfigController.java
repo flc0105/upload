@@ -1,8 +1,11 @@
 package flc.upload.controller;
 
 
+import flc.upload.annotation.Log;
+import flc.upload.annotation.Token;
 import flc.upload.model.AppConfig;
 import flc.upload.model.ConfigRequest;
+import flc.upload.util.CommonUtil;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,15 +21,17 @@ public class ConfigController {
 
     private final AppConfig config;
 
-    public ConfigController(AppConfig config, BeanFactory beanFactory) {
+    public ConfigController(AppConfig config) {
         this.config = config;
     }
 
+    @Log
+//    @Token
     @PostMapping("/config")
     public String updateConfig(@RequestBody ConfigRequest configRequest) {
         String key = configRequest.getKey();
         Object value = configRequest.getValue();
-        Field field = getFieldByName(key, config.getClass());
+        Field field = CommonUtil.getFieldByName(key, config.getClass());
         if (field != null) {
             try {
                 field.setAccessible(true);
@@ -41,15 +46,7 @@ public class ConfigController {
         }
     }
 
-    private Field getFieldByName(String fieldName, Class<?> clazz) {
-        try {
-            return clazz.getDeclaredField(fieldName);
-        } catch (NoSuchFieldException e) {
-            Class<?> superclass = clazz.getSuperclass();
-            if (superclass != null) {
-                return getFieldByName(fieldName, superclass);
-            }
-        }
-        return null;
-    }
+
+
+
 }
