@@ -50,4 +50,10 @@ public class TokenController {
             return new Result<>(false, "密码错误");
         }
     }
+
+    @Log
+    @PostMapping
+    public Result deactivateToken() {
+        return null;
+    }
 }

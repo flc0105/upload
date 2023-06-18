@@ -1,10 +1,14 @@
 package flc.upload.model;
 
+import java.util.List;
+
 public class Bookmark {
     private Integer id;
     private String url;
     private String title;
     private String icon;
+
+    private List<Tag> tags;
 
     public Integer getId() {
         return id;
@@ -36,5 +40,13 @@ public class Bookmark {
 
     public void setIcon(String icon) {
         this.icon = icon;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
     }
 }

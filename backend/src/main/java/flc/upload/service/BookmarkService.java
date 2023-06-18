@@ -2,6 +2,8 @@ package flc.upload.service;
 
 import flc.upload.model.Result;
 
+import java.util.List;
+
 public interface BookmarkService {
 
     Result add(String url) throws Exception;
@@ -17,5 +19,11 @@ public interface BookmarkService {
     Result updateAll() throws Exception;
 
     Result rename(Integer id, String title, String url) throws Exception;
+
+
+    Result addTag(Integer bookmarkId, List<Integer> tagIds) throws Exception;
+
+    Result findAllTags() throws Exception;
+
 
 }

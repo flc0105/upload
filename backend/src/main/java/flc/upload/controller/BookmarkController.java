@@ -3,8 +3,9 @@ package flc.upload.controller;
 import flc.upload.model.Bookmark;
 import flc.upload.model.Result;
 import flc.upload.service.BookmarkService;
-import flc.upload.service.impl.BookmarkServiceImpl;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -54,5 +55,24 @@ public class BookmarkController {
     @PostMapping("/rename")
     public Result rename(@RequestBody Bookmark bookmark) throws Exception {
         return bookmarkService.rename(bookmark.getId(), bookmark.getTitle(), bookmark.getUrl());
+    }
+
+//    @PostMapping("/addTag")
+//    public Result addTag(@RequestBody  Bookmark bookmark, @RequestBody List<Tag> tags) throws Exception {
+//
+//        return null;
+////        return bookmarkService.addTag(bookmark, tags);
+//
+//
+//    }
+
+    @PostMapping("/addTag")
+    public Result addTag(@RequestParam Integer bookmarkId, @RequestParam("tagIds") List<Integer> tagIds) throws Exception {
+        return bookmarkService.addTag(bookmarkId, tagIds);
+    }
+
+    @PostMapping("/findAllTags")
+    public Result findAllTags() throws Exception {
+        return bookmarkService.findAllTags();
     }
 }

@@ -85,4 +85,18 @@ public class BookmarkServiceImpl implements BookmarkService {
         }
         return new Result<>(bookmarkMapper.update(bookmark) != 0, null);
     }
+
+    @Override
+    public Result addTag(Integer bookmarkId, List<Integer> tagIds) throws Exception {
+        for (Integer id : tagIds) {
+            bookmarkMapper.addTag(bookmarkId, id);
+
+        }
+        return new Result<>(true, "添加完成", null);
+    }
+
+    public Result findAllTags() throws Exception {
+        return new Result<>(true, "查询完成", bookmarkMapper.findAllTags());
+    }
+
 }

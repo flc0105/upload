@@ -130,7 +130,8 @@
             <a class="link-primary">..</a>
           </td>
         </tr>
-        <tr v-for="               folder                in                files.folders               " :key=" folder ">
+        <tr v-for="                   folder                    in                    files.folders                   "
+          :key=" folder ">
           <td class="checkbox" v-show=" multiSelect "
             @click=" (event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click() ">
             <input type="checkbox" class="form-check-input" :value=" folder.relativePath " v-model=" checkedFiles " />
@@ -139,8 +140,8 @@
             <i class="bi bi-folder2"></i>&nbsp;
             <a class="link-primary">{{ folder.name }}</a>
           </td>
-          <td class="size" v-if=" columns.includes('size') ">-</td>
-          <td class="contentType" v-if=" columns.includes('contentType') ">-</td>
+          <td class="size" v-if=" columns.includes('size') "> -</td>
+          <td class=" contentType" v-if=" columns.includes('contentType') ">-</td>
           <td class="lastModified" v-if=" columns.includes('lastModified') ">{{ folder.lastModified }}</td>
           <td class="action">
             <a class="link-primary" @click=" downloadFolder(folder.relativePath) "><i
@@ -163,7 +164,8 @@
             </div>
           </td>
         </tr>
-        <tr v-for="               file                in                files.files               " :key=" file ">
+        <tr v-for="                   file                    in                    files.files                   "
+          :key=" file ">
           <td class="checkbox" v-show=" multiSelect "
             @click=" (event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click() ">
             <input type="checkbox" class="form-check-input" :value=" file.relativePath " v-model=" checkedFiles " />

@@ -1,6 +1,15 @@
 <template>
   <input type="file" name="file" id="file" class="d-none" @change="(event) => importBookmarks(event)" multiple />
+
+  <div class="btn-group mb-2 " v-for="tag in      tags     " :key="tag">
+    <input type="checkbox" class="btn-check" :id="tag.id" autocomplete="off">
+    <label class="btn btn-outline-primary" :for="tag.id">{{ tag.title }}</label> &nbsp;
+  </div>
+
+
   <div class="input-group mb-2">
+
+
     <input class="form-control" v-model="url" @keyup.enter="add()" :disabled="$root.loading" />
     <button class="btn btn-outline-primary" @click="add()" :disabled="$root.loading">添加</button>
     <button class="btn btn-outline-primary" data-bs-toggle="dropdown" :disabled="$root.loading">
@@ -21,7 +30,7 @@
   </div>
   <table class="table table-hover table-borderless border shadow-sm">
     <tbody>
-      <tr v-for="bookmark in bookmarks" :key="bookmark">
+      <tr v-for="bookmark in                              bookmarks                             " :key="bookmark">
         <td class="text-truncate" style="max-width: 200px">
           <img v-if="bookmark.icon" class="icon" v-bind:src="'data:image/jpeg;base64,' + bookmark.icon" />
           <img v-else class="icon" src="/vite.svg" />
@@ -47,10 +56,10 @@
               </li>
               <li>
                 <a class="dropdown-item"
-                  @click="$root.inputValue=bookmark.title; $root.showInput('修改标题', '输入新标题', function () { rename(bookmark.id) })">修改</a>
+                  @click="$root.inputValue = bookmark.title; $root.showInput('修改标题', '输入新标题', function () { rename(bookmark.id) })">修改</a>
               </li>
               <li>
-                <a class="dropdown-item" @click="update(bookmark.id)">更新</a>
+                <a class="dropdown-item" @click=" update(bookmark.id) ">更新</a>
               </li>
             </ul>
           </div>
@@ -88,6 +97,7 @@ export default {
     return {
       bookmarks: {}, // 书签
       url: "", // 输入的url
+      tags: "", //全部tag
     };
   },
   methods: {
@@ -284,9 +294,29 @@ export default {
           this.$root.loading = false;
         });
     },
+    // 获取tags列表
+    listTags() {
+      this.$root.loading = true;
+      axios
+        .post("bookmark/findAllTags")
+        .then((res) => {
+          if (res.success) {
+            this.tags = res.detail;
+          } else {
+            this.$root.showModal("失败", res.msg);
+          }
+        })
+        .catch((err) => {
+          this.$root.showModal("错误", err.message);
+        })
+        .finally(() => {
+          this.$root.loading = false;
+        });
+    },
   },
   mounted() {
     this.list();
-  },
+    this.listTags();
+  }
 }
 </script>
