@@ -40,6 +40,11 @@ const routes = [
     meta: { title: "文件列表" },
     component: () => import("../components/Upload.vue"),
   },
+  {
+    path: "/log",
+    meta: { title: "操作日志" },
+    component: () => import("../components/Log.vue"),
+  },
 ];
 const router = createRouter({
   history: createWebHistory(),

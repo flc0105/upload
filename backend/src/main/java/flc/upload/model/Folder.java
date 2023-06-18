@@ -1,8 +1,15 @@
 package flc.upload.model;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
+@ApiModel("文件夹")
 public class Folder {
+    @ApiModelProperty("文件夹名")
     private String name;
+    @ApiModelProperty("修改时间")
     private String lastModified;
+    @ApiModelProperty("相对路径")
     private String relativePath;
 
     public Folder(String name, String lastModified, String relativePath) {

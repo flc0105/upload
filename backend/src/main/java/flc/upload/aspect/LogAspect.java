@@ -31,6 +31,8 @@ public class LogAspect {
     // private static final Logger logger = LoggerFactory.getLogger(LogAspect.class);
     private static Logger logger;
 
+    public static final List<Map> logs = new ArrayList<>();
+
     @Pointcut("@annotation(flc.upload.annotation.Log)")
     public void logPointCut() {
 
@@ -117,7 +119,12 @@ public class LogAspect {
                 logMap.put("方法耗时", ((endTime - startTime) / 1_000_000) + " ms");
                 logMap.put("token", CookieUtil.getCookie("token", request));
                 logMap.put("username", JwtUtil.getUsername(CookieUtil.getCookie("token", request)));
-                logger.info("\n" + hashMapToJson(logMap));
+
+                String json = hashMapToJson(logMap);
+                logs.add(logMap);
+
+
+                logger.info("\n" + json);
                 break;
             }
         }

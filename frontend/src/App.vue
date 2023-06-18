@@ -41,12 +41,16 @@
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="/share">文件分享</a></li>
             <li><a class="dropdown-item" href="/upload">拖拽上传</a></li>
+            <li><a class="dropdown-item" href="/log">操作日志</a></li>
           </ul>
         </li>
       </ul>
     </div>
 
-    <router-view></router-view>
+    <div v-if="this.$route.path == '/log'" style="overflow-x: scroll">
+      <router-view></router-view>
+    </div>
+    <router-view v-else></router-view>
   </div>
 
   <!-- 消息框 -->
@@ -62,7 +66,9 @@
           ></button>
         </div>
         <div class="modal-body">
-          <p style="white-space: pre-wrap">{{ message.text }}</p>
+          <p style="white-space: pre-wrap; word-break: break-all">
+            {{ message.text }}
+          </p>
         </div>
         <div class="modal-footer">
           <button class="btn btn-outline-primary" data-bs-dismiss="modal">
@@ -359,6 +365,7 @@ export default {
     });
   },
   mounted() {
+    console.log(this.$route.path);
     this.$refs.imageModal.addEventListener("hidden.bs.modal", this.modalClose);
   },
 };

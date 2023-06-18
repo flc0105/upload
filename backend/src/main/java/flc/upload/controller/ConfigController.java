@@ -3,8 +3,10 @@ package flc.upload.controller;
 
 import flc.upload.annotation.Log;
 import flc.upload.annotation.Token;
+import flc.upload.aspect.LogAspect;
 import flc.upload.model.AppConfig;
 import flc.upload.model.ConfigRequest;
+import flc.upload.model.Result;
 import flc.upload.util.CommonUtil;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.annotation.PropertySource;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -44,6 +48,16 @@ public class ConfigController {
         } else {
             return "没有找到该配置";
         }
+    }
+
+    @Log
+//    @Token
+    @PostMapping("/logs")
+    public Result getLogs() {
+        List<Map> logs = LogAspect.logs;
+
+        return new Result(true, "获取成功", logs);
+
     }
 
 

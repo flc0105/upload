@@ -1,10 +1,19 @@
 package flc.upload.model;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
+@ApiModel("文件")
 public class File {
+    @ApiModelProperty("文件名")
     private String name;
+    @ApiModelProperty("文件大小")
     private long length;
+    @ApiModelProperty("修改时间")
     private String lastModified;
+    @ApiModelProperty("相对路径")
     private String relativePath;
+    @ApiModelProperty("文件类型")
     private String fileType;
 
     public File(String name, long length, String lastModified, String relativePath, String fileType) {
