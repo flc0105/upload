@@ -1,23 +1,68 @@
 <template>
-  <input type="file" name="file" id="file" class="d-none" @change="(event) => importBookmarks(event)" multiple />
+  <input
+    type="file"
+    name="file"
+    id="file"
+    class="d-none"
+    @change="(event) => importBookmarks(event)"
+    multiple
+  />
 
-  <div class="btn-group mb-2 " v-for="tag in      tags     " :key="tag">
-    <input type="checkbox" class="btn-check" :id="tag.id" autocomplete="off">
-    <label class="btn btn-outline-primary" :for="tag.id">{{ tag.title }}</label> &nbsp;
+  <div class="mb-2 custom-btn-group">
+    <!-- <input type="radio" id="radio" class="btn-check" autocomplete="off" />
+    <label
+      class="btn btn-outline-primary"
+      for="radio"
+      @click="
+        this.currentTags = [];
+        list();
+      "
+      >All</label
+    > -->
+
+    <div v-for="tag in tags" :key="tag" class="d-inline">
+      <input
+        type="checkbox"
+        class="btn-check"
+        :id="tag.id"
+        :value="tag.id"
+        v-model="this.currentTags"
+        autocomplete="off"
+        @change="findByTags()"
+      />
+      <label class="btn btn-outline-primary" :for="tag.id">{{
+        tag.title
+      }}</label>
+    </div>
   </div>
 
-
   <div class="input-group mb-2">
-
-
-    <input class="form-control" v-model="url" @keyup.enter="add()" :disabled="$root.loading" />
-    <button class="btn btn-outline-primary" @click="add()" :disabled="$root.loading">添加</button>
-    <button class="btn btn-outline-primary" data-bs-toggle="dropdown" :disabled="$root.loading">
+    <input
+      class="form-control"
+      v-model="url"
+      @keyup.enter="add()"
+      :disabled="$root.loading"
+    />
+    <button
+      class="btn btn-outline-primary"
+      @click="add()"
+      :disabled="$root.loading"
+    >
+      添加
+    </button>
+    <button
+      class="btn btn-outline-primary"
+      data-bs-toggle="dropdown"
+      :disabled="$root.loading"
+    >
       <i class="bi bi-three-dots-vertical"></i>
       <ul class="dropdown-menu">
         <li>
-          <a class="dropdown-item"
-            onclick="document.getElementById('file').value=null; document.getElementById('file').click()">导入</a>
+          <a
+            class="dropdown-item"
+            onclick="document.getElementById('file').value=null; document.getElementById('file').click()"
+            >导入</a
+          >
         </li>
         <li>
           <a class="dropdown-item" @click="exportBookmarks()">导出</a>
@@ -30,36 +75,68 @@
   </div>
   <table class="table table-hover table-borderless border shadow-sm">
     <tbody>
-      <tr v-for="bookmark in                              bookmarks                             " :key="bookmark">
+      <tr v-for="bookmark in bookmarks" :key="bookmark">
         <td class="text-truncate" style="max-width: 200px">
-          <img v-if="bookmark.icon" class="icon" v-bind:src="'data:image/jpeg;base64,' + bookmark.icon" />
+          <img
+            v-if="bookmark.icon"
+            class="icon"
+            v-bind:src="'data:image/jpeg;base64,' + bookmark.icon"
+          />
           <img v-else class="icon" src="/vite.svg" />
-          <span v-if="bookmark.title" class="align-middle">{{ bookmark.title }}</span>
-          <span v-else class="align-middle text-muted"><i>{{ extractDomain(bookmark.url) }}</i></span>
+          <span v-if="bookmark.title" class="align-middle">{{
+            bookmark.title
+          }}</span>
+          <span v-else class="align-middle text-muted"
+            ><i>{{ extractDomain(bookmark.url) }}</i></span
+          >
         </td>
-        <td class="text-truncate url" style="max-width: 200px"><i class="text-muted">{{ bookmark.url }}</i></td>
+        <td class="text-truncate url" style="max-width: 200px">
+          <i class="text-muted">{{ bookmark.url }}</i>
+        </td>
         <td class="text-end" style="width: 10%">
           <div class="dropdown d-inline">
-            <i class="bi bi-three-dots-vertical link-primary" data-bs-toggle="dropdown"></i>
+            <i
+              class="bi bi-three-dots-vertical link-primary"
+              data-bs-toggle="dropdown"
+            ></i>
             <ul class="dropdown-menu">
               <li>
-                <a class="dropdown-item" :href="bookmark.url" target="_blank">打开</a>
+                <a class="dropdown-item" :href="bookmark.url" target="_blank"
+                  >打开</a
+                >
               </li>
               <li>
-                <a class="dropdown-item" id="btnCopy" :data-clipboard-text="bookmark.url">复制</a>
+                <a
+                  class="dropdown-item"
+                  id="btnCopy"
+                  :data-clipboard-text="bookmark.url"
+                  >复制</a
+                >
               </li>
               <li>
-                <hr class="dropdown-divider">
+                <hr class="dropdown-divider" />
               </li>
               <li>
-                <a class="dropdown-item" @click="$root.showConfirm(() => remove(bookmark.id))">删除</a>
+                <a
+                  class="dropdown-item"
+                  @click="$root.showConfirm(() => remove(bookmark.id))"
+                  >删除</a
+                >
               </li>
               <li>
-                <a class="dropdown-item"
-                  @click="$root.inputValue = bookmark.title; $root.showInput('修改标题', '输入新标题', function () { rename(bookmark.id) })">修改</a>
+                <a
+                  class="dropdown-item"
+                  @click="
+                    $root.inputValue = bookmark.title;
+                    $root.showInput('修改标题', '输入新标题', function () {
+                      rename(bookmark.id);
+                    });
+                  "
+                  >修改</a
+                >
               </li>
               <li>
-                <a class="dropdown-item" @click=" update(bookmark.id) ">更新</a>
+                <a class="dropdown-item" @click="update(bookmark.id)">更新</a>
               </li>
             </ul>
           </div>
@@ -69,13 +146,30 @@
   </table>
 </template>
 
-
 <style scoped>
 .icon {
   width: auto;
   height: 15px;
   margin-right: 10px;
   vertical-align: middle;
+}
+
+.custom-btn-group :not(:first-child):not(:last-child) .btn {
+  border-radius: 0 !important;
+  border-left: 0 !important;
+  /* background: black !important; */
+}
+
+.custom-btn-group :first-child .btn {
+  /* border-right: 0 !important; */
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.custom-btn-group :last-child .btn {
+  border-left: 0 !important;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 @media screen and (max-width: 768px) {
@@ -86,11 +180,10 @@
 </style>
 
 <script>
-
-import axios from 'axios'
-import Qs from 'qs'
-import 'bootstrap/dist/js/bootstrap.bundle'
-import 'file-saver'
+import axios from "axios";
+import Qs from "qs";
+import "bootstrap/dist/js/bootstrap.bundle";
+import "file-saver";
 
 export default {
   data() {
@@ -98,6 +191,7 @@ export default {
       bookmarks: {}, // 书签
       url: "", // 输入的url
       tags: "", //全部tag
+      currentTags: [], // 当前已选中tag
     };
   },
   methods: {
@@ -120,6 +214,11 @@ export default {
     },
     // 获取书签列表
     list() {
+      if (this.currentTags.length != 0) {
+        this.findByTags();
+        return;
+      }
+
       this.$root.loading = true;
       axios
         .post("bookmark/list")
@@ -149,6 +248,7 @@ export default {
         .then((res) => {
           if (res.success) {
             this.list();
+            this.addTags(res.detail);
             this.update(res.detail);
           } else {
             this.$root.showModal("添加失败", res.msg);
@@ -193,7 +293,10 @@ export default {
       }
       this.$root.loading = true;
       axios
-        .post("bookmark/rename", Qs.stringify({ id: id, title: this.$root.$refs.input.value }))
+        .post(
+          "bookmark/rename",
+          Qs.stringify({ id: id, title: this.$root.$refs.input.value })
+        )
         .then((res) => {
           if (res.success) {
             this.$root.showModal("成功", "修改成功");
@@ -224,6 +327,27 @@ export default {
         })
         .catch((err) => {
           this.$root.showModal("错误", err.message);
+        })
+        .finally(() => {
+          this.$root.loading = false;
+        });
+    },
+    // 添加标签
+    addTags(id) {
+      this.$root.loading = true;
+      axios
+        .post(
+          "bookmark/addTags",
+          Qs.stringify({ bookmarkId: id, tagIds: this.currentTags.join(",") })
+        )
+        .then((res) => {
+          if (res.success) {
+          } else {
+            console.log("添加标签失败：" + res.msg);
+          }
+        })
+        .catch((err) => {
+          console.log("添加标签失败：" + err.message);
         })
         .finally(() => {
           this.$root.loading = false;
@@ -313,10 +437,36 @@ export default {
           this.$root.loading = false;
         });
     },
+    // 根据标签获取书签列表
+    findByTags() {
+      if (this.currentTags.length == 0) {
+        this.list();
+        return;
+      }
+      this.$root.loading = true;
+      axios
+        .post(
+          "bookmark/findByTags",
+          Qs.stringify({ tagIds: this.currentTags.join(",") })
+        )
+        .then((res) => {
+          if (res.success) {
+            this.bookmarks = res.detail;
+          } else {
+            this.$root.showModal("失败", res.msg);
+          }
+        })
+        .catch((err) => {
+          this.$root.showModal("错误", err.message);
+        })
+        .finally(() => {
+          this.$root.loading = false;
+        });
+    },
   },
   mounted() {
     this.list();
     this.listTags();
-  }
-}
+  },
+};
 </script>

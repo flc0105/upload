@@ -3,6 +3,7 @@ package flc.upload.service.impl;
 import flc.upload.mapper.BookmarkMapper;
 import flc.upload.model.Bookmark;
 import flc.upload.model.Result;
+import flc.upload.model.Tag;
 import flc.upload.service.BookmarkService;
 import flc.upload.util.JsoupUtil;
 import net.sf.json.JSONArray;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.URL;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BookmarkServiceImpl implements BookmarkService {
@@ -44,7 +46,16 @@ public class BookmarkServiceImpl implements BookmarkService {
     }
 
     public Result findAll() throws Exception {
-        return new Result<>(true, null, bookmarkMapper.findAll());
+
+        List<Bookmark> bookmarks = bookmarkMapper.findAll();
+
+        for (Bookmark bookmark : bookmarks) {
+            List<Tag> tags = bookmarkMapper.getTagsForBookmark(bookmark.getId());
+            bookmark.setTags(tags);
+        }
+
+//        return new Result<>(true, null, bookmarkMapper.findAll());
+        return new Result<>(true, null, bookmarks);
     }
 
     public Result bulkAdd(String data) throws Exception {
@@ -87,7 +98,12 @@ public class BookmarkServiceImpl implements BookmarkService {
     }
 
     @Override
-    public Result addTag(Integer bookmarkId, List<Integer> tagIds) throws Exception {
+    public Result addTags(Integer bookmarkId, List<Integer> tagIds) throws Exception {
+
+        if (tagIds.isEmpty()) {
+            return new Result<>(true, "没有添加标签", null);
+        }
+
         for (Integer id : tagIds) {
             bookmarkMapper.addTag(bookmarkId, id);
 
@@ -97,6 +113,22 @@ public class BookmarkServiceImpl implements BookmarkService {
 
     public Result findAllTags() throws Exception {
         return new Result<>(true, "查询完成", bookmarkMapper.findAllTags());
+    }
+
+    public Result findBookmarksByTags(List<Integer> tagIds) throws Exception {
+
+        String idString = tagIds.stream().map(Object::toString).collect(Collectors.joining(","));
+        System.out.println(idString);
+        List<Bookmark> bookmarks = bookmarkMapper.findBookmarksByTags(tagIds, idString);
+
+
+        for (Bookmark bookmark : bookmarks) {
+            List<Tag> tags = bookmarkMapper.getTagsForBookmark(bookmark.getId());
+            bookmark.setTags(tags);
+        }
+
+//        return new Result<>(true, null, bookmarkMapper.findAll());
+        return new Result<>(true, null, bookmarks);
     }
 
 }

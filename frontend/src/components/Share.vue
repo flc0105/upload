@@ -10,17 +10,33 @@
     </thead>
     <tbody>
       <tr v-for="code in codes" :key="code">
-        <td class="code"><i>{{ code.code }}</i></td>
-        <td class="text-truncate filePath"><i>{{ code.path }}</i></td>
+        <td class="code">
+          <i>{{ code.code }}</i>
+        </td>
+        <td class="text-truncate filePath">
+          <i>{{ code.path }}</i>
+        </td>
         <td class="status">
           <span class="badge text-bg-success" v-if="code.valid">有效</span>
           <span class="badge text-bg-danger" v-else>无效</span>
         </td>
         <td>
-          <a v-if="code.valid" class="link-primary me-1" id="btnCopy" :data-clipboard-text="getLink(code.code)">
+          <a
+            v-if="code.valid"
+            class="link-primary me-1"
+            id="btnCopy"
+            :data-clipboard-text="getLink(code.code)"
+          >
             <i class="bi bi-clipboard"></i>
           </a>
-          <a class="link-danger" @click="$root.showConfirm(function () { remove(code.code) })">
+          <a
+            class="link-danger"
+            @click="
+              $root.showConfirm(function () {
+                remove(code.code);
+              })
+            "
+          >
             <i class="bi bi-trash"></i>
           </a>
         </td>
@@ -47,10 +63,10 @@
 </style>
 
 <script>
-import axios from 'axios'
-import Qs from 'qs'
+import axios from "axios";
+import Qs from "qs";
 
-import 'bootstrap/dist/js/bootstrap.bundle'
+import "bootstrap/dist/js/bootstrap.bundle";
 export default {
   data() {
     return {
@@ -101,8 +117,14 @@ export default {
         });
     },
     getLink(code) {
-      return window.location.protocol + '//' + window.location.host + '/files/' + code;
-    }
+      return (
+        window.location.protocol +
+        "//" +
+        window.location.host +
+        "/files/" +
+        code
+      );
+    },
   },
   created() {
     this.list();

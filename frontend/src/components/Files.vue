@@ -2,92 +2,191 @@
   <div class="card border-bottom-0">
     <div class="card-header">
       <ol class="breadcrumb float-start" style="margin: 0.5rem 0">
-        <li class="filename text-truncate" v-for="directory in directories" :key="directory"
-          :class="['breadcrumb-item', { active: (directory.relativePath == currentDirectory) }]">
-          <a v-if="directory.relativePath == currentDirectory">{{ directory.displayName }}</a>
-          <a v-else class="link-primary" @click="changeDirectory(directory.relativePath)">{{ directory.displayName }}</a>
+        <li
+          class="filename text-truncate"
+          v-for="directory in directories"
+          :key="directory"
+          :class="[
+            'breadcrumb-item',
+            { active: directory.relativePath == currentDirectory },
+          ]"
+        >
+          <a v-if="directory.relativePath == currentDirectory">{{
+            directory.displayName
+          }}</a>
+          <a
+            v-else
+            class="link-primary"
+            @click="changeDirectory(directory.relativePath)"
+            >{{ directory.displayName }}</a
+          >
         </li>
       </ol>
     </div>
     <div class="card-body">
-      <form id="form" action="upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" id="file" class="d-none" @change="(event) => upload(event)" multiple />
-        <input type="file" name="folder" id="folder" class="d-none" @change="(event) => upload(event)" multiple
-          webkitdirectory />
+      <form
+        id="form"
+        action="upload"
+        method="post"
+        enctype="multipart/form-data"
+      >
+        <input
+          type="file"
+          name="file"
+          id="file"
+          class="d-none"
+          @change="(event) => upload(event)"
+          multiple
+        />
+        <input
+          type="file"
+          name="folder"
+          id="folder"
+          class="d-none"
+          @change="(event) => upload(event)"
+          multiple
+          webkitdirectory
+        />
       </form>
       <div class="files-left">
-        <button class="btn btn-outline-primary"
-          onclick="document.getElementById('file').value=null; document.getElementById('file').click()">
+        <button
+          class="btn btn-outline-primary"
+          onclick="document.getElementById('file').value=null; document.getElementById('file').click()"
+        >
           上传文件
         </button>
-        <button class="btn btn-outline-primary ms-1 me-1"
-          onclick="document.getElementById('folder').value=null; document.getElementById('folder').click()">
+        <button
+          class="btn btn-outline-primary ms-1 me-1"
+          onclick="document.getElementById('folder').value=null; document.getElementById('folder').click()"
+        >
           上传文件夹
         </button>
-        <button class="btn btn-outline-primary me-1"
-          @click="$root.inputValue = ''; $root.showInput('新建文件夹', '输入文件夹名', createDirectory)">
+        <button
+          class="btn btn-outline-primary me-1"
+          @click="
+            $root.inputValue = '';
+            $root.showInput('新建文件夹', '输入文件夹名', createDirectory);
+          "
+        >
           新建文件夹
         </button>
-        <button class="btn btn-outline-primary me-1" @click=" list() ">
+        <button class="btn btn-outline-primary me-1" @click="list()">
           刷新
         </button>
         <button
-          v-if=" cutFiles.length !== 0 && getParentDirectory(cutFiles[0]) !== currentDirectory && !currentDirectory.startsWith(cutFiles[0]) "
-          class="btn btn-outline-primary me-1" @click=" paste() ">
+          v-if="
+            cutFiles.length !== 0 &&
+            getParentDirectory(cutFiles[0]) !== currentDirectory &&
+            !currentDirectory.startsWith(cutFiles[0])
+          "
+          class="btn btn-outline-primary me-1"
+          @click="paste()"
+        >
           粘贴
         </button>
         <div class="btn-group">
-          <button class="btn btn-outline-primary" :disabled=" files.length === 0 "
-            @click=" multiSelect = !multiSelect; checkedFiles = [] ">
+          <button
+            class="btn btn-outline-primary"
+            :disabled="files.length === 0"
+            @click="
+              multiSelect = !multiSelect;
+              checkedFiles = [];
+            "
+          >
             多选
           </button>
-          <button v-if=" multiSelect " :disabled=" checkedFiles.length == 0 " class="btn btn-outline-primary"
-            @click=" bulkDownload() ">
+          <button
+            v-if="multiSelect"
+            :disabled="checkedFiles.length == 0"
+            class="btn btn-outline-primary"
+            @click="bulkDownload()"
+          >
             下载
           </button>
-          <button v-if=" multiSelect " :disabled=" checkedFiles.length == 0 " class="btn btn-outline-primary"
-            @click=" $root.showConfirm(function () { deleteFile(checkedFiles) }) ">
+          <button
+            v-if="multiSelect"
+            :disabled="checkedFiles.length == 0"
+            class="btn btn-outline-primary"
+            @click="
+              $root.showConfirm(function () {
+                deleteFile(checkedFiles);
+              })
+            "
+          >
             删除
           </button>
-          <button v-if=" multiSelect " :disabled=" checkedFiles.length == 0 " class="btn btn-outline-primary"
-            @click=" cut(checkedFiles) ">
+          <button
+            v-if="multiSelect"
+            :disabled="checkedFiles.length == 0"
+            class="btn btn-outline-primary"
+            @click="cut(checkedFiles)"
+          >
             剪切
           </button>
-          <button v-if=" multiSelect " :disabled=" checkedFiles.length == 0 " class="btn btn-outline-primary"
-            @click=" bulkZip() ">
+          <button
+            v-if="multiSelect"
+            :disabled="checkedFiles.length == 0"
+            class="btn btn-outline-primary"
+            @click="bulkZip()"
+          >
             打包
           </button>
         </div>
       </div>
       <div class="files-right">
         <div class="w-100 d-flex">
-          <input class="form-control" style="flex: 1 1 auto; width: 1%" placeholder="搜索" v-model=" filter "
-            @keyup.enter=" search() " />
+          <input
+            class="form-control"
+            style="flex: 1 1 auto; width: 1%"
+            placeholder="搜索"
+            v-model="filter"
+            @keyup.enter="search()"
+          />
           <div class="dropdown" style="padding-left: 5px">
-            <button class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown"
-              data-bs-auto-close="outside">
+            <button
+              class="btn btn-outline-primary dropdown-toggle"
+              data-bs-toggle="dropdown"
+              data-bs-auto-close="outside"
+            >
               <i class="bi bi-grid-3x3-gap-fill"></i>
             </button>
             <ul class="dropdown-menu">
               <li class="dropdown-item">
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="size" :checked=" columns.includes('size') "
-                    @click=" hideColumn('size') " />
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="size"
+                    :checked="columns.includes('size')"
+                    @click="hideColumn('size')"
+                  />
                   <label class="form-check-label" for="size">大小</label>
                 </div>
               </li>
               <li class="dropdown-item">
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="contentType"
-                    :checked=" columns.includes('contentType') " @click=" hideColumn('contentType') " />
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="contentType"
+                    :checked="columns.includes('contentType')"
+                    @click="hideColumn('contentType')"
+                  />
                   <label class="form-check-label" for="contentType">类型</label>
                 </div>
               </li>
               <li class="dropdown-item">
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="lastModified"
-                    :checked=" columns.includes('lastModified') " @click=" hideColumn('lastModified') " />
-                  <label class="form-check-label" for="lastModified">修改日期</label>
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="lastModified"
+                    :checked="columns.includes('lastModified')"
+                    @click="hideColumn('lastModified')"
+                  />
+                  <label class="form-check-label" for="lastModified"
+                    >修改日期</label
+                  >
                 </div>
               </li>
             </ul>
@@ -97,115 +196,261 @@
     </div>
     <table class="mb-0 table table-hover">
       <tbody>
-        <tr style="user-select: none;">
-          <th class="checkbox" v-if=" multiSelect "
-            @click=" (event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click() ">
-            <input type="checkbox" class="form-check-input" @click=" (event) => checkAll(event) "
-              :checked=" Object.keys(files).length > 0 && (checkedFiles.length > 0 && files.folders.length + files.files.length > 0) "
-              :indeterminate=" Object.keys(files).length > 0 && (checkedFiles.length > 0 && checkedFiles.length < files.folders.length + files.files.length) "
-              :disabled=" Object.keys(files).length > 0 && (files.folders.length + files.files.length == 0) " />
+        <tr style="user-select: none">
+          <th
+            class="checkbox"
+            v-if="multiSelect"
+            @click="
+              (event) =>
+                event.target === event.currentTarget &&
+                event.target.querySelector('.form-check-input').click()
+            "
+          >
+            <input
+              type="checkbox"
+              class="form-check-input"
+              @click="(event) => checkAll(event)"
+              :checked="
+                Object.keys(files).length > 0 &&
+                checkedFiles.length > 0 &&
+                files.folders.length + files.files.length > 0
+              "
+              :indeterminate="
+                Object.keys(files).length > 0 &&
+                checkedFiles.length > 0 &&
+                checkedFiles.length < files.folders.length + files.files.length
+              "
+              :disabled="
+                Object.keys(files).length > 0 &&
+                files.folders.length + files.files.length == 0
+              "
+            />
           </th>
-          <th class="filename text-truncate cursor-pointer" @click=" sortBy('name') ">
+          <th
+            class="filename text-truncate cursor-pointer"
+            @click="sortBy('name')"
+          >
             文件名
             <div class="sort-by-filename">
-              <i v-if=" sort.key === 'name' && sort.direction === 'asc' " class="bi bi-sort-alpha-up text-muted"></i>
-              <i v-if=" sort.key === 'name' && sort.direction === 'desc' "
-                class="bi bi-sort-alpha-down-alt text-muted"></i>
+              <i
+                v-if="sort.key === 'name' && sort.direction === 'asc'"
+                class="bi bi-sort-alpha-up text-muted"
+              ></i>
+              <i
+                v-if="sort.key === 'name' && sort.direction === 'desc'"
+                class="bi bi-sort-alpha-down-alt text-muted"
+              ></i>
             </div>
           </th>
-          <th class="size" v-if=" columns.includes('size') ">大小</th>
-          <th class="contentType" v-if=" columns.includes('contentType') ">类型</th>
-          <th class="lastModified cursor-pointer" v-if=" columns.includes('lastModified') " @click=" sortBy('time') ">
+          <th class="size" v-if="columns.includes('size')">大小</th>
+          <th class="contentType" v-if="columns.includes('contentType')">
+            类型
+          </th>
+          <th
+            class="lastModified cursor-pointer"
+            v-if="columns.includes('lastModified')"
+            @click="sortBy('time')"
+          >
             修改时间
             <div class="sort-by-time">
-              <i v-if=" sort.key === 'time' && sort.direction === 'asc' " class="bi bi-sort-numeric-up text-muted"></i>
-              <i v-if=" sort.key === 'time' && sort.direction === 'desc' "
-                class="bi bi-sort-numeric-down-alt text-muted"></i>
+              <i
+                v-if="sort.key === 'time' && sort.direction === 'asc'"
+                class="bi bi-sort-numeric-up text-muted"
+              ></i>
+              <i
+                v-if="sort.key === 'time' && sort.direction === 'desc'"
+                class="bi bi-sort-numeric-down-alt text-muted"
+              ></i>
             </div>
           </th>
           <th class="action">操作</th>
         </tr>
-        <tr v-if=" currentDirectory != '/' ">
-          <td colspan="6" @click=" changeDirectory(getParentDirectory(currentDirectory)) ">
+        <tr v-if="currentDirectory != '/'">
+          <td
+            colspan="6"
+            @click="changeDirectory(getParentDirectory(currentDirectory))"
+          >
             <a class="link-primary">..</a>
           </td>
         </tr>
-        <tr v-for="                   folder                    in                    files.folders                   "
-          :key=" folder ">
-          <td class="checkbox" v-show=" multiSelect "
-            @click=" (event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click() ">
-            <input type="checkbox" class="form-check-input" :value=" folder.relativePath " v-model=" checkedFiles " />
+        <tr v-for="folder in files.folders" :key="folder">
+          <td
+            class="checkbox"
+            v-show="multiSelect"
+            @click="
+              (event) =>
+                event.target === event.currentTarget &&
+                event.target.querySelector('.form-check-input').click()
+            "
+          >
+            <input
+              type="checkbox"
+              class="form-check-input"
+              :value="folder.relativePath"
+              v-model="checkedFiles"
+            />
           </td>
-          <td class="filename text-truncate" @click=" changeDirectory(folder.relativePath) ">
+          <td
+            class="filename text-truncate"
+            @click="changeDirectory(folder.relativePath)"
+          >
             <i class="bi bi-folder2"></i>&nbsp;
             <a class="link-primary">{{ folder.name }}</a>
           </td>
-          <td class="size" v-if=" columns.includes('size') "> -</td>
-          <td class=" contentType" v-if=" columns.includes('contentType') ">-</td>
-          <td class="lastModified" v-if=" columns.includes('lastModified') ">{{ folder.lastModified }}</td>
+          <td class="size" v-if="columns.includes('size')">-</td>
+          <td class="contentType" v-if="columns.includes('contentType')">-</td>
+          <td class="lastModified" v-if="columns.includes('lastModified')">
+            {{ folder.lastModified }}
+          </td>
           <td class="action">
-            <a class="link-primary" @click=" downloadFolder(folder.relativePath) "><i
-                class="bi bi-cloud-download"></i></a>
-            <a class="link-danger ms-1" @click=" $root.showConfirm(function () { deleteFile([folder.relativePath]) }) "><i
-                class="bi bi-trash"></i></a>
+            <a class="link-primary" @click="downloadFolder(folder.relativePath)"
+              ><i class="bi bi-cloud-download"></i
+            ></a>
+            <a
+              class="link-danger ms-1"
+              @click="
+                $root.showConfirm(function () {
+                  deleteFile([folder.relativePath]);
+                })
+              "
+              ><i class="bi bi-trash"></i
+            ></a>
             <div class="dropdown d-inline">
-              <a class="link-primary ms-1" data-bs-toggle="dropdown" aria-expanded="false">
+              <a
+                class="link-primary ms-1"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
                 <i class="bi bi-three-dots"></i>
               </a>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" @click=" zipFolder(folder.relativePath) ">压缩</a></li>
-                <li><a class="dropdown-item" @click=" cut([folder.relativePath]) ">剪切</a></li>
                 <li>
-                  <a class="dropdown-item"
-                    @click=" $root.inputValue = folder.name; $root.showInput('重命名', '输入新文件夹名', function () { rename(folder.relativePath) }) ">重命名</a>
+                  <a
+                    class="dropdown-item"
+                    @click="zipFolder(folder.relativePath)"
+                    >压缩</a
+                  >
                 </li>
-                <li><a class="dropdown-item" @click=" directoryStats(folder.relativePath) ">详细信息</a></li>
+                <li>
+                  <a class="dropdown-item" @click="cut([folder.relativePath])"
+                    >剪切</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    @click="
+                      $root.inputValue = folder.name;
+                      $root.showInput('重命名', '输入新文件夹名', function () {
+                        rename(folder.relativePath);
+                      });
+                    "
+                    >重命名</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    @click="directoryStats(folder.relativePath)"
+                    >详细信息</a
+                  >
+                </li>
               </ul>
             </div>
           </td>
         </tr>
-        <tr v-for="                   file                    in                    files.files                   "
-          :key=" file ">
-          <td class="checkbox" v-show=" multiSelect "
-            @click=" (event) => event.target === event.currentTarget && event.target.querySelector('.form-check-input').click() ">
-            <input type="checkbox" class="form-check-input" :value=" file.relativePath " v-model=" checkedFiles " />
+        <tr v-for="file in files.files" :key="file">
+          <td
+            class="checkbox"
+            v-show="multiSelect"
+            @click="
+              (event) =>
+                event.target === event.currentTarget &&
+                event.target.querySelector('.form-check-input').click()
+            "
+          >
+            <input
+              type="checkbox"
+              class="form-check-input"
+              :value="file.relativePath"
+              v-model="checkedFiles"
+            />
           </td>
           <td class="filename text-truncate">
-            <i class="bi" :class=" getIcon(file.name, file.fileType) "></i>&nbsp; {{ file.name }}
+            <i class="bi" :class="getIcon(file.name, file.fileType)"></i>&nbsp;
+            {{ file.name }}
           </td>
-          <td class="size" v-if=" columns.includes('size') ">
+          <td class="size" v-if="columns.includes('size')">
             {{ $root.formatBytes(file.length) }}
           </td>
-          <td class="contentType" v-if=" columns.includes('contentType') ">
+          <td class="contentType" v-if="columns.includes('contentType')">
             {{ file.fileType }}
           </td>
-          <td class="lastModified" v-if=" columns.includes('lastModified') ">
+          <td class="lastModified" v-if="columns.includes('lastModified')">
             {{ file.lastModified }}
           </td>
           <td class="action">
-            <a class="link-primary" @click=" downloadFile(file.relativePath) "><i class="bi bi-cloud-download"></i></a>
-            <a class="link-danger ms-1" @click=" $root.showConfirm(function () { deleteFile([file.relativePath]) }) "><i
-                class="bi bi-trash"></i></a>
+            <a class="link-primary" @click="downloadFile(file.relativePath)"
+              ><i class="bi bi-cloud-download"></i
+            ></a>
+            <a
+              class="link-danger ms-1"
+              @click="
+                $root.showConfirm(function () {
+                  deleteFile([file.relativePath]);
+                })
+              "
+              ><i class="bi bi-trash"></i
+            ></a>
             <div class="dropdown d-inline">
-              <a class="link-primary ms-1" data-bs-toggle="dropdown" aria-expanded="false">
+              <a
+                class="link-primary ms-1"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
                 <i class="bi bi-three-dots"></i>
               </a>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item" v-if=" file.fileType.includes('image') || file.fileType.includes('text') "
-                    @click=" preview(file.fileType, file.relativePath) ">预览</a>
+                  <a
+                    class="dropdown-item"
+                    v-if="
+                      file.fileType.includes('image') ||
+                      file.fileType.includes('text')
+                    "
+                    @click="preview(file.fileType, file.relativePath)"
+                    >预览</a
+                  >
                 </li>
                 <li>
-                  <a class="dropdown-item" @click=" share(file.relativePath) ">分享</a>
+                  <a class="dropdown-item" @click="share(file.relativePath)"
+                    >分享</a
+                  >
                 </li>
                 <li>
-                  <a class="dropdown-item" @click=" cut([file.relativePath]) ">剪切</a>
+                  <a class="dropdown-item" @click="cut([file.relativePath])"
+                    >剪切</a
+                  >
                 </li>
                 <li>
-                  <a class="dropdown-item"
-                    @click=" $root.inputValue = file.name; $root.showInput('重命名', '输入新文件名', function () { rename(file.relativePath) }) ">重命名</a>
+                  <a
+                    class="dropdown-item"
+                    @click="
+                      $root.inputValue = file.name;
+                      $root.showInput('重命名', '输入新文件名', function () {
+                        rename(file.relativePath);
+                      });
+                    "
+                    >重命名</a
+                  >
                 </li>
-                <li><a class="dropdown-item" @click=" directoryStats(file.relativePath) ">详细信息</a></li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    @click="directoryStats(file.relativePath)"
+                    >详细信息</a
+                  >
+                </li>
               </ul>
             </div>
           </td>
@@ -229,12 +474,12 @@
   display: inline;
 }
 
-.btn-group>.btn-group:not(:first-child),
-.btn-group> :not(.btn-check:first-child)+.btn {
+.btn-group > .btn-group:not(:first-child),
+.btn-group > :not(.btn-check:first-child) + .btn {
   margin-left: -0.9px !important;
 }
 
-.table>tbody>tr>td {
+.table > tbody > tr > td {
   vertical-align: middle;
 }
 
@@ -254,9 +499,7 @@
   max-width: 200px;
 }
 
-
 @media screen and (max-width: 768px) {
-
   .size,
   .contentType,
   .lastModified {
@@ -268,9 +511,7 @@
   }
 }
 
-
 @media screen and (max-width: 1000px) {
-
   .files-left,
   .files-right {
     float: none;
@@ -287,11 +528,11 @@
 </style>
 
 <script>
-import axios from 'axios'
-import Qs from 'qs'
+import axios from "axios";
+import Qs from "qs";
 
-import 'file-saver'
-import 'bootstrap/dist/js/bootstrap.bundle'
+import "file-saver";
+import "bootstrap/dist/js/bootstrap.bundle";
 
 let cancel;
 const CancelToken = axios.CancelToken;
@@ -317,8 +558,8 @@ export default {
       columns: ["size", "lastModified"],
       // 排序方式
       sort: {
-        'key': 'name',
-        'direction': 'asc',
+        key: "name",
+        direction: "asc",
       },
     };
   },
@@ -326,13 +567,13 @@ export default {
     // 排序
     sortBy(key) {
       if (key !== this.sort.key) {
-        this.sort.key = key
-        this.sort.direction = 'asc'
+        this.sort.key = key;
+        this.sort.direction = "asc";
       } else {
-        if (this.sort.direction === 'asc') {
-          this.sort.direction = 'desc';
+        if (this.sort.direction === "asc") {
+          this.sort.direction = "desc";
         } else {
-          this.sort.direction = 'asc';
+          this.sort.direction = "asc";
         }
       }
     },
@@ -345,7 +586,8 @@ export default {
         cancel(); // 取消之前的操作
       }
       axios
-        .post("file/list",
+        .post(
+          "file/list",
           Qs.stringify({ currentDirectory: this.currentDirectory }),
           {
             cancelToken: new CancelToken(function executor(c) {
@@ -356,7 +598,7 @@ export default {
         .then((res) => {
           if (res.success) {
             this.files = res.detail;
-            this.doSort(this.sort)
+            this.doSort(this.sort);
           } else {
             if (res.msg === "没有权限") {
               if (!this.$root.hasToken(() => this.list())) {
@@ -386,7 +628,8 @@ export default {
         cancel();
       }
       axios
-        .post("file/search",
+        .post(
+          "file/search",
           Qs.stringify({
             filter: this.filter,
             currentDirectory: this.currentDirectory,
@@ -400,7 +643,7 @@ export default {
         .then((res) => {
           if (res.success) {
             this.files = res.detail;
-            this.doSort(this.sort)
+            this.doSort(this.sort);
           } else {
             this.$root.showModal("失败", res.msg);
           }
@@ -448,14 +691,14 @@ export default {
       if (!this.$root.hasToken(() => this.upload(event))) {
         return;
       }
-      this.$root.message.title = "上传进度"
+      this.$root.message.title = "上传进度";
       const modal = new Modal(this.$root.$refs.progressModal);
       modal.show();
       const formData = new FormData();
       formData.append("currentDirectory", this.currentDirectory);
       const files = Array.from(event.target.files);
       files.forEach((file) => {
-        console.log(file)
+        console.log(file);
         formData.append("files", file);
       });
       var lastTime = new Date().getTime(); // 上次传输时的时间
@@ -471,14 +714,14 @@ export default {
           const current = e.loaded;
           const total = e.total;
           this.$root.progress = Math.round((current / total) * 100) + "%";
-          var now = new Date().getTime();//当前时间
+          var now = new Date().getTime(); //当前时间
           var amount_completed = current - lastBytes; // 从上次到这次的传输量
           var time_taken = (now - lastTime) / 1000; // 从上次到这次的传输所用秒数
           var speed = time_taken ? amount_completed / time_taken : 0;
           lastBytes = current;
           lastTime = now;
           this.$root.speed = this.$root.formatBytes(speed) + "/s";
-        }
+        },
       })
         .then((res) => {
           if (res.success) {
@@ -510,10 +753,11 @@ export default {
       }
       this.$root.loading = true;
       axios
-        .post("file/mkdir",
+        .post(
+          "file/mkdir",
           Qs.stringify({
             relativePath: this.currentDirectory + "/" + directoryName,
-          }),
+          })
         )
         .then((res) => {
           if (res.success) {
@@ -538,18 +782,18 @@ export default {
     },
     // 下载文件
     download(relativePath, api_url) {
-      this.$root.message.title = "正在下载"
+      this.$root.message.title = "正在下载";
       const modal = new Modal(this.$root.$refs.progressModal);
       modal.show();
       var lastTime = new Date().getTime();
       var lastBytes = 0;
       axios({
-        method: 'post',
+        method: "post",
         url: axios.defaults.baseURL + api_url,
         data: Qs.stringify({
-          relativePath: relativePath
+          relativePath: relativePath,
         }),
-        responseType: 'blob',
+        responseType: "blob",
         onDownloadProgress: (e) => {
           const current = e.loaded;
           const total = e.total;
@@ -561,18 +805,22 @@ export default {
           lastBytes = current;
           lastTime = now;
           this.$root.speed = this.$root.formatBytes(speed) + "/s";
-        }
-      }).then((response) => {
-        let filename = response.headers["content-disposition"].split("filename=")[1];
-        filename = decodeURIComponent(filename);
-        saveAs(response.data, this.removeOuterQuotes(filename));
-      }).catch((error) => {
-        modal.hide();
-        this.$root.showModal("错误", error.message);
-      }).finally(() => {
-        this.$root.progress = 0;
-        modal.hide();
+        },
       })
+        .then((response) => {
+          let filename =
+            response.headers["content-disposition"].split("filename=")[1];
+          filename = decodeURIComponent(filename);
+          saveAs(response.data, this.removeOuterQuotes(filename));
+        })
+        .catch((error) => {
+          modal.hide();
+          this.$root.showModal("错误", error.message);
+        })
+        .finally(() => {
+          this.$root.progress = 0;
+          modal.hide();
+        });
     },
     downloadFile(relativePath) {
       this.download(relativePath, "file/download");
@@ -592,7 +840,8 @@ export default {
       }
       this.$root.loading = true;
       axios
-        .post("file/delete",
+        .post(
+          "file/delete",
           Qs.stringify({ relativePath: JSON.stringify(files) })
         )
         .then((res) => {
@@ -619,13 +868,11 @@ export default {
     zipFolder(folderPath) {
       this.$root.loading = true;
       axios
-        .post("file/zip",
-          Qs.stringify({ relativePath: folderPath })
-        )
+        .post("file/zip", Qs.stringify({ relativePath: folderPath }))
         .then((res) => {
           if (res.success) {
             this.$root.showModal("成功", "压缩成功");
-            this.list()
+            this.list();
           } else {
             this.$root.showModal("成功", "压缩失败");
           }
@@ -641,13 +888,14 @@ export default {
     bulkZip() {
       this.$root.loading = true;
       axios
-        .post("file/bulkZip",
+        .post(
+          "file/bulkZip",
           Qs.stringify({ relativePath: JSON.stringify(this.checkedFiles) })
         )
         .then((res) => {
           if (res.success) {
             this.$root.showModal("成功", "压缩成功");
-            this.list()
+            this.list();
           } else {
             this.$root.showModal("成功", "压缩失败");
           }
@@ -660,7 +908,8 @@ export default {
         });
     },
     // 重命名
-    rename(oldName) { // 传入旧文件名
+    rename(oldName) {
+      // 传入旧文件名
       const newName = this.$root.$refs.input.value; // 从根组件获取输入的文件名
       if (newName.trim().length === 0) {
         this.$root.showModal("提示", "新文件名不能为空");
@@ -671,7 +920,8 @@ export default {
       }
       this.$root.loading = true;
       axios
-        .post("file/rename",
+        .post(
+          "file/rename",
           Qs.stringify({
             src: oldName,
             dst: this.currentDirectory + "/" + newName, // 新文件名：当前路径+新文件名
@@ -705,7 +955,8 @@ export default {
       }
       this.$root.loading = true;
       axios
-        .post("file/move",
+        .post(
+          "file/move",
           Qs.stringify({
             src: JSON.stringify(this.cutFiles),
             dst: this.currentDirectory,
@@ -733,13 +984,13 @@ export default {
     preview(fileType, filename) {
       if (fileType.includes("text")) {
         this.$root.loading = true;
-        this.$root.message.title = filename
-        this.$root.message.text = ""
+        this.$root.message.title = filename;
+        this.$root.message.text = "";
         axios
           .post("file/read", Qs.stringify({ relativePath: filename }))
           .then((res) => {
             if (res.success) {
-              this.$root.message.text = res.detail
+              this.$root.message.text = res.detail;
               new Modal(this.$root.$refs.textModal).show();
             } else {
               this.$root.showModal("失败", res.msg);
@@ -752,8 +1003,11 @@ export default {
             this.$root.loading = false;
           });
       } else if (fileType.includes("image")) {
-        this.$root.src = ""
-        this.$root.src = axios.defaults.baseURL + "file/previewImage?relativePath=" + encodeURIComponent(filename);
+        this.$root.src = "";
+        this.$root.src =
+          axios.defaults.baseURL +
+          "file/previewImage?relativePath=" +
+          encodeURIComponent(filename);
         new Modal(this.$root.$refs.imageModal).show();
       }
     },
@@ -779,9 +1033,6 @@ export default {
           this.$root.loading = false;
         });
     },
-
-
-
 
     directoryStats(relativePath) {
       this.$root.loading = true;
@@ -853,7 +1104,7 @@ export default {
     doSort(sort) {
       if (sort.key === "time") {
         // 按时间排序
-        if (sort.direction === 'desc') {
+        if (sort.direction === "desc") {
           // 降序
           this.files.folders.sort((a, b) => {
             const dateA = new Date(a.lastModified);
@@ -911,7 +1162,7 @@ export default {
       }
       if (sort.key == "name") {
         // 按名称排序
-        if (sort.direction === 'desc') {
+        if (sort.direction === "desc") {
           // 降序
           this.files.files.sort((a, b) => {
             const nameA = a.name.toUpperCase();
@@ -945,7 +1196,7 @@ export default {
           });
         }
       }
-    }
+    },
   },
   mounted() {
     this.list();
@@ -954,11 +1205,11 @@ export default {
   watch: {
     sort: {
       handler(newValue, oldValue) {
-        this.doSort(newValue)
+        this.doSort(newValue);
       },
       deep: true,
-      flush: 'post',
-    }
-  }
-}
+      flush: "post",
+    },
+  },
+};
 </script>

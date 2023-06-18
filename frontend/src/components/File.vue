@@ -22,11 +22,20 @@
           </tr>
         </tbody>
       </table>
-      <button class="btn btn-sm btn-outline-primary mt-3" @click="download(file.relativePath)">
+      <button
+        class="btn btn-sm btn-outline-primary mt-3"
+        @click="download(file.relativePath)"
+      >
         下载
       </button>
-      <button v-if="file && (file.fileType.includes('image') || file.fileType.includes('text'))"
-        class="btn btn-sm btn-outline-primary mt-3 ms-1" @click="preview(file.fileType, file.relativePath)">
+      <button
+        v-if="
+          file &&
+          (file.fileType.includes('image') || file.fileType.includes('text'))
+        "
+        class="btn btn-sm btn-outline-primary mt-3 ms-1"
+        @click="preview(file.fileType, file.relativePath)"
+      >
         预览
       </button>
     </div>
@@ -39,7 +48,7 @@
   width: auto;
 }
 
-.table>tbody>tr>td {
+.table > tbody > tr > td {
   vertical-align: top;
 }
 
@@ -57,8 +66,8 @@ tr :not(:first-child) {
 </style>
 
 <script>
-import axios from 'axios'
-import Qs from 'qs'
+import axios from "axios";
+import Qs from "qs";
 
 export default {
   data() {
@@ -80,7 +89,7 @@ export default {
           }
         })
         .catch((err) => {
-          this.$root.showModal('错误', err.message)
+          this.$root.showModal("错误", err.message);
           this.$router.push("/");
         })
         .finally(() => {
@@ -88,19 +97,22 @@ export default {
         });
     },
     download(relativePath) {
-      location.href = axios.defaults.baseURL + "/file/download?relativePath=" + encodeURIComponent(relativePath);
+      location.href =
+        axios.defaults.baseURL +
+        "/file/download?relativePath=" +
+        encodeURIComponent(relativePath);
     },
     // 预览文件
     preview(fileType, filename) {
       if (fileType.includes("text")) {
         this.$root.loading = true;
-        this.$root.message.title = filename
-        this.$root.message.text = ""
+        this.$root.message.title = filename;
+        this.$root.message.text = "";
         axios
           .post("/file/read", Qs.stringify({ relativePath: filename }))
           .then((res) => {
             if (res.success) {
-              this.$root.message.text = res.detail
+              this.$root.message.text = res.detail;
               new Modal(this.$root.$refs.textModal).show();
             } else {
               this.$root.showModal("失败", res.msg);
@@ -114,7 +126,10 @@ export default {
           });
       } else if (fileType.includes("image")) {
         this.$root.src = "";
-        this.$root.src = axios.defaults.baseURL + "/file/previewImage?relativePath=" + encodeURIComponent(filename);
+        this.$root.src =
+          axios.defaults.baseURL +
+          "/file/previewImage?relativePath=" +
+          encodeURIComponent(filename);
         new Modal(this.$root.$refs.imageModal).show();
       }
     },

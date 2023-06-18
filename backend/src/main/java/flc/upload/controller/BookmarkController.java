@@ -57,22 +57,18 @@ public class BookmarkController {
         return bookmarkService.rename(bookmark.getId(), bookmark.getTitle(), bookmark.getUrl());
     }
 
-//    @PostMapping("/addTag")
-//    public Result addTag(@RequestBody  Bookmark bookmark, @RequestBody List<Tag> tags) throws Exception {
-//
-//        return null;
-////        return bookmarkService.addTag(bookmark, tags);
-//
-//
-//    }
-
-    @PostMapping("/addTag")
-    public Result addTag(@RequestParam Integer bookmarkId, @RequestParam("tagIds") List<Integer> tagIds) throws Exception {
-        return bookmarkService.addTag(bookmarkId, tagIds);
+    @PostMapping("/addTags")
+    public Result addTags(@RequestParam Integer bookmarkId, @RequestParam("tagIds") List<Integer> tagIds) throws Exception {
+        return bookmarkService.addTags(bookmarkId, tagIds);
     }
 
     @PostMapping("/findAllTags")
     public Result findAllTags() throws Exception {
         return bookmarkService.findAllTags();
+    }
+
+    @PostMapping("/findByTags")
+    public Result findByTags(@RequestParam  List<Integer> tagIds) throws Exception {
+        return bookmarkService.findBookmarksByTags(tagIds);
     }
 }
