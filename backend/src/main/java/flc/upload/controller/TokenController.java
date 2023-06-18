@@ -1,5 +1,6 @@
 package flc.upload.controller;
 
+import flc.upload.annotation.Log;
 import flc.upload.model.AppConfig;
 import flc.upload.model.Result;
 import flc.upload.util.CookieUtil;
@@ -24,6 +25,7 @@ public class TokenController {
     @Value("${password}")
     private String password;
 
+    @Log
     @PostMapping("/get")
     public Result get(@RequestParam("password") String password, HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (this.password.equals(password)) {
@@ -36,6 +38,7 @@ public class TokenController {
         }
     }
 
+    @Log
     @PostMapping("/getWithUsername")
     public Result getWithUsername(@RequestParam("password") String password, String username, HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (this.password.equals(password)) {

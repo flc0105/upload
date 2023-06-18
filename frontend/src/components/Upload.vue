@@ -1,7 +1,11 @@
 <template>
   <div :class="['wrapper', { 'active': active }]" v-cloak @drop.prevent="addFile" @dragenter.prevent="active = true"
     @dragover.prevent="active = true" @dragleave.prevent="active = false">
-    <div class="drag" v-show="files.length == 0">
+
+    <input type="file" name="file" id="file" class="d-none" @change="(event) => addFromClick(event)" multiple />
+
+    <div class="drag cursor-pointer" v-show="files.length == 0"
+      onclick="document.getElementById('file').value = null; document.getElementById('file').click()">
       <p class="title">未选择文件/文件夹</p>
       <p class="subtile">支持拖拽到此区域上传，支持选择多个文件/文件夹</p>
     </div>
@@ -17,7 +21,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(file, id) in files" :key="id">
+            <tr v-for="( file, id ) in  files " :key="id">
               <td>{{ id + 1 }}</td>
               <td><i>{{ file.webkitRelativePath ? file.webkitRelativePath : file.name }}</i></td>
               <td>{{ $root.formatBytes(file.size) }}</td>
@@ -104,6 +108,12 @@ export default {
         if (entry) {
           this.traverseFileTree(entry);
         }
+      });
+    },
+    addFromClick(e) {
+      let files = Array.from(e.target.files);
+      files.forEach((file) => {
+        this.files.push(file);
       });
     },
     traverseFileTree(item, path) {

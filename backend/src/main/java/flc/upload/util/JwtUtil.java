@@ -40,7 +40,7 @@ public class JwtUtil {
             DecodedJWT decodedJWT = verifier.verify(token);
             return decodedJWT.getClaim("username").asString();
         } catch (Exception e) {
-            return "invalid token";
+            return "null";
         }
 
     }

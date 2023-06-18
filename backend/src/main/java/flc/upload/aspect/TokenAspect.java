@@ -1,7 +1,9 @@
 package flc.upload.aspect;
 
+import flc.upload.exception.VerifyFailedException;
 import flc.upload.manager.TokenManager;
 import flc.upload.util.CookieUtil;
+import flc.upload.util.JwtUtil;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -35,8 +37,16 @@ public class TokenAspect {
             if (arg instanceof HttpServletRequest) {
                 HttpServletRequest request = ((HttpServletRequest) arg);
                 String token = CookieUtil.getCookie("token", request);
-                tokenManager.verify(token);
-                logger.info("验证成功");
+
+                try {
+                    tokenManager.verify(token);
+                    String username = JwtUtil.getUsername(token);
+                    logger.info(username + " 验证成功，执行的方法是 " + method.getName());
+                } catch (VerifyFailedException e) {
+                    logger.info("验证失败，执行的方法是 "  + method.getName());
+                    throw e;
+                }
+
             }
         }
     }
