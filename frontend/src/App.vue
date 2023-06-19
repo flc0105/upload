@@ -365,7 +365,6 @@ export default {
     });
   },
   mounted() {
-    console.log(this.$route.path);
     this.$refs.imageModal.addEventListener("hidden.bs.modal", this.modalClose);
   },
 };

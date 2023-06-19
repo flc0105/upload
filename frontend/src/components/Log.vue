@@ -1,4 +1,5 @@
 <template id="share-list">
+  <div id="alert"></div>
   <table class="table table-center" style="white-space: nowrap">
     <thead>
       <tr>
@@ -11,7 +12,9 @@
 
         <td v-for="(value, key) in item" :key="key" :title="item[key]">
           <template v-if="['返回结果', 'token'].includes(key)">
-            <a href="#" @click="showDetails(item[key])">查看</a>
+            <a href="#" @click="showDetails(item[key])" v-if="item[key] != null"
+              >查看</a
+            ><span v-else>null</span>
           </template>
           <template v-else>{{ value }}</template>
         </td>
@@ -88,7 +91,23 @@ export default {
       this.$root.showModal("查看", value);
     },
   },
-  created() {
+  created() {},
+  mounted() {
+    if (
+      !this.$root.hasToken(() => {
+        document.getElementById("alert").innerHTML = "";
+        this.list();
+      })
+    ) {
+      document.getElementById("alert").innerHTML = [
+        `<div class="alert alert-danger alert-dismissible" role="alert">`,
+        `   <div>拒绝访问</div>`,
+        '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+        "</div>",
+      ].join("");
+      return;
+    }
+
     this.list();
   },
 };

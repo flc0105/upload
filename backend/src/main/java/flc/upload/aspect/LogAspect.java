@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import flc.upload.model.Result;
 import flc.upload.util.CookieUtil;
 import flc.upload.util.JwtUtil;
+import flc.upload.util.ServerInfoUtil;
+import io.swagger.annotations.ApiOperation;
+import org.apache.catalina.util.ServerInfo;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -52,9 +55,7 @@ public class LogAspect {
         logger = LoggerFactory.getLogger(method.getDeclaringClass());
         String methodName = method.getName();
         Object[] args = joinPoint.getArgs();
-
         long startTime = System.nanoTime();
-
         // 执行目标方法，并记录返回值
         Object result = joinPoint.proceed();
 
@@ -102,6 +103,15 @@ public class LogAspect {
                 String contextPath = request.getContextPath();
                 String requestURI = request.getRequestURI();
                 String path = requestURI.substring(contextPath.length());
+
+                if (method.isAnnotationPresent(ApiOperation.class)) {
+                    ApiOperation apiOperation = method.getAnnotation(ApiOperation.class);
+                    String interfaceName = apiOperation.value();
+                    logMap.put("接口名称", interfaceName);
+                }
+                else {
+                    logMap.put("接口名称", "null");
+                }
                 logMap.put("请求地址", path);
                 logMap.put("ip", ip);
                 logMap.put("是否执行成功", String.valueOf((result instanceof Result) ? ((Result<?>) result).isSuccess() : null));
