@@ -46,7 +46,7 @@ const routes = [
     component: () => import("../components/Log.vue"),
   },
   {
-    path: "/info",
+    path: "/server",
     meta: { title: "服务器信息" },
     component: () => import("../components/Info.vue"),
   },

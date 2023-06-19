@@ -1,7 +1,7 @@
 <template>
   <h2 class="pt-2 pb-2 border-bottom">服务器信息</h2>
 
-  <div class="row row-cols-4 g-4 py-4">
+  <div class="row g-4 py-5 row-cols-1 row-cols-lg-4">
     <div class="col" v-for="(value, key) in info" :key="key">
       <div class="card rounded-3 shadow-sm" style="min-height: 10rem">
         <div class="card-body">
@@ -16,7 +16,8 @@
 
   <h2 class="pt-2 pb-2 border-bottom">配置信息</h2>
 
-  <div class="row row-cols-4 g-4 py-4">
+  <!-- <div class="row row-cols-4 g-4 py-4"> -->
+  <div class="row g-4 py-5 row-cols-1 row-cols-lg-4">
     <div class="col" v-for="(value, key) in config" :key="key">
       <div class="card rounded-3 shadow-sm" style="min-height: 10rem">
         <div class="card-body">
