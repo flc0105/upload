@@ -45,6 +45,11 @@ const routes = [
     meta: { title: "操作日志" },
     component: () => import("../components/Log.vue"),
   },
+  {
+    path: "/info",
+    meta: { title: "服务器信息" },
+    component: () => import("../components/Info.vue"),
+  },
 ];
 const router = createRouter({
   history: createWebHistory(),

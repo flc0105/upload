@@ -42,6 +42,7 @@
             <li><a class="dropdown-item" href="/share">文件分享</a></li>
             <li><a class="dropdown-item" href="/upload">拖拽上传</a></li>
             <li><a class="dropdown-item" href="/log">操作日志</a></li>
+            <li><a class="dropdown-item" href="/info">服务器信息</a></li>
           </ul>
         </li>
       </ul>

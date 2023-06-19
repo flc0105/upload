@@ -24,7 +24,7 @@ public class AppConfig {
     @Value("${preview.compressImage}")
     private boolean compressImage;
 
-    @Value("deactivated.tokens")
+    @Value("${deactivated.tokens}")
     private List<String> deactivatedTokens;
 
     public List<String> getDeactivatedTokens() {

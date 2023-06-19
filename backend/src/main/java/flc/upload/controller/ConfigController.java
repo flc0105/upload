@@ -39,7 +39,7 @@ public class ConfigController {
     @ApiOperation("修改配置")
 //    @Token
     @PostMapping("/config/set")
-    public String updateConfig(@RequestBody ConfigRequest configRequest) {
+    public Result updateConfig(@RequestBody ConfigRequest configRequest) {
         String key = configRequest.getKey();
         Object value = configRequest.getValue();
         Field field = CommonUtil.getFieldByName(key, config.getClass());
@@ -47,13 +47,13 @@ public class ConfigController {
             try {
                 field.setAccessible(true);
                 field.set(config, value);
-                return "修改配置成功";
+                return new Result(true, "修改成功", null);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
-                return "修改配置失败：" + e.getMessage();
+                return new Result(false, "修改失败：" + e.getMessage(), null);
             }
         } else {
-            return "没有找到该配置";
+            return new Result(false, "没有找到该配置", null);
         }
     }
 
@@ -61,8 +61,8 @@ public class ConfigController {
 //    @Token
     @ApiOperation("获取配置列表")
     @PostMapping("/config/get")
-    public Map<String, Object> getConfig() {
-        return CommonUtil.getClassAttributes(config);
+    public Result getConfig() {
+        return new Result(true, "获取成功", CommonUtil.getClassAttributes(config));
     }
 
     @Log

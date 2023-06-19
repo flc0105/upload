@@ -105,26 +105,26 @@ public class ServerInfoUtil {
             Object attribute = mBeanServer.getAttribute(new ObjectName("java.lang", "type", "OperatingSystem"), "TotalPhysicalMemorySize");
             Object attribute2 = mBeanServer.getAttribute(new ObjectName("java.lang", "type", "OperatingSystem"), "FreePhysicalMemorySize");
             map.put("当前内存占用", FileUtil.formatSize(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
-            map.put("物理内存大小", FileUtil.formatSize(Long.parseLong(attribute.toString())));
-            map.put("物理内存剩余", FileUtil.formatSize(Long.parseLong(attribute2.toString())));
+            map.put("内存大小", FileUtil.formatSize(Long.parseLong(attribute.toString())));
+            map.put("内存剩余", FileUtil.formatSize(Long.parseLong(attribute2.toString())));
             File currentDisk = new File(".");
             map.put("当前磁盘空间", FileUtil.formatSize(currentDisk.getTotalSpace()));
             map.put("当前磁盘剩余空间", FileUtil.formatSize(currentDisk.getFreeSpace()));
             File systemDrive = new File(System.getenv("SystemDrive"));
-            map.put("系统所在磁盘剩余空间", FileUtil.formatSize(systemDrive.getFreeSpace()));
+            map.put("系统盘剩余空间", FileUtil.formatSize(systemDrive.getFreeSpace()));
             File uploadFolder = new File(uploadPath);
             if (uploadFolder.exists()) {
                 map.put("文件上传目录", uploadFolder.getAbsoluteFile());
-                map.put("目录总大小", FileUtil.formatSize(getDirectorySize(uploadFolder)));
+                map.put("目录大小", FileUtil.formatSize(getDirectorySize(uploadFolder)));
                 map.put("已管理文件个数", FileUtil.countFiles(uploadFolder) + "个文件，" + FileUtil.countFolders(uploadFolder) + "个文件夹");
             }
             File dbFile = new File(Objects.requireNonNull(getSQLiteFilePath(dbPath), "未找到数据库文件"));
             if (dbFile.exists()) {
-                map.put("数据库文件路径", dbFile.getAbsoluteFile());
+                map.put("数据库路径", dbFile.getAbsoluteFile());
                 map.put("数据库大小", FileUtil.formatSize(dbFile.length()));
             }
-            map.put("Paste个数", myBatisUtil.executeQueryCount("select count(1) from paste"));
-            map.put("书签个数", myBatisUtil.executeQueryCount("select count(1) from bookmark"));
+            map.put("Paste数量", myBatisUtil.executeQueryCount("select count(1) from paste"));
+            map.put("书签数量", myBatisUtil.executeQueryCount("select count(1) from bookmark"));
 //            OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 //            long physicalMemorySize = osBean.getTotalPhysicalMemorySize();
 //            long usedPhysicalMemorySize = osBean.getTotalPhysicalMemorySize() - osBean.getFreePhysicalMemorySize();
