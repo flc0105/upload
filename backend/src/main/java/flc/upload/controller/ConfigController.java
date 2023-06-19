@@ -24,9 +24,7 @@ import java.util.Map;
 @RestController
 @PropertySource("classpath:app-config.properties")
 public class ConfigController {
-
     private final AppConfig config;
-
 
     private final MyBatisUtil myBatisUtil;
 
@@ -35,10 +33,9 @@ public class ConfigController {
         this.myBatisUtil = myBatisUtil;
     }
 
-
     @Log
 //    @Token
-    @PostMapping("/config")
+    @PostMapping("/config/set")
     public String updateConfig(@RequestBody ConfigRequest configRequest) {
         String key = configRequest.getKey();
         Object value = configRequest.getValue();
@@ -59,6 +56,13 @@ public class ConfigController {
 
     @Log
 //    @Token
+    @PostMapping("/config/get")
+    public Map<String, Object> getConfig() {
+        return CommonUtil.getClassAttributes(config);
+    }
+
+    @Log
+//    @Token
     @PostMapping("/logs")
     public Result getLogs() {
         List<Map> logs = LogAspect.logs;
@@ -72,17 +76,17 @@ public class ConfigController {
         return new Result(true, "获取成功", ServerInfoUtil.getInfoMap());
     }
 
-    @PostMapping("/select")
+    @PostMapping("/sql/select")
     public Result select(@RequestParam String sql) {
         return new Result(true, "查询成功", myBatisUtil.executeQuery(sql));
     }
 
-    @PostMapping("/count")
+    @PostMapping("/sql/count")
     public Result count(@RequestParam String sql) {
         return new Result(true, "查询成功", myBatisUtil.executeQueryCount(sql));
     }
 
-    @PostMapping("/execute")
+    @PostMapping("/sql/execute")
     public Result execute(@RequestParam String sql) {
         return new Result(true, "执行成功", myBatisUtil.executeStatement(sql));
     }
