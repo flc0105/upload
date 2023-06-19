@@ -10,6 +10,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.io.File;
 import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -96,7 +97,7 @@ public class ServerInfoUtil {
             map.put("版本", ServerInfoUtil.class.getPackage().getImplementationVersion());
             map.put("PID", new ApplicationPid().toString());
             map.put("运行时间", convertTime(ApplicationStartTime.getInstance().getUptime()));
-            map.put("计算机名", System.getenv("COMPUTERNAME"));
+            map.put("主机名", InetAddress.getLocalHost().getHostName());
             map.put("用户名", System.getProperty("user.name"));
             map.put("操作系统", System.getProperty("os.name"));
             map.put("操作系统版本", System.getProperty("os.version"));
@@ -110,8 +111,12 @@ public class ServerInfoUtil {
             File currentDisk = new File(".");
             map.put("当前磁盘空间", FileUtil.formatSize(currentDisk.getTotalSpace()));
             map.put("当前磁盘剩余空间", FileUtil.formatSize(currentDisk.getFreeSpace()));
-            File systemDrive = new File(System.getenv("SystemDrive"));
-            map.put("系统盘剩余空间", FileUtil.formatSize(systemDrive.getFreeSpace()));
+            try {
+                File systemDrive = new File(System.getenv("SystemDrive"));
+                map.put("系统盘剩余空间", FileUtil.formatSize(systemDrive.getFreeSpace()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             File uploadFolder = new File(uploadPath);
             if (uploadFolder.exists()) {
                 map.put("文件上传目录", uploadFolder.getAbsoluteFile());
