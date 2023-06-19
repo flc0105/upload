@@ -1,14 +1,24 @@
 package flc.upload.model;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.validation.constraints.NotNull;
 
+@ApiModel("Paste")
 public class Paste {
     @NotNull(message = "ID不能为空")
+    @ApiModelProperty("Paste id")
     private Integer id;
+    @ApiModelProperty("Paste标题")
     private String title;
+    @ApiModelProperty("Paste正文")
     private String text;
+    @ApiModelProperty("添加时间")
     private String time;
+    @ApiModelProperty("过期时间")
     private String expiredDate;
+    @ApiModelProperty("是否私密")
     private Boolean isPrivate;
 
     public Integer getId() {
@@ -47,7 +57,7 @@ public class Paste {
         return expiredDate;
     }
 
-    public void setExpireDate(String expiredDate) {
+    public void setExpiredDate(String expiredDate) {
         this.expiredDate = expiredDate;
     }
 

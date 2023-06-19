@@ -36,8 +36,8 @@ public class SwaggerConfig {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("Your API Title")
-                .description("Your API Description")
+                .title("Upload")
+                .description("Upload Application")
                 .version("1.0.0")
                 .build();
     }

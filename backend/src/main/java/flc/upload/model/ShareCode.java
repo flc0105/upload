@@ -1,9 +1,17 @@
 package flc.upload.model;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
+@ApiModel("分享码")
 public class ShareCode {
+    @ApiModelProperty("分享码id")
     private Integer id;
+    @ApiModelProperty("分享码")
     private String code;
+    @ApiModelProperty("文件路径")
     private String path;
+    @ApiModelProperty("是否有效")
     private boolean isValid;
 
     public Integer getId() {

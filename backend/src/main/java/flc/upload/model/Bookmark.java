@@ -1,13 +1,21 @@
 package flc.upload.model;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.List;
 
+@ApiModel("书签")
 public class Bookmark {
+    @ApiModelProperty("书签id")
     private Integer id;
+    @ApiModelProperty("url")
     private String url;
+    @ApiModelProperty("标题")
     private String title;
+    @ApiModelProperty("图标base64")
     private String icon;
-
+    @ApiModelProperty("标签列表")
     private List<Tag> tags;
 
     public Integer getId() {
