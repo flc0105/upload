@@ -60,7 +60,7 @@ public class BookmarkServiceImpl implements BookmarkService {
         }
 
 //        return new Result<>(true, null, bookmarkMapper.findAll());
-        return new Result<>(true, null, bookmarks);
+        return new Result<>(true, "查询成功", bookmarks);
     }
 
     public Result bulkAdd(String data) throws Exception {

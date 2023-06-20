@@ -45,11 +45,6 @@ public class FileUtil {
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
     private static MyConfigProperties myConfigProperties;
 
-    @Autowired
-    public void setMyConfigProperties(MyConfigProperties myConfigProperties) {
-        FileUtil.myConfigProperties = myConfigProperties;
-    }
-
     public static String relativize(String uploadPath, File file) {
         String path = new File(uploadPath).toURI().relativize(file.toURI()).getPath();
         return "/" + (path.endsWith("/") ? path.substring(0, path.length() - 1) : path);
@@ -145,7 +140,6 @@ public class FileUtil {
             return null;
         }
     }
-
 
     public static long calculateDirectorySize(File file) {
         long size = 0;
@@ -298,6 +292,20 @@ public class FileUtil {
             logger.error("获取音乐元数据失败：" + e.getMessage());
         }
         return sb.toString();
+    }
+
+    public static String getFileExtension(File file) {
+        String fileName = file.getName();
+        int dotIndex = fileName.lastIndexOf(".");
+        if (dotIndex == -1) {
+            return ""; // 文件没有扩展名
+        }
+        return fileName.substring(dotIndex);
+    }
+
+    @Autowired
+    public void setMyConfigProperties(MyConfigProperties myConfigProperties) {
+        FileUtil.myConfigProperties = myConfigProperties;
     }
 
 }

@@ -1,6 +1,13 @@
 <template id="share-list">
   <div id="alert"></div>
-  <table class="table table-center" style="white-space: nowrap">
+
+  <div class="btn-group mb-3">
+    <button class="btn btn-outline-primary" @click="list()">刷新</button>
+    <button class="btn btn-outline-primary" @click="exportLogs()">导出</button>
+    <button class="btn btn-outline-primary" @click="clearLogs()">清空</button>
+  </div>
+
+  <table class="table table-hover" style="white-space: nowrap">
     <thead>
       <tr>
         <th v-for="(value, key) in logs[0]" :key="key">{{ key }}</th>
@@ -24,10 +31,10 @@
 </template>
 
 <style scoped>
-.table th,
+/* .table th,
 td {
   text-align: center;
-}
+} */
 
 td {
   max-width: 200px;
@@ -42,6 +49,7 @@ import axios from "axios";
 import Qs from "qs";
 
 import "bootstrap/dist/js/bootstrap.bundle";
+import "file-saver";
 export default {
   data() {
     return {
@@ -69,6 +77,35 @@ export default {
     },
     showDetails(value) {
       this.$root.showModal("查看", value);
+    },
+    // 新建文件夹
+    clearLogs() {
+      if (!this.$root.hasToken(() => this.clearLogs())) {
+        return;
+      }
+      this.$root.loading = true;
+      axios
+        .post("logs/clear")
+        .then((res) => {
+          if (res.success) {
+            this.list();
+            this.$root.showModal("成功", res.msg);
+          } else {
+            this.$root.showModal("失败", res.msg);
+          }
+        })
+        .catch((err) => {
+          this.$root.showModal("错误", err.message);
+        })
+        .finally(() => {
+          this.$root.loading = false;
+        });
+    },
+    exportLogs() {
+      var blob = new Blob([JSON.stringify(this.logs, null, 2)], {
+        type: "text/plain;charset=utf-8",
+      });
+      saveAs(blob, new Date().getTime() + ".txt");
     },
   },
   created() {},

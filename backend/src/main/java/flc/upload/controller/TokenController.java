@@ -24,13 +24,12 @@ import java.util.List;
 public class TokenController {
 
     private final AppConfig config;
+    @Value("${password}")
+    private String password;
 
     public TokenController(AppConfig config) {
         this.config = config;
     }
-
-    @Value("${password}")
-    private String password;
 
     @Log
     @ApiOperation("Token_获取")

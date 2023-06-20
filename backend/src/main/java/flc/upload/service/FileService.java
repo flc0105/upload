@@ -5,6 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 
 public interface FileService {
 
@@ -37,4 +38,6 @@ public interface FileService {
     Result rename(String oldName, String newName);
 
     Result getFileInfo(String relativePath) throws Exception;
+
+    Result generateDirectLink(String relativePath) throws IOException;
 }

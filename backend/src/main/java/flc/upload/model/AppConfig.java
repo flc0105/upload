@@ -26,20 +26,19 @@ public class AppConfig {
 
     @Value("${deactivated.tokens}")
     private List<String> deactivatedTokens;
+    @Value("${bookmark.timeout}")
+    private int bookmarkTimeout;
 
     public List<String> getDeactivatedTokens() {
         return deactivatedTokens;
-    }
-
-    public void setDeactivatedTokens(List<String> deactivatedTokens) {
-        this.deactivatedTokens = deactivatedTokens;
     }
 //
 //    @Value("${password}")
 //    private String password;
 
-    @Value("${bookmark.timeout}")
-    private int bookmarkTimeout;
+    public void setDeactivatedTokens(List<String> deactivatedTokens) {
+        this.deactivatedTokens = deactivatedTokens;
+    }
 
     public int getMaxFileSize() {
         return maxFileSize;

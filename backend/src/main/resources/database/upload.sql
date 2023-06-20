@@ -55,7 +55,11 @@ CREATE TABLE if not exists bookmark_tag
 );
 
 
-insert or ignore into tag values (null, "工作");
-insert or ignore into tag values (null, "学习");
-insert or ignore into tag values (null, "生活");
-insert or ignore into tag values (null, "娱乐");
+insert or ignore into tag
+values (null, "工作");
+insert or ignore into tag
+values (null, "学习");
+insert or ignore into tag
+values (null, "生活");
+insert or ignore into tag
+values (null, "娱乐");

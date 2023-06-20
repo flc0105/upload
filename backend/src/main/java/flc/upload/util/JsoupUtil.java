@@ -1,7 +1,6 @@
 package flc.upload.util;
 
 import flc.upload.model.AppConfig;
-import flc.upload.model.MyConfigProperties;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -19,11 +18,6 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class JsoupUtil {
     private static AppConfig appConfig;
-
-    @Autowired
-    public void setAppConfig(AppConfig appConfig) {
-        JsoupUtil.appConfig = appConfig;
-    }
 
     public static String getTitle(String url) {
         System.out.println("param:" + appConfig.getBookmarkTimeout());
@@ -71,5 +65,10 @@ public class JsoupUtil {
             System.err.println(e);
             return "";
         }
+    }
+
+    @Autowired
+    public void setAppConfig(AppConfig appConfig) {
+        JsoupUtil.appConfig = appConfig;
     }
 }

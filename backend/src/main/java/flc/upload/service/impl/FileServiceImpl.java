@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.zip.ZipOutputStream;
 
@@ -32,17 +33,18 @@ public class FileServiceImpl implements FileService {
     private final TokenManager tokenManager;
 
     private final AppConfig config;
+    private final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
+    @Value("${upload.path}")
+    private String uploadPath;
+
+    @Value("${image.path}")
+    private String imagePath;
 
     @Autowired
     public FileServiceImpl(TokenManager tokenManager, AppConfig config) {
         this.tokenManager = tokenManager;
         this.config = config;
     }
-
-    @Value("${upload.path}")
-    private String uploadPath;
-
-    private final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
 
     public Result list(String currentDirectory, String token) {
         List<Folder> folders = new ArrayList<>();
@@ -359,5 +361,20 @@ public class FileServiceImpl implements FileService {
             }
         }
         return new Result(true, "查询成功", sb.toString());
+    }
+
+    @Override
+    public Result generateDirectLink(String relativePath) throws IOException {
+        File file = new File(uploadPath, relativePath);
+        if (file.isFile() && Objects.requireNonNull(FileUtil.detectFileType(file), "检查文件类型失败").startsWith("image")) {
+            String newFile = "IMG_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + FileUtil.getFileExtension(file);
+            Path targetFile = Paths.get(new File(imagePath, newFile).toURI());
+            Files.createDirectories(targetFile.getParent());
+            Files.copy(Paths.get(file.toURI()), targetFile, StandardCopyOption.REPLACE_EXISTING);
+
+            return new Result(true, "生成成功", "/images/" + newFile);
+        } else {
+            throw new BusinessException("不支持的文件类型");
+        }
     }
 }

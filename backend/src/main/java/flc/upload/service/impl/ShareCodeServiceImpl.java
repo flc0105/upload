@@ -16,13 +16,12 @@ import java.util.List;
 @Service
 public class ShareCodeServiceImpl implements ShareCodeService {
     private final ShareCodeMapper shareCodeMapper;
+    @Value("${upload.path}")
+    private String uploadPath;
 
     public ShareCodeServiceImpl(ShareCodeMapper shareCodeMapper) {
         this.shareCodeMapper = shareCodeMapper;
     }
-
-    @Value("${upload.path}")
-    private String uploadPath;
 
     public Result add(String path) throws Exception {
         ShareCode shareCode = shareCodeMapper.findByPath(path);
@@ -46,7 +45,7 @@ public class ShareCodeServiceImpl implements ShareCodeService {
     public Result findAll() throws Exception {
         List<ShareCode> shareCodeList = shareCodeMapper.findAll();
         List<ShareCode> newShareCodeList = new ArrayList<>();
-        for (ShareCode shareCode: shareCodeList) {
+        for (ShareCode shareCode : shareCodeList) {
             File file = new File(uploadPath, shareCode.getPath());
             if (file.isFile()) {
                 shareCode.setValid(true);

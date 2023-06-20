@@ -77,6 +77,15 @@ public class ConfigController {
 
     @Log
     @Token
+    @ApiOperation("清空日志")
+    @PostMapping("/logs/clear")
+    public Result clearLogs() {
+        LogAspect.logs.clear();
+        return new Result(true, "清空成功", null);
+    }
+
+    @Log
+    @Token
     @ApiOperation("获取服务器信息")
     @PostMapping("/info")
     public Result getServerInfo() {

@@ -43,7 +43,7 @@ public class TokenAspect {
                     String username = JwtUtil.getUsername(token);
                     logger.info(username + " 验证成功，执行的方法是 " + method.getName());
                 } catch (VerifyFailedException e) {
-                    logger.info("验证失败，执行的方法是 "  + method.getName());
+                    logger.info("验证失败，执行的方法是 " + method.getName());
                     throw e;
                 }
 

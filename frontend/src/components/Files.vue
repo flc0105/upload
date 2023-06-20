@@ -296,6 +296,22 @@
           >
             <i class="bi bi-folder2"></i>&nbsp;
             <a class="link-primary">{{ folder.name }}</a>
+
+            <span
+              v-if="folder.relativePath == '/images'"
+              class="badge text-bg-primary ms-2"
+              >直链图片文件夹</span
+            >
+            <span
+              v-if="folder.relativePath == '/public'"
+              class="badge text-bg-primary ms-2"
+              >公共文件夹</span
+            >
+            <span
+              v-if="folder.relativePath == '/private'"
+              class="badge text-bg-primary ms-2"
+              >私密文件夹</span
+            >
           </td>
           <td class="size" v-if="columns.includes('size')">-</td>
           <td class="contentType" v-if="columns.includes('contentType')">-</td>
@@ -449,6 +465,14 @@
                     class="dropdown-item"
                     @click="directoryStats(file.relativePath)"
                     >详细信息</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    v-if="file.fileType.includes('image')"
+                    @click="generateDirectLink(file.relativePath)"
+                    >生成图片直链</a
                   >
                 </li>
               </ul>
@@ -1195,6 +1219,30 @@ export default {
           });
         }
       }
+    },
+    generateDirectLink(relativePath) {
+      this.$root.loading = true;
+      axios
+        .post(
+          "file/generateDirectLink",
+          Qs.stringify({ relativePath: relativePath })
+        )
+        .then((res) => {
+          if (res.success) {
+            this.$root.showModal(
+              "生成成功",
+              location.protocol + "//" + location.host + res.detail
+            );
+          } else {
+            this.$root.showModal("失败", res.msg);
+          }
+        })
+        .catch((err) => {
+          this.$root.showModal("错误", err.message);
+        })
+        .finally(() => {
+          this.$root.loading = false;
+        });
     },
   },
   mounted() {

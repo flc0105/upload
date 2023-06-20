@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
@@ -146,5 +147,12 @@ public class FileController {
     @PostMapping("/info")
     public Result info(@RequestParam("relativePath") String relativePath) throws Exception {
         return fileService.getFileInfo(relativePath);
+    }
+
+    @Log
+    @ApiOperation("文件_生成图片直链")
+    @PostMapping("/generateDirectLink")
+    public Result generateDirectLink(@RequestParam("relativePath") String relativePath) throws IOException {
+        return fileService.generateDirectLink(relativePath);
     }
 }

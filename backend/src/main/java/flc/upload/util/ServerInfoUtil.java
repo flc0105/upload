@@ -24,26 +24,6 @@ public class ServerInfoUtil {
     private static int port;
     private static MyBatisUtil myBatisUtil;
 
-    @Value("${upload.path}")
-    public void setUploadPath(String uploadPath) {
-        ServerInfoUtil.uploadPath = uploadPath;
-    }
-
-    @Value("${spring.datasource.url}")
-    public void setDbPath(String dbPath) {
-        ServerInfoUtil.dbPath = dbPath;
-    }
-
-    @Value("${server.port}")
-    public void setPort(int port) {
-        ServerInfoUtil.port = port;
-    }
-
-    @Autowired
-    public void setMyBatisUtil(MyBatisUtil myBatisUtil) {
-        ServerInfoUtil.myBatisUtil = myBatisUtil;
-    }
-
     public static Map<String, Object> getInfoMap() {
         Map<String, Object> map = new LinkedHashMap<>();
         try {
@@ -85,5 +65,25 @@ public class ServerInfoUtil {
             logger.error("获取服务器信息失败：" + e.getMessage());
         }
         return map;
+    }
+
+    @Value("${upload.path}")
+    public void setUploadPath(String uploadPath) {
+        ServerInfoUtil.uploadPath = uploadPath;
+    }
+
+    @Value("${spring.datasource.url}")
+    public void setDbPath(String dbPath) {
+        ServerInfoUtil.dbPath = dbPath;
+    }
+
+    @Value("${server.port}")
+    public void setPort(int port) {
+        ServerInfoUtil.port = port;
+    }
+
+    @Autowired
+    public void setMyBatisUtil(MyBatisUtil myBatisUtil) {
+        ServerInfoUtil.myBatisUtil = myBatisUtil;
     }
 }
