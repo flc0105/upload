@@ -11,7 +11,7 @@
         <!-- <td v-for="(value, key) in item" :key="key">{{ value }}</td> -->
 
         <td v-for="(value, key) in item" :key="key" :title="item[key]">
-          <template v-if="['返回结果', 'token'].includes(key)">
+          <template v-if="['返回结果', 'Token'].includes(key)">
             <a href="#" @click="showDetails(item[key])" v-if="item[key] != null"
               >查看</a
             ><span v-else>null</span>
@@ -29,32 +29,12 @@ td {
   text-align: center;
 }
 
-table {
-  /* width: 100%;
-  table-layout: fixed; */
-}
-
 td {
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-/* .code {
-  width: 10%;
-  min-width: 80px;
-}
-
-.filePath {
-  max-width: 200px;
-}
-
-@media screen and (max-width: 768px) {
-  .status {
-    display: none;
-  }
-} */
 </style>
 
 <script>

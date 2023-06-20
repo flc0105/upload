@@ -1,4 +1,5 @@
 <template>
+  <div id="alert"></div>
   <h2 class="pt-2 pb-2 border-bottom">服务器信息</h2>
 
   <div class="row g-4 py-5 row-cols-1 row-cols-lg-4">
@@ -178,6 +179,22 @@ export default {
   },
   created() {},
   mounted() {
+    if (
+      !this.$root.hasToken(() => {
+        document.getElementById("alert").innerHTML = "";
+        this.list();
+        this.listConfig();
+      })
+    ) {
+      document.getElementById("alert").innerHTML = [
+        `<div class="alert alert-danger alert-dismissible" role="alert">`,
+        `   <div>拒绝访问</div>`,
+        '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+        "</div>",
+      ].join("");
+      return;
+    }
+
     this.list();
     this.listConfig();
   },

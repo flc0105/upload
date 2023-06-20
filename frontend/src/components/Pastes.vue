@@ -145,15 +145,12 @@ export default {
       }
       this.$root.loading = true;
       axios
-        .post(
-          "/paste/add",
-          Qs.stringify({
-            title: this.title.trim().length === 0 ? "未命名" : this.title,
-            text: this.text,
-            expiredDate: this.calcExpiredDate(this.$refs.select.value),
-            isPrivate: this.$refs.isPrivate.checked,
-          })
-        )
+        .post("/paste/add", {
+          title: this.title.trim().length === 0 ? "未命名" : this.title,
+          text: this.text,
+          expiredDate: this.calcExpiredDate(this.$refs.select.value),
+          private: this.$refs.isPrivate.checked,
+        })
         .then((res) => {
           if (res.success) {
             this.list();

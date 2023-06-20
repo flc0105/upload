@@ -24,19 +24,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.zip.ZipOutputStream;
 
 @Service
 public class FileServiceImpl implements FileService {
-    private TokenManager tokenManager;
+    private final TokenManager tokenManager;
 
-    private AppConfig config;
+    private final AppConfig config;
 
     @Autowired
     public FileServiceImpl(TokenManager tokenManager, AppConfig config) {
@@ -46,7 +41,6 @@ public class FileServiceImpl implements FileService {
 
     @Value("${upload.path}")
     private String uploadPath;
-
 
     private final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
 
@@ -72,7 +66,7 @@ public class FileServiceImpl implements FileService {
         map.put("folders", folders);
         map.put("files", files);
         JSONObject jsonObject = JSONObject.fromObject(map);
-        return new Result<>(true, null, jsonObject);
+        return new Result<>(true, "查询成功", jsonObject);
     }
 
     public Result search(String filter, String currentDirectory, String token) {
@@ -121,7 +115,7 @@ public class FileServiceImpl implements FileService {
         map.put("folders", folders);
         map.put("files", files);
         JSONObject jsonObject = JSONObject.fromObject(map);
-        return new Result<>(true, null, jsonObject);
+        return new Result<>(true, "查询成功", jsonObject);
     }
 
     public Result upload(MultipartFile[] files, String currentDirectory, String token) throws Exception {
@@ -289,11 +283,10 @@ public class FileServiceImpl implements FileService {
             sb.append(str).append("\n");
         }
         in.close();
-        return new Result<>(true, null, sb.toString());
+        return new Result<>(true, "查询成功", sb.toString());
     }
 
     public Result move(String src, String dst) {
-//        tokenManager.verify(token);
         JSONArray array = JSONArray.fromObject(src);
         StringBuilder failedFilenames = new StringBuilder();
         for (Object file : array) {
@@ -321,7 +314,6 @@ public class FileServiceImpl implements FileService {
     }
 
     public Result rename(String oldName, String newName) {
-//        tokenManager.verify(token);
         File srcFile = new File(uploadPath, oldName);
         File dstFile = new File(uploadPath, newName);
         if (dstFile.exists()) {
@@ -338,58 +330,34 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    @Override
-    public Result getFolderInfo(String relativePath) throws Exception {
-        File directory = new File(uploadPath, relativePath);
-        StringBuilder builder = new StringBuilder();
-        if (directory.isDirectory()) {
-            long totalSize = FileUtil.calculateSize(directory);
-            int fileCount = FileUtil.countFiles(directory);
-            int folderCount = FileUtil.countFolders(directory);
-            builder.append("文件夹名: ").append(directory.getName()).append("\n");
-            builder.append("大小: ").append(FileUtil.formatSize(totalSize)).append("\n");
-            builder.append("包含: ").append(fileCount).append("个文件，").append(folderCount).append("个文件夹").append("\n");
-            try {
-                Path dir = Paths.get(directory.toURI());
-                BasicFileAttributes attributes = Files.readAttributes(dir, BasicFileAttributes.class);
-                FileTime creationTime = attributes.creationTime();
-                FileTime lastModifiedTime = attributes.lastModifiedTime();
-                LocalDateTime creationDateTime = LocalDateTime.ofInstant(creationTime.toInstant(), ZoneId.systemDefault());
-                LocalDateTime lastModifiedDateTime = LocalDateTime.ofInstant(lastModifiedTime.toInstant(), ZoneId.systemDefault());
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                builder.append("创建时间: ").append(creationDateTime.format(formatter)).append("\n");
-                builder.append("修改时间: ").append(lastModifiedDateTime.format(formatter));
-            } catch (Exception e) {
-                logger.error(e.getMessage());
-            }
-        } else if (directory.isFile()) {
-            builder.append("文件名: ").append(directory.getName()).append("\n");
-            builder.append("大小: ").append(FileUtil.formatSize(directory.length())).append("\n");
-            String fileType = FileUtil.detectFileType(directory);
-            builder.append("文件类型: ").append(fileType).append("\n");
-            builder.append("相对路径: ").append(FileUtil.relativize(uploadPath, directory)).append("\n");
-            Path file = Paths.get(directory.toURI());
-            try {
-                BasicFileAttributes attributes = Files.readAttributes(file, BasicFileAttributes.class);
-                FileTime creationTime = attributes.creationTime();
-                LocalDateTime creationDateTime = LocalDateTime.ofInstant(creationTime.toInstant(), ZoneId.systemDefault());
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                FileTime lastModifiedTime = attributes.lastModifiedTime();
-                LocalDateTime lastModifiedDateTime = LocalDateTime.ofInstant(lastModifiedTime.toInstant(), ZoneId.systemDefault());
-                builder.append("创建时间: ").append(creationDateTime.format(formatter)).append("\n");
-                builder.append("修改时间: ").append(lastModifiedDateTime.format(formatter)).append("\n");
-            } catch (IOException e) {
-                logger.error(e.getMessage());
-            }
+    public Result getFileInfo(String relativePath) throws Exception {
+        File f = new File(uploadPath, relativePath);
+        StringBuilder sb = new StringBuilder();
+        if (f.isDirectory()) {
+            sb.append("--------- 文件夹属性 ---------").append("\n");
+            sb.append("文件夹名: ").append(f.getName()).append("\n");
+            sb.append("大小: ").append(FileUtil.formatSize(FileUtil.calculateDirectorySize(f))).append("\n");
+            sb.append("包含: ").append(FileUtil.countFiles(f)).append("个文件，").append(FileUtil.countFolders(f)).append("个文件夹").append("\n");
+            sb.append("相对路径: ").append(FileUtil.relativize(uploadPath, f)).append("\n");
+            sb.append("创建时间: ").append(FileUtil.getCreationTime(f)).append("\n");
+            sb.append("修改时间: ").append(FileUtil.getModifiedTime(f)).append("\n");
+        } else if (f.isFile()) {
+            sb.append("--------- 文件属性 ---------").append("\n");
+            sb.append("文件名: ").append(f.getName()).append("\n");
+            sb.append("大小: ").append(FileUtil.formatSize(f.length())).append("\n");
+            sb.append("相对路径: ").append(FileUtil.relativize(uploadPath, f)).append("\n");
+            String fileType = FileUtil.detectFileType(f);
+            sb.append("文件类型: ").append(fileType).append("\n");
+            sb.append("创建时间: ").append(FileUtil.getCreationTime(f)).append("\n");
+            sb.append("修改时间: ").append(FileUtil.getModifiedTime(f)).append("\n");
             if (fileType != null) {
                 if (fileType.startsWith("image")) {
-                    builder.append(FileUtil.getImageInfo(directory));
+                    sb.append(FileUtil.getImageInfo(f));
                 } else if (fileType.startsWith("audio")) {
-                    builder.append(FileUtil.getAudioInfo(directory));
+                    sb.append(FileUtil.getAudioInfo(f));
                 }
             }
         }
-        return new Result(true, builder.toString());
-
+        return new Result(true, "查询成功", sb.toString());
     }
 }

@@ -1033,14 +1033,13 @@ export default {
           this.$root.loading = false;
         });
     },
-
     directoryStats(relativePath) {
       this.$root.loading = true;
       axios
-        .post("file/folderInfo", Qs.stringify({ relativePath: relativePath }))
+        .post("file/info", Qs.stringify({ relativePath: relativePath }))
         .then((res) => {
           if (res.success) {
-            this.$root.showModal("详细信息", res.msg);
+            this.$root.showModal("详细信息", res.detail);
           } else {
             this.$root.showModal("失败", res.msg);
           }

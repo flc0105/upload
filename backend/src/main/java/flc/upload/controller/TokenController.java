@@ -37,7 +37,6 @@ public class TokenController {
     @PostMapping("/get")
     public Result get(@RequestParam("password") String password, HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (this.password.equals(password)) {
-//        if (config.getPassword().equals(password)) {
             String token = JwtUtil.generateToken();
             CookieUtil.addCookie("token", token, request, response);
             return new Result<>(true, "获取成功", token);
@@ -51,7 +50,6 @@ public class TokenController {
     @PostMapping("/getWithUsername")
     public Result getWithUsername(@RequestParam("password") String password, String username, HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (this.password.equals(password)) {
-//        if (config.getPassword().equals(password)) {
             String token = JwtUtil.generateTokenWithUsername(username);
             CookieUtil.addCookie("token", token, request, response);
             return new Result<>(true, "获取成功", token);
@@ -61,8 +59,8 @@ public class TokenController {
     }
 
     @Log
+    @Token
     @ApiOperation("Token_禁用")
-//    @Token
     @PostMapping("/deactivateToken")
     public Result deactivateToken(@RequestParam String token) {
         Field field = CommonUtil.getFieldByName("deactivatedTokens", config.getClass());
@@ -72,15 +70,12 @@ public class TokenController {
                 List<String> tokens = config.getDeactivatedTokens();
                 tokens.add(token);
                 field.set(config, tokens);
-                System.out.println(config.getDeactivatedTokens());
-                return new Result(true, "添加成功", null);
-
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-                return new Result(false, "添加失败" + e.getMessage(), null);
+                return new Result(true, "Token禁用成功", null);
+            } catch (Exception e) {
+                return new Result(false, "Token禁用失败：" + e.getMessage(), null);
             }
         } else {
-            return new Result(false, "添加失败：没有找到配置项", null);
+            return new Result(false, "Token禁用失败：没有找到配置项", null);
         }
     }
 }

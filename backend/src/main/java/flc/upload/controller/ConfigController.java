@@ -2,6 +2,7 @@ package flc.upload.controller;
 
 
 import flc.upload.annotation.Log;
+import flc.upload.annotation.Token;
 import flc.upload.aspect.LogAspect;
 import flc.upload.model.AppConfig;
 import flc.upload.model.ConfigRequest;
@@ -36,8 +37,8 @@ public class ConfigController {
     }
 
     @Log
+    @Token
     @ApiOperation("修改配置")
-//    @Token
     @PostMapping("/config/set")
     public Result updateConfig(@RequestBody ConfigRequest configRequest) {
         String key = configRequest.getKey();
@@ -58,7 +59,7 @@ public class ConfigController {
     }
 
     @Log
-//    @Token
+    @Token
     @ApiOperation("获取配置列表")
     @PostMapping("/config/get")
     public Result getConfig() {
@@ -66,39 +67,44 @@ public class ConfigController {
     }
 
     @Log
-//    @Token
+    @Token
     @ApiOperation("获取日志")
     @PostMapping("/logs")
     public Result getLogs() {
-        List<Map> logs = LogAspect.logs;
+        List<Map<String, String>> logs = LogAspect.logs;
         return new Result(true, "获取成功", logs);
     }
 
     @Log
-//    @Token
+    @Token
     @ApiOperation("获取服务器信息")
     @PostMapping("/info")
     public Result getServerInfo() {
         return new Result(true, "获取成功", ServerInfoUtil.getInfoMap());
     }
 
+    @Log
+    @Token
     @ApiOperation("执行SQL查询")
     @PostMapping("/sql/select")
     public Result select(@RequestParam String sql) {
         return new Result(true, "查询成功", myBatisUtil.executeQuery(sql));
     }
 
+    @Log
+    @Token
     @ApiOperation("执行SQL查询个数")
     @PostMapping("/sql/count")
     public Result count(@RequestParam String sql) {
         return new Result(true, "查询成功", myBatisUtil.executeQueryCount(sql));
     }
 
+    @Log
+    @Token
     @ApiOperation("执行SQL更新")
     @PostMapping("/sql/execute")
     public Result execute(@RequestParam String sql) {
         return new Result(true, "执行成功", myBatisUtil.executeStatement(sql));
     }
-
 
 }

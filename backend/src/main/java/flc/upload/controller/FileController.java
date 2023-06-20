@@ -143,8 +143,8 @@ public class FileController {
 
     @Log
     @ApiOperation("文件_查询详情")
-    @PostMapping("/folderInfo")
-    public Result getFolderInfo(@RequestParam("relativePath") String relativePath) throws Exception {
-        return fileService.getFolderInfo(relativePath);
+    @PostMapping("/info")
+    public Result info(@RequestParam("relativePath") String relativePath) throws Exception {
+        return fileService.getFileInfo(relativePath);
     }
 }

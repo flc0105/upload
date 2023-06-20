@@ -1,6 +1,5 @@
 package flc.upload.service.impl;
 
-import flc.upload.manager.TokenManager;
 import flc.upload.mapper.PasteMapper;
 import flc.upload.model.Paste;
 import flc.upload.model.Result;
@@ -17,14 +16,12 @@ import java.util.Objects;
 
 @Service
 public class PasteServiceImpl implements PasteService {
-    private PasteMapper pasteMapper;
-    private TokenManager tokenManager;
+    private final PasteMapper pasteMapper;
 
-    private Logger logger = LoggerFactory.getLogger(PasteServiceImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(PasteServiceImpl.class);
 
-    public PasteServiceImpl(PasteMapper pasteMapper, TokenManager tokenManager) {
+    public PasteServiceImpl(PasteMapper pasteMapper) {
         this.pasteMapper = pasteMapper;
-        this.tokenManager = tokenManager;
     }
 
     public Result add(Paste paste) throws Exception {
@@ -36,8 +33,7 @@ public class PasteServiceImpl implements PasteService {
         }
     }
 
-    public Result delete(Integer id, String token) throws Exception {
-        tokenManager.verify(token);
+    public Result delete(Integer id) throws Exception {
         if (pasteMapper.delete(id) != 0) {
             return new Result<>(true, "删除成功");
         } else {
@@ -45,8 +41,7 @@ public class PasteServiceImpl implements PasteService {
         }
     }
 
-    public Result update(Paste paste, String token) throws Exception {
-        tokenManager.verify(token);
+    public Result update(Paste paste) throws Exception {
         if (pasteMapper.update(paste) != 0) {
             return new Result<>(true, "修改成功");
         } else {
@@ -55,7 +50,7 @@ public class PasteServiceImpl implements PasteService {
     }
 
     public Result findAll() throws Exception {
-        return new Result<>(true, null, pasteMapper.findAll());
+        return new Result<>(true, "查询成功", pasteMapper.findAll());
     }
 
     public Result findById(Integer id) throws Exception {
@@ -64,30 +59,28 @@ public class PasteServiceImpl implements PasteService {
             if (Objects.equals(paste.getExpiredDate(), "-1")) {
                 logger.info("删除" + pasteMapper.delete(id) + "条阅后即焚数据");
             }
-            return new Result<>(true, null, paste);
+            return new Result<>(true, "查询成功", paste);
         } else {
-            return new Result<>(false, null);
+            return new Result<>(false, "查询失败");
         }
     }
 
     public Result findLast() throws Exception {
         Paste paste = pasteMapper.findLast();
         if (paste != null) {
-            return new Result<>(true, null, paste);
+            return new Result<>(true, "查询成功", paste);
         } else {
-            return new Result<>(false, null);
+            return new Result<>(false, "查询失败");
         }
     }
 
-    public Result findUnlisted(String token) throws Exception {
-        tokenManager.verify(token);
+    public Result findUnlisted() throws Exception {
         List<Paste> unlisted = pasteMapper.findUnlisted();
-        return new Result<>(true, null, unlisted);
+        return new Result<>(true, "查询成功", unlisted);
     }
 
     public void deleteExpired() throws Exception {
         Integer integer = pasteMapper.deleteExpired(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         logger.info("删除" + integer + "条过期数据");
-//        new Result(integer != 0, null);
     }
 }

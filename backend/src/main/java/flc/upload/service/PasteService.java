@@ -4,9 +4,9 @@ import flc.upload.model.Paste;
 import flc.upload.model.Result;
 
 public interface PasteService {
-    Result delete(Integer id, String token) throws Exception;
+    Result delete(Integer id) throws Exception;
 
-    Result update(Paste paste, String token) throws Exception;
+    Result update(Paste paste) throws Exception;
 
     void deleteExpired() throws Exception;
 
@@ -18,5 +18,5 @@ public interface PasteService {
 
     Result add(Paste paste) throws Exception;
 
-    Result findUnlisted(String token) throws Exception;
+    Result findUnlisted() throws Exception;
 }

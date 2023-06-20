@@ -33,9 +33,9 @@ public class ShareCodeServiceImpl implements ShareCodeService {
         shareCode.setCode(RandomStringUtils.randomAlphanumeric(4).toLowerCase());
         shareCode.setPath(path);
         if (shareCodeMapper.add(shareCode) != 0) {
-            return new Result<>(true, null, shareCode.getCode());
+            return new Result<>(true, "添加成功", shareCode.getCode());
         } else {
-            return new Result<>(false, null);
+            return new Result<>(false, "添加失败");
         }
     }
 
@@ -55,7 +55,7 @@ public class ShareCodeServiceImpl implements ShareCodeService {
             }
             newShareCodeList.add(shareCode);
         }
-        return new Result<>(true, null, newShareCodeList);
+        return new Result<>(true, "查询成功", newShareCodeList);
     }
 
     public Result findByCode(String code) throws Exception {
@@ -63,9 +63,9 @@ public class ShareCodeServiceImpl implements ShareCodeService {
         if (shareCode != null) {
             File file = new File(uploadPath, shareCode.getPath());
             if (file.isFile()) {
-                return new Result<>(true, null, new flc.upload.model.File(file.getName(), file.length(), FileUtil.formatDate(file.lastModified()), FileUtil.relativize(uploadPath, file), FileUtil.detectFileType(file)));
+                return new Result<>(true, "查询成功", new flc.upload.model.File(file.getName(), file.length(), FileUtil.formatDate(file.lastModified()), FileUtil.relativize(uploadPath, file), FileUtil.detectFileType(file)));
             }
         }
-        return new Result<>(false, null);
+        return new Result<>(false, "查询失败");
     }
 }
