@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -265,15 +266,16 @@ public class CommonUtil {
             processBuilder.command("sh", "-c", command);
         }
         Process process = processBuilder.start();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        Charset charset = Charset.defaultCharset();
+        if (isWindows()) {
+            charset = Charset.forName("GBK");
+        }
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), charset));
         String line;
         while ((line = reader.readLine()) != null) {
             output.append(line).append("\n");
         }
         int exitCode = process.waitFor();
-//        if (exitCode != 0) {
-//            System.err.println("命令执行失败，退出码：" + exitCode);
-//        }
         return new Result<>(exitCode == 0, "命令执行完成", output.toString());
     }
 

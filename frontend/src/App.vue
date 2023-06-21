@@ -275,6 +275,53 @@
       </div>
     </div>
   </div>
+
+  <!-- 命令执行框 -->
+  <div class="modal fade" tabindex="-1" ref="commandModal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">执行命令</h5>
+          <button
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <div class="input-group">
+              <input
+                class="form-control"
+                placeholder="命令"
+                ref="inputCmd"
+                id="inputCmd"
+                @keyup.enter="$refs.btnCmd.click()"
+              />
+              <button
+                type="submit"
+                class="btn btn-outline-primary"
+                ref="btnCmd"
+                @click="exec"
+              >
+                执行
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <textarea class="form-control" rows="12" ref="txtResult"></textarea>
+          </div>
+        </div>
+
+        <!-- <div class="modal-footer">
+          <button class="btn btn-outline-primary" data-bs-dismiss="modal">
+            关闭
+          </button>
+        </div> -->
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -404,6 +451,39 @@ export default {
         second: "2-digit",
       });
     },
+    // 监听按键按下的动作
+    handleKeyDown(event) {
+      if (event.ctrlKey && event.altKey && event.key === "c") {
+        this.showCommandModal();
+      }
+    },
+    // 显示命令执行框
+    showCommandModal() {
+      this.$refs.txtResult.value = "";
+      new Modal(this.$refs.commandModal).show();
+      console.log(this.$refs.inputCmd);
+      this.$refs.inputCmd.focus();
+    },
+    // 执行命令
+    exec() {
+      this.loading = true;
+      axios
+        .post("/shell", Qs.stringify({ command: this.$refs.inputCmd.value }))
+        .then((res) => {
+          if (res.success) {
+            this.$refs.txtResult.value = res.detail;
+          } else {
+            this.$refs.txtResult.value = res.msg + "\n" + res.detail;
+          }
+        })
+        .catch((err) => {
+          this.$refs.txtResult.value = err;
+        })
+        .finally(() => {
+          this.$refs.inputCmd.value = "";
+          this.loading = false;
+        });
+    },
   },
   created() {
     new ClipboardJS("#btnCopy").on("success", () => {
@@ -412,6 +492,14 @@ export default {
   },
   mounted() {
     this.$refs.imageModal.addEventListener("hidden.bs.modal", this.modalClose);
+    window.addEventListener("keydown", this.handleKeyDown);
+    this.$refs.commandModal.addEventListener("shown.bs.modal", () => {
+      this.$refs.inputCmd.focus();
+    });
+  },
+
+  beforeDestroy() {
+    window.removeEventListener("keydown", this.handleKeyDown);
   },
 };
 </script>
