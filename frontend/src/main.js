@@ -74,4 +74,7 @@ hljs.registerLanguage("shell", shell);
 hljs.registerLanguage("sql", sql);
 hljs.registerLanguage("yaml", yaml);
 
+
+console.log(` %c upload %c https://github.com/flc0105/upload `, "background: #35495e; padding: 1px; border-radius: 3px 0 0 3px; color: #fff", "background: #fadfa3; padding: 1px; border-radius: 0 3px 3px 0; color: #fff");
+
 createApp(App).use(router).use(hljsVuePlugin).mount("#app");

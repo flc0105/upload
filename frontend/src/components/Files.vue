@@ -131,6 +131,14 @@
           >
             打包
           </button>
+          <button
+            v-if="multiSelect"
+            :disabled="checkedFiles.length == 0"
+            class="btn btn-outline-primary"
+            @click="clientZip()"
+          >
+            客户端打包
+          </button>
         </div>
       </div>
       <div class="files-right">
@@ -297,7 +305,7 @@
             <i class="bi bi-folder2"></i>&nbsp;
             <a class="link-primary">{{ folder.name }}</a>
 
-            <span
+            <!-- <span
               v-if="folder.relativePath == '/images'"
               class="badge text-bg-primary ms-2"
               >直链图片文件夹</span
@@ -311,7 +319,7 @@
               v-if="folder.relativePath == '/private'"
               class="badge text-bg-primary ms-2"
               >私密文件夹</span
-            >
+            > -->
           </td>
           <td class="size" v-if="columns.includes('size')">-</td>
           <td class="contentType" v-if="columns.includes('contentType')">-</td>
@@ -557,6 +565,8 @@ import Qs from "qs";
 
 import "file-saver";
 import "bootstrap/dist/js/bootstrap.bundle";
+
+import { BlobWriter, HttpReader, TextReader, ZipWriter } from "@zip.js/zip.js";
 
 let cancel;
 const CancelToken = axios.CancelToken;
@@ -845,6 +855,20 @@ export default {
           this.$root.progress = 0;
           modal.hide();
         });
+    },
+    async clientZip() {
+      this.$root.loading = true;
+      const zipWriter = new ZipWriter(new BlobWriter("application/zip"));
+      this.checkedFiles.forEach(async (f) => {
+        var url = axios.defaults.baseURL + "file/download?relativePath=" + f;
+        await zipWriter.add(
+          url.substring(url.lastIndexOf("/") + 1),
+          new HttpReader(url)
+        );
+      });
+      var blob = await zipWriter.close();
+      saveAs(blob, "客户端打包.zip");
+      this.$root.loading = false;
     },
     downloadFile(relativePath) {
       this.download(relativePath, "file/download");

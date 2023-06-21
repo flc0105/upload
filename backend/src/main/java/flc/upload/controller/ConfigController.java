@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
@@ -115,5 +116,14 @@ public class ConfigController {
     public Result execute(@RequestParam String sql) {
         return new Result(true, "执行成功", myBatisUtil.executeStatement(sql));
     }
+
+    @Log
+    @Token
+    @ApiOperation("执行命令")
+    @PostMapping("/shell")
+    public Result executeCommand(@RequestParam String command) throws IOException, InterruptedException {
+        return CommonUtil.executeCommand(command);
+    }
+
 
 }

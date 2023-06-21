@@ -260,7 +260,7 @@
       aria-atomic="true"
     >
       <div class="toast-header">
-        <img src="..." class="rounded me-2" alt="..." />
+        <!-- <img src="..." class="rounded me-2" alt="..." /> -->
         <strong class="me-auto">{{ message.title }}</strong>
         <small>{{ getCurrentTime() }}</small>
         <button

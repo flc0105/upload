@@ -1,5 +1,6 @@
 package flc.upload.util;
 
+import flc.upload.model.Result;
 import io.swagger.annotations.ApiOperation;
 import org.aspectj.lang.ProceedingJoinPoint;
 
@@ -7,6 +8,9 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -243,6 +247,44 @@ public class CommonUtil {
         String contextPath = request.getContextPath();
         String requestURI = request.getRequestURI();
         return requestURI.substring(contextPath.length());
+    }
+
+    /**
+     * 执行shell命令
+     *
+     * @param command 命令
+     * @return 执行结果
+     */
+    public static Result executeCommand(String command) throws IOException, InterruptedException {
+        StringBuilder output = new StringBuilder();
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        processBuilder.redirectErrorStream(true);
+        if (isWindows()) {
+            processBuilder.command("cmd.exe", "/c", command);
+        } else {
+            processBuilder.command("sh", "-c", command);
+        }
+        Process process = processBuilder.start();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            output.append(line).append("\n");
+        }
+        int exitCode = process.waitFor();
+//        if (exitCode != 0) {
+//            System.err.println("命令执行失败，退出码：" + exitCode);
+//        }
+        return new Result<>(exitCode == 0, "命令执行完成", output.toString());
+    }
+
+    /**
+     * 判断是不是Windows系统
+     *
+     * @return 是或不是
+     */
+    private static boolean isWindows() {
+        String os = System.getProperty("os.name").toLowerCase();
+        return os.contains("win");
     }
 
 }
