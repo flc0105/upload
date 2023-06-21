@@ -7,6 +7,7 @@ import flc.upload.model.Result;
 import flc.upload.service.PermissionService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,9 +24,15 @@ public class PermissionController {
 
 //    @Log
 //    @Token
-    @ApiOperation("修改权限")
+    @ApiOperation("权限_修改")
     @PostMapping("/permission/set")
     public Result setPermission(@RequestBody Permission permission) throws Exception {
         return permissionService.updatePermissionByPath(permission);
+    }
+
+    @ApiOperation("权限_查询所有")
+    @GetMapping("/permission/list")
+    public Result findAll() throws Exception {
+        return permissionService.findAll();
     }
 }

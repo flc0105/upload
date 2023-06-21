@@ -12,6 +12,8 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import * as bootstrap from "bootstrap";
 window.Modal = bootstrap.Modal;
 
+window.Toast = bootstrap.Toast;
+
 import axios from "axios";
 
 // 拦截器

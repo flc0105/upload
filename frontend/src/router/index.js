@@ -50,6 +50,11 @@ const routes = [
     meta: { title: "服务器信息" },
     component: () => import("../components/Info.vue"),
   },
+  {
+    path: "/permissions",
+    meta: { title: "权限控制" },
+    component: () => import("../components/Permission.vue"),
+  },
 ];
 const router = createRouter({
   history: createWebHistory(),

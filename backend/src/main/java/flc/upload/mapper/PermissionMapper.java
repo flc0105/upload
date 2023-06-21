@@ -5,6 +5,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import java.util.List;
+
 @Mapper
 public interface PermissionMapper {
 
@@ -13,5 +15,8 @@ public interface PermissionMapper {
 
     @Select("select * from permission where path=#{path}")
     Permission getPermission(String path) throws Exception;
+
+    @Select("select * from permission")
+    List<Permission> findAll() throws Exception;
 
 }

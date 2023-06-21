@@ -7,4 +7,6 @@ public interface PermissionService {
     Result updatePermissionByPath(Permission permission) throws Exception;
 
     Result getPermission(String path) throws Exception;
+
+    Result findAll() throws Exception;
 }

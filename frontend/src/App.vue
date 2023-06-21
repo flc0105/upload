@@ -43,6 +43,7 @@
             <li><a class="dropdown-item" href="/upload">拖拽上传</a></li>
             <li><a class="dropdown-item" href="/log">操作日志</a></li>
             <li><a class="dropdown-item" href="/server">服务器信息</a></li>
+            <li><a class="dropdown-item" href="/permissions">权限控制</a></li>
           </ul>
         </li>
       </ul>
@@ -248,6 +249,32 @@
       />
     </div>
   </div>
+
+  <!-- Toast -->
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+    <div
+      id="liveToast"
+      class="toast"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <div class="toast-header">
+        <img src="..." class="rounded me-2" alt="..." />
+        <strong class="me-auto">{{ message.title }}</strong>
+        <small>{{ getCurrentTime() }}</small>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="toast"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="toast-body">
+        {{ message.text }}
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -358,6 +385,24 @@ export default {
     // 关闭图片预览框后清除图片资源
     modalClose() {
       this.src = "";
+    },
+    showToast(title, text) {
+      this.message.title = title;
+      this.message.text = text;
+      const toastLiveExample = document.getElementById("liveToast");
+      const toastBootstrap = Toast.getOrCreateInstance(toastLiveExample);
+      toastBootstrap.show();
+    },
+    getCurrentTime() {
+      return new Date().toLocaleString("zh-CN", {
+        hour12: false,
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "2-digit",
+      });
     },
   },
   created() {

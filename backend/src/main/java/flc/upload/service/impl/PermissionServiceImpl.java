@@ -5,7 +5,6 @@ import flc.upload.mapper.PermissionMapper;
 import flc.upload.model.Permission;
 import flc.upload.model.Result;
 import flc.upload.service.PermissionService;
-import org.apache.commons.lang.NotImplementedException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,5 +27,10 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public Result getPermission(String path) throws Exception {
         return permissionManager.getPermission(path);
+    }
+
+    @Override
+    public Result findAll() throws Exception {
+        return new Result(true, "查询成功", permissionMapper.findAll());
     }
 }
