@@ -3,6 +3,7 @@ package flc.upload.service.impl;
 import flc.upload.exception.BusinessException;
 import flc.upload.exception.VerifyFailedException;
 import flc.upload.manager.TokenManager;
+import flc.upload.manager.impl.TokenManagerImpl;
 import flc.upload.model.AppConfig;
 import flc.upload.model.Folder;
 import flc.upload.model.Result;

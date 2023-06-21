@@ -70,7 +70,7 @@ public class LogAspect {
             logMap.put("请求参数", CommonUtil.getMethodArguments(joinPoint));
             logMap.put("参数类型", request.getContentType());
             logMap.put("具体消息", String.valueOf((result instanceof Result) ? ((Result<?>) result).getMsg() : null));
-            logMap.put("返回结果", result.toString());
+//            logMap.put("返回结果", result.toString());
             logMap.put("方法耗时", ((endTime - startTime) / 1_000_000) + " ms");
             logMap.put("Token", CookieUtil.getCookie("token", request));
             logMap.put("设备", JwtUtil.getUsername(CookieUtil.getCookie("token", request)));

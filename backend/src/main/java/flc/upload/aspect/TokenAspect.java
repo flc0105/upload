@@ -2,6 +2,7 @@ package flc.upload.aspect;
 
 import flc.upload.exception.VerifyFailedException;
 import flc.upload.manager.TokenManager;
+import flc.upload.manager.impl.TokenManagerImpl;
 import flc.upload.util.CookieUtil;
 import flc.upload.util.JwtUtil;
 import org.aspectj.lang.JoinPoint;

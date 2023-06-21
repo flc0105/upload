@@ -1,7 +1,7 @@
 package flc.upload.controller;
 
+import flc.upload.annotation.GetPermission;
 import flc.upload.annotation.Log;
-import flc.upload.annotation.Token;
 import flc.upload.model.Paste;
 import flc.upload.model.Result;
 import flc.upload.service.PasteService;
@@ -25,6 +25,7 @@ public class PasteController {
     }
 
     @Log
+    @GetPermission
     @ApiOperation("Paste_添加")
     @PostMapping("/add")
     public Result add(@RequestBody Paste paste) throws Exception {
@@ -32,7 +33,7 @@ public class PasteController {
     }
 
     @Log
-    @Token
+    @GetPermission
     @ApiOperation("Paste_删除")
     @PostMapping("/delete")
     public Result delete(Integer id) throws Exception {
@@ -40,7 +41,7 @@ public class PasteController {
     }
 
     @Log
-    @Token
+    @GetPermission
     @ApiOperation("Paste_修改")
     @PostMapping("/update")
     public Result update(@Valid @RequestBody Paste paste) throws Exception {
@@ -49,6 +50,7 @@ public class PasteController {
 
     @Log
     @ApiOperation("Paste_查询所有")
+    @GetPermission
     @PostMapping("/list")
     public Result list() throws Exception {
         pasteService.deleteExpired();
@@ -56,6 +58,7 @@ public class PasteController {
     }
 
     @Log
+    @GetPermission
     @ApiOperation("Paste_根据id查询")
     @PostMapping("/get")
     public Result get(Integer id, HttpServletRequest request) throws Exception {
@@ -65,6 +68,7 @@ public class PasteController {
 
 
     @Log
+    @GetPermission
     @ApiOperation("Paste_根据id获取文本")
     @GetMapping("/get/{id}")
     public String getById(@PathVariable Integer id, HttpServletRequest request) throws Exception {
@@ -77,6 +81,7 @@ public class PasteController {
     }
 
     @Log
+    @GetPermission
     @ApiOperation("Paste_查询最后添加的文本")
     @RequestMapping(value = "/last", method = {RequestMethod.GET, RequestMethod.POST})
     public String last() throws Exception {
@@ -89,7 +94,7 @@ public class PasteController {
     }
 
     @Log
-    @Token
+    @GetPermission
     @ApiOperation("Paste_查询私密")
     @PostMapping("/unlisted")
     public Result unlisted() throws Exception {

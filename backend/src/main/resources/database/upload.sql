@@ -63,3 +63,24 @@ insert or ignore into tag
 values (null, "生活");
 insert or ignore into tag
 values (null, "娱乐");
+
+
+create table if not exists permission
+(
+    id         integer not null
+        primary key autoincrement
+        unique,
+    path       text    not null,
+    isAdmin   integer not null,
+    desc       text
+);
+
+/*
+insert into permission values (null, "/paste/list", 0, "Paste_查询所有");
+insert into permission values (null, "/paste/add", 0, "Paste_添加");
+insert into permission values (null, "/paste/delete", 1, "Paste_删除");
+insert into permission values (null, "/paste/update", 1, "Paste_修改");
+insert into permission values (null, "/paste/get", 0, "Paste_根据id查询");
+insert into permission values (null, "/paste/last", 0, "Paste_查询最后添加");
+insert into permission values (null, "/paste/unlisted", 1, "Paste_查询私密");
+ */
