@@ -21,17 +21,12 @@ public class PermissionServiceImpl implements PermissionService {
 
 
     @Override
-    public Result updatePermissionByPath(Permission permission) {
-        throw new NotImplementedException();
+    public Result updatePermissionByPath(Permission permission) throws Exception {
+        return new Result(true, "更改成功", permissionMapper.updatePermissionByPath(permission));
     }
 
     @Override
     public Result getPermission(String path) throws Exception {
         return permissionManager.getPermission(path);
-//        Permission permission = permissionMapper.getPermission(path);
-//        if (permission == null) {
-//            throw new BusinessException("未找到该Path");
-//        }
-//        return new Result(true, "查询成功", permissionMapper.getPermission(path));
     }
 }
