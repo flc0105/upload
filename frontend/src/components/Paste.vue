@@ -4,7 +4,15 @@
       <div class="d-flex justify-content-between flex-wrap align-items-center">
         <a class="link-primary" @click="$router.push('/pastes')">返回</a>
         <div class="paste-title text-muted text-truncate mw-50">
-          {{ title }}
+          <span
+            class="editable"
+            id="editable"
+            contenteditable="true"
+            @keydown.enter.prevent="handleEnterKey"
+            style="padding: 2px 20px; min-width: 50px"
+            >{{ title }}</span
+          >
+
           <span
             class="text-danger"
             v-if="expiredDate"
@@ -171,6 +179,42 @@ export default {
           this.$root.loading = false;
         });
     },
+    // 修改标题
+    updateTitle() {
+      const editable = document.getElementById("editable");
+      if (editable.innerText.trim().length === 0) {
+        this.$root.showModal("提示", "标题不能为空");
+        editable.innerText = "";
+        return;
+      }
+      if (editable.innerText.trim() == this.title.trim()) {
+        return;
+      }
+      if (!this.$root.hasToken(() => this.updateTitle())) {
+        return;
+      }
+      this.$root.loading = true;
+      axios
+        .post("/paste/update", {
+          id: this.$route.params.id,
+          title: editable.innerText.trim(),
+        })
+        .then((res) => {
+          if (res.success) {
+            this.$root.showToast("成功", "修改标题成功");
+            this.title = editable.innerText.trim();
+          } else {
+            this.$root.showModal("失败", res.msg);
+          }
+        })
+        .catch((err) => {
+          this.$root.showModal("错误", err.message);
+        })
+        .finally(() => {
+          this.$root.loading = false;
+        });
+    },
+
     // 删除文本
     remove() {
       if (!this.$root.hasToken(() => this.remove())) {
@@ -199,6 +243,10 @@ export default {
       var blob = new Blob([this.text], { type: "text/plain;charset=utf-8" });
       saveAs(blob, this.$route.params.id + ".txt");
     },
+    handleEnterKey(event) {
+      event.preventDefault(); // 屏蔽回车键的默认行为
+      this.updateTitle();
+    },
   },
   created() {
     if (this.$route.params.id) {
@@ -208,6 +256,12 @@ export default {
         this.checked = true;
       }
     }
+  },
+  mounted() {
+    const editable = document.getElementById("editable");
+    editable.addEventListener("focusout", () => {
+      this.updateTitle();
+    });
   },
 };
 </script>
