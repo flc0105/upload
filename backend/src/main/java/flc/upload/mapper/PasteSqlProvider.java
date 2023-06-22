@@ -13,7 +13,7 @@ public class PasteSqlProvider {
             if (paste.getTitle() != null) {
                 SET("title = #{title}");
             }
-            if (paste.isPrivate() != null) {
+            if (paste.getPrivate() != null) {
                 SET("isPrivate = #{isPrivate}");
             }
             WHERE("id = #{id}");

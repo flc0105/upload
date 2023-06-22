@@ -122,7 +122,7 @@ export default {
     list() {
       this.$root.loading = true;
       axios
-        .post("/paste/list")
+        .get("/paste/list")
         .then((res) => {
           if (res.success) {
             this.pastes = res.detail;

@@ -7,17 +7,22 @@ import javax.validation.constraints.NotNull;
 
 @ApiModel("Paste")
 public class Paste {
-    @NotNull(message = "ID不能为空")
-    @ApiModelProperty("Paste id")
+    @NotNull(message = "id不能为空")
+    @ApiModelProperty("id")
     private Integer id;
-    @ApiModelProperty("Paste标题")
+
+    @ApiModelProperty("标题")
     private String title;
-    @ApiModelProperty("Paste正文")
+
+    @ApiModelProperty("正文")
     private String text;
+
     @ApiModelProperty("添加时间")
     private String time;
+
     @ApiModelProperty("过期时间")
     private String expiredDate;
+
     @ApiModelProperty("是否私密")
     private Boolean isPrivate;
 
@@ -61,7 +66,7 @@ public class Paste {
         this.expiredDate = expiredDate;
     }
 
-    public Boolean isPrivate() {
+    public Boolean getPrivate() {
         return isPrivate;
     }
 

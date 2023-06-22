@@ -132,7 +132,11 @@ export default {
       this.text = "";
       this.$root.loading = true;
       axios
-        .post("/paste/get", Qs.stringify({ id: id }))
+        .get("/paste/get", {
+          params: {
+            id: id,
+          },
+        })
         .then((res) => {
           if (res.success) {
             this.expiredDate = res.detail.expiredDate;

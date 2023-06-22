@@ -27,7 +27,7 @@ public interface PasteMapper {
     Paste findLast() throws Exception;
 
     @Select("select * from paste where isPrivate=true order by time desc")
-    List<Paste> findUnlisted() throws Exception;
+    List<Paste> findPrivate() throws Exception;
 
     @Delete("delete from paste where expiredDate <= #{date} and expiredDate != -1")
     Integer deleteExpired(String date) throws Exception;

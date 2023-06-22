@@ -1,22 +1,23 @@
 package flc.upload.controller;
 
-import flc.upload.annotation.GetPermission;
 import flc.upload.annotation.Log;
+import flc.upload.annotation.Permission;
 import flc.upload.model.Paste;
 import flc.upload.model.Result;
 import flc.upload.service.PasteService;
+import flc.upload.util.ResponseUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.Objects;
 
-@RestController
 @Api(tags = "Paste")
 @CrossOrigin(origins = "*")
 @RequestMapping("/paste")
+@RestController
 public class PasteController {
     private final PasteService pasteService;
 
@@ -24,86 +25,75 @@ public class PasteController {
         this.pasteService = pasteService;
     }
 
-    @Log
-    @GetPermission
     @ApiOperation("Paste_添加")
+    @Log
+    @Permission
     @PostMapping("/add")
-    public Result add(@RequestBody Paste paste) throws Exception {
+    public Result<?> add(@RequestBody Paste paste) throws Exception {
         return pasteService.add(paste);
     }
 
-    @Log
-    @GetPermission
     @ApiOperation("Paste_删除")
+    @Log
+    @Permission
     @PostMapping("/delete")
-    public Result delete(Integer id) throws Exception {
+    public Result<?> delete(Integer id) throws Exception {
         return pasteService.delete(id);
     }
 
-    @Log
-    @GetPermission
     @ApiOperation("Paste_修改")
+    @Log
+    @Permission
     @PostMapping("/update")
-    public Result update(@Valid @RequestBody Paste paste) throws Exception {
+    public Result<?> update(@Valid @RequestBody Paste paste) throws Exception {
         return pasteService.update(paste);
     }
 
-    @Log
     @ApiOperation("Paste_查询所有")
-    @GetPermission
-    @PostMapping("/list")
-    public Result list() throws Exception {
+    @Log
+    @Permission
+    @GetMapping("/list")
+    public Result<?> list() throws Exception {
         pasteService.deleteExpired();
         return pasteService.findAll();
     }
 
-    @Log
-    @GetPermission
     @ApiOperation("Paste_根据id查询")
-    @PostMapping("/get")
-    public Result get(Integer id, HttpServletRequest request) throws Exception {
-        pasteService.deleteExpired();
+    @Log
+    @Permission
+    @GetMapping("/get")
+    public Result<?> get(Integer id) throws Exception {
         return pasteService.findById(id);
     }
 
-
+    @ApiOperation("Paste_根据id查询")
     @Log
-    @GetPermission
-    @ApiOperation("Paste_根据id获取文本")
+//    @Permission
     @GetMapping("/get/{id}")
-    public String getById(@PathVariable Integer id, HttpServletRequest request) throws Exception {
-        pasteService.deleteExpired();
-        Paste paste = (Paste) pasteService.findById(id).getDetail();
-        if (paste == null) {
-            return "404";
-        }
+    public String getText(@PathVariable Integer id) throws Exception {
+        Paste paste = (Paste) Objects.requireNonNull(pasteService.findById(id).getDetail(), ResponseUtil.getMessage("query.failure"));
         return paste.getText();
     }
 
+    @ApiOperation("Paste_查询最后添加")
     @Log
-    @GetPermission
-    @ApiOperation("Paste_查询最后添加的文本")
-    @RequestMapping(value = "/last", method = {RequestMethod.GET, RequestMethod.POST})
+    @Permission
+    @GetMapping(value = "/last")
     public String last() throws Exception {
-        pasteService.deleteExpired();
-        Paste paste = (Paste) pasteService.findLast().getDetail();
-        if (paste == null) {
-            return "404";
-        }
+        Paste paste = (Paste) Objects.requireNonNull(pasteService.findLast().getDetail(), ResponseUtil.getMessage("query.failure"));
         return paste.getText();
     }
 
-    @Log
-    @GetPermission
     @ApiOperation("Paste_查询私密")
-    @PostMapping("/unlisted")
-    public Result unlisted() throws Exception {
-        pasteService.deleteExpired();
-        return pasteService.findUnlisted();
+    @Log
+    @Permission
+    @GetMapping("/private")
+    public Result<?> findPrivate() throws Exception {
+        return pasteService.findPrivate();
     }
 
-    @Scheduled(fixedRate = 60 * 60 * 1000)
-    public void scheduledDeleteExpired() throws Exception {
+    @Scheduled(fixedRate = 60 * 60 * 1000) // 每小时执行一次
+    public void deleteExpired() throws Exception {
         pasteService.deleteExpired();
     }
 
