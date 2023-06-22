@@ -64,7 +64,7 @@
     <textarea
       v-else
       id="textarea"
-      class="form-control border-0 min-vh-75"
+      class="form-control border-0 min-vh-75 monospace"
       v-model="text"
     ></textarea>
   </div>

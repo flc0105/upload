@@ -58,3 +58,7 @@ a {
     max-width: 100% !important;
   }
 }
+
+.monospace {
+  font-family: Consolas, 'Dejavu Sans Mono', 'Courier New', monospace;
+}

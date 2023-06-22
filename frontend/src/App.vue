@@ -292,7 +292,7 @@
           <div class="mb-3">
             <div class="input-group">
               <input
-                class="form-control"
+                class="form-control monospace"
                 placeholder="命令"
                 ref="inputCmd"
                 id="inputCmd"
@@ -310,7 +310,11 @@
           </div>
 
           <div class="mb-3">
-            <textarea class="form-control" rows="12" ref="txtResult"></textarea>
+            <textarea
+              class="form-control monospace"
+              rows="12"
+              ref="txtResult"
+            ></textarea>
           </div>
         </div>
 
@@ -461,12 +465,14 @@ export default {
     showCommandModal() {
       this.$refs.txtResult.value = "";
       new Modal(this.$refs.commandModal).show();
-      console.log(this.$refs.inputCmd);
       this.$refs.inputCmd.focus();
     },
     // 执行命令
     exec() {
-      this.loading = true;
+      this.$refs.inputCmd.disabled = true;
+      this.$refs.btnCmd.disabled = true;
+      this.$refs.btnCmd.innerHTML =
+        "<span class='spinner-grow spinner-grow-sm' role='status' aria-hidden='true'></span><span>&nbsp;正在执行...</span>";
       axios
         .post("/shell", Qs.stringify({ command: this.$refs.inputCmd.value }))
         .then((res) => {
@@ -480,8 +486,13 @@ export default {
           this.$refs.txtResult.value = err;
         })
         .finally(() => {
-          this.$refs.inputCmd.value = "";
-          this.loading = false;
+          // this.$refs.inputCmd.value = "";
+
+          this.$refs.btnCmd.innerHTML = "执行";
+          this.$refs.inputCmd.disabled = false;
+          this.$refs.btnCmd.disabled = false;
+          this.$refs.inputCmd.focus();
+          this.$refs.inputCmd.select();
         });
     },
   },
