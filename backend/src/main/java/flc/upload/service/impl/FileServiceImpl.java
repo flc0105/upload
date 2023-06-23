@@ -3,59 +3,59 @@ package flc.upload.service.impl;
 import flc.upload.exception.BusinessException;
 import flc.upload.exception.VerifyFailedException;
 import flc.upload.manager.TokenManager;
-import flc.upload.manager.impl.TokenManagerImpl;
 import flc.upload.model.AppConfig;
 import flc.upload.model.Folder;
 import flc.upload.model.Result;
 import flc.upload.service.FileService;
+import flc.upload.util.CommonUtil;
 import flc.upload.util.FileUtil;
-import net.coobird.thumbnailator.Thumbnails;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import flc.upload.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.util.UriUtils;
 
-import javax.activation.MimetypesFileTypeMap;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipOutputStream;
 
 @Service
 public class FileServiceImpl implements FileService {
+    private final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
+
     private final TokenManager tokenManager;
 
-    private final AppConfig config;
-    private final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
+    private final AppConfig appConfig;
+
     @Value("${upload.path}")
     private String uploadPath;
 
-    @Value("${image.path}")
-    private String imagePath;
-
     @Autowired
-    public FileServiceImpl(TokenManager tokenManager, AppConfig config) {
+    public FileServiceImpl(TokenManager tokenManager, AppConfig appConfig) {
         this.tokenManager = tokenManager;
-        this.config = config;
+        this.appConfig = appConfig;
     }
 
-    public Result list(String currentDirectory, String token) {
+    @Override
+    public Result<?> list(String currentDirectory, String token) {
         List<Folder> folders = new ArrayList<>();
         List<flc.upload.model.File> files = new ArrayList<>();
-        if (config.getPrivateDirectories().contains(currentDirectory)) {
+        if (appConfig.getPrivateDirectories().contains(currentDirectory)) {
             tokenManager.verify(token);
         }
         File[] list = new File(uploadPath, currentDirectory).listFiles();
         if (list == null) {
-            return new Result(false, "无法访问");
+            return ResponseUtil.buildErrorResult("access.failure");
         }
         for (File file : list) {
             if (file.isDirectory()) {
@@ -65,14 +65,14 @@ public class FileServiceImpl implements FileService {
                 files.add(new flc.upload.model.File(file.getName(), file.length(), FileUtil.formatDate(file.lastModified()), FileUtil.relativize(uploadPath, file), FileUtil.detectFileType(file)));
             }
         }
-        Map<String, List> map = new HashMap<>();
+        Map<String, List<?>> map = new HashMap<>();
         map.put("folders", folders);
         map.put("files", files);
-        JSONObject jsonObject = JSONObject.fromObject(map);
-        return new Result<>(true, "查询成功", jsonObject);
+        return ResponseUtil.buildSuccessResult("query.success", map);
     }
 
-    public Result search(String filter, String currentDirectory, String token) {
+    @Override
+    public Result<?> search(String filter, String currentDirectory, String token) {
         List<Folder> folders = new ArrayList<>();
         List<flc.upload.model.File> files = new ArrayList<>();
         PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*" + filter + "*");
@@ -84,14 +84,14 @@ public class FileServiceImpl implements FileService {
             } catch (VerifyFailedException e) {
                 iterator = Files.walk(Paths.get(uploadPath, currentDirectory))
                         .filter(matcher::matches)
-                        .filter(p -> config.getPrivateDirectories().stream().noneMatch(s -> FileUtil.relativize(uploadPath, p.toFile()).startsWith(s)))
+                        .filter(p -> appConfig.getPrivateDirectories().stream().noneMatch(s -> FileUtil.relativize(uploadPath, p.toFile()).startsWith(s)))
                         .iterator();
             }
         } catch (IOException e) {
-            logger.error(e.getLocalizedMessage());
+            logger.error("搜索文件时出错：" + e.getLocalizedMessage());
         }
         if (iterator == null) {
-            return new Result(false, "无法访问");
+            return ResponseUtil.buildErrorResult("access.failure");
         }
         while (true) {
             try {
@@ -111,228 +111,212 @@ public class FileServiceImpl implements FileService {
                     break;
                 }
             } catch (Exception e) {
-                logger.error(e.getLocalizedMessage());
+                logger.error("搜索文件时出错：" + e.getLocalizedMessage());
             }
         }
-        Map<String, List> map = new HashMap<>();
+        Map<String, List<?>> map = new HashMap<>();
         map.put("folders", folders);
         map.put("files", files);
-        JSONObject jsonObject = JSONObject.fromObject(map);
-        return new Result<>(true, "查询成功", jsonObject);
+        return ResponseUtil.buildSuccessResult("query.success", map);
     }
 
-    public Result upload(MultipartFile[] files, String currentDirectory, String token) throws Exception {
+    @Override
+    public Result<?> upload(MultipartFile[] files, String currentDirectory, String token) throws Exception {
         if (!currentDirectory.startsWith("/public/")) {
             tokenManager.verify(token);
         }
         if (files.length == 0) {
-            return new Result(false, "没有文件");
+            return ResponseUtil.buildErrorResult("no.incoming.files");
         }
-        StringBuilder failedFilenames = new StringBuilder();
+        List<String> failures = new ArrayList<>();
         for (MultipartFile file : files) {
-            File dest = new File(uploadPath + File.separator + currentDirectory + File.separator + file.getOriginalFilename());
+            File dest = FileUtil.getFile(uploadPath, currentDirectory, file.getOriginalFilename());
             if (!dest.getParentFile().exists()) {
-                logger.info("自动创建目录：{}", dest.getParentFile().mkdirs());
+                logger.info("自动创建目录 {}：{}", dest.getParentFile(), dest.getParentFile().mkdirs());
             }
             if (dest.exists()) {
-                failedFilenames.append(file.getOriginalFilename()).append(" (已存在)").append(System.lineSeparator());
+                failures.add(file.getOriginalFilename() + " (" + ResponseUtil.getMessage("file.already.exists") + ")");
                 continue;
             }
             try {
                 file.transferTo(dest);
             } catch (Exception e) {
-                failedFilenames.append(file.getOriginalFilename()).append(" (").append(e.getLocalizedMessage()).append(")").append(System.lineSeparator());
+                failures.add(file.getOriginalFilename() + " (" + e.getLocalizedMessage() + ")");
             }
         }
-        if (failedFilenames.length() == 0) {
-            return new Result(true, "上传成功");
+        if (failures.isEmpty()) {
+            return ResponseUtil.buildSuccessResult("upload.success");
         } else {
-            return new Result(false, "上传失败的文件：\n" + failedFilenames);
+            return new Result<>(false, ResponseUtil.getMessage("some.files.upload.failure") + System.lineSeparator() + String.join(System.lineSeparator(), failures));
         }
     }
 
-    public Result mkdir(String relativePath) {
-//        tokenManager.verify(token);
+    @Override
+    public Result<?> mkdir(String relativePath) {
         File directory = new File(uploadPath, relativePath);
         if (directory.exists()) {
-            return new Result(false, "文件已存在");
+            return ResponseUtil.buildErrorResult("file.already.exists");
         }
         if (directory.mkdirs()) {
-            return new Result(true, "创建成功");
+            return ResponseUtil.buildSuccessResult("create.directory.success");
         } else {
-            return new Result(false, "创建失败");
+            return ResponseUtil.buildErrorResult("create.directory.failure");
         }
     }
 
-    public Result delete(String files) throws Exception {
-//        tokenManager.verify(token);
-        JSONArray array = JSONArray.fromObject(files);
-        for (Object file : array) {
-            FileUtil.deleteRecursively(new File(uploadPath, file.toString()));
+    @Override
+    public Result<?> delete(List<String> files) throws Exception {
+        if (files.isEmpty()) {
+            return ResponseUtil.buildErrorResult("no.incoming.files");
         }
-        return new Result(true, "删除成功");
+        for (String file : files) {
+            FileUtil.deleteRecursively(new File(uploadPath, file));
+        }
+        return ResponseUtil.buildSuccessResult("delete.success");
     }
 
+    @Override
     public void download(String relativePath, HttpServletResponse response) throws Exception {
         File file = new File(uploadPath, relativePath);
         if (!file.exists()) {
-            throw new RuntimeException("文件不存在");
+            throw new BusinessException(ResponseUtil.getMessage("file.does.not.exist"));
         }
         FileUtil.download(file, response);
     }
 
-    public void compress(String relativePath, HttpServletResponse response) throws Exception {
+    @Override
+    public void downloadCompressedImage(String relativePath, HttpServletResponse response) throws Exception {
         File file = new File(uploadPath, relativePath);
         if (!file.exists()) {
-            throw new RuntimeException("文件不存在");
+            throw new BusinessException(ResponseUtil.getMessage("file.does.not.exist"));
         }
-        response.setHeader("Content-type", new MimetypesFileTypeMap().getContentType(file.getName()));
-        response.setHeader("Content-Disposition", "attachment;filename=\"" + UriUtils.encode(file.getName(), "UTF-8") + "\"");
-        OutputStream out = response.getOutputStream();
-        if (file.getName().endsWith(".png")) {
-            String jpg = file.getAbsoluteFile() + "_" + new Random().nextInt(1000) + ".jpg";
-            Thumbnails.of(file).scale(1f).toFile(jpg);
-            Thumbnails.of(jpg).scale(1f).outputQuality(0.5f).toOutputStream(out);
-            File f = new File(jpg);
-            logger.info("删除{}：{}", jpg, f.delete());
-        } else {
-            Thumbnails.of(file)
-                    .scale(1f)
-                    .outputQuality(0.5f)
-                    .toOutputStream(out);
-        }
+        FileUtil.downloadCompressedImage(file, response);
     }
 
-    public File zipFolder(String relativePath, String token) throws Exception {
-        if (config.getPrivateDirectories().contains(relativePath)) {
-            tokenManager.verify(token);
-        }
+    @Override
+    public Result<?> read(String relativePath) throws Exception {
         File file = new File(uploadPath, relativePath);
-        if (!file.exists()) {
-            throw new RuntimeException("文件不存在");
+        if (file.length() > appConfig.getMaxFileSize()) {
+            return ResponseUtil.buildErrorResult("file.is.too.large");
         }
-        String[] pathSplit = relativePath.split("\\\\");
-//        String zipName = uploadPath + File.separator + pathSplit[pathSplit.length - 1] + ".zip";
-        String zipName = file.getParent() + File.separator + System.currentTimeMillis() + ".zip";
-        FileOutputStream fos = new FileOutputStream(zipName);
-        ZipOutputStream zos = new ZipOutputStream(fos);
-        FileUtil.zipFile(zos, file, null);
-        zos.close();
-        fos.close();
-        return new File(zipName);
-    }
-
-    public void downloadFolder(String relativePath, HttpServletResponse response, String token) throws Exception {
-        // TODO: 压缩失败时返回错误
-        File file = zipFolder(relativePath, token);
-        if (file.isFile()) {
-            FileUtil.download(file, response);
-            logger.info("删除压缩文件{}：{}", file.getName(), file.delete());
-        } else {
-            throw new FileNotFoundException("文件压缩失败");
+        String charsetName = Optional.ofNullable(FileUtil.getFileEncode(file)).orElse(Charset.defaultCharset().name());
+        try (Stream<String> lines = Files.lines(file.toPath(), Charset.forName(charsetName))) {
+            String content = lines.collect(Collectors.joining("\n"));
+            return ResponseUtil.buildSuccessResult("query.success", content);
         }
     }
 
-    public File bulkZip(String files, String token) throws Exception {
-        JSONArray array = JSONArray.fromObject(files);
-        if (array.isEmpty()) {
-            throw new BusinessException("没有可以压缩的文件");
-        }
-//        String zipName = uploadPath + File.separator + System.currentTimeMillis() + ".zip";
-        File firstFile = new File(uploadPath, String.valueOf(array.get(0)));
-        String zipName = firstFile.getParentFile() + File.separator + System.currentTimeMillis() + ".zip";
-        FileOutputStream fos = new FileOutputStream(zipName);
-        ZipOutputStream zos = new ZipOutputStream(fos);
-        for (Object f : array) {
-            if (config.getPrivateDirectories().contains(f.toString())) {
-                try {
-                    tokenManager.verify(token);
-                } catch (VerifyFailedException e) {
-                    continue;
-                }
-            }
-            File file = new File(uploadPath, f.toString());
-            FileUtil.zipFile(zos, file, null);
-        }
-        zos.close();
-        fos.close();
-        return new File(zipName);
-    }
-
-    public void bulkDownload(String files, HttpServletResponse response, String token) throws Exception {
-        File file = bulkZip(files, token);
-        if (file.isFile()) {
-            FileUtil.download(file, response);
-            logger.info("删除压缩文件{}：{}", file.getName(), file.delete());
-        } else {
-            throw new FileNotFoundException("文件压缩失败");
-        }
-    }
-
-    public Result read(String relativePath) throws Exception {
-        File file = new File(uploadPath, relativePath);
-        if (file.length() > config.getMaxFileSize()) {
-            return new Result<>(false, "文件过大，不允许预览");
-        }
-        String charsetName = FileUtil.getFileEncode(file);
-        if (charsetName == null) {
-            charsetName = Charset.defaultCharset().name();
-        }
-        FileInputStream inputStream = new FileInputStream(file);
-        BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, charsetName));
-        String str;
-        StringBuilder sb = new StringBuilder();
-        while ((str = in.readLine()) != null) {
-            sb.append(str).append("\n");
-        }
-        in.close();
-        return new Result<>(true, "查询成功", sb.toString());
-    }
-
+    @Override
     public Result move(String src, String dst) {
-        JSONArray array = JSONArray.fromObject(src);
-        StringBuilder failedFilenames = new StringBuilder();
-        for (Object file : array) {
-            File srcFile = new File(uploadPath + File.separator + file.toString());
-            File dstFile = new File(uploadPath + File.separator + dst + File.separator + srcFile.getName());
-            if (dstFile.exists()) {
-                failedFilenames.append(dstFile.getName()).append(" (已存在)").append(System.lineSeparator());
-                continue;
-            }
-            boolean success = false;
-            try {
-                success = srcFile.renameTo(dstFile);
-            } catch (Exception e) {
-                failedFilenames.append(dstFile.getName()).append(" (").append(e.getMessage()).append(")").append(System.lineSeparator());
-            }
-            if (!success) {
-                failedFilenames.append(dstFile.getName()).append(" (移动失败)").append(System.lineSeparator());
+        return null;
+    }
+
+    @Override
+    public Result<?> zip(List<String> files, String token) throws IOException {
+        if (files.isEmpty()) {
+            return ResponseUtil.buildErrorResult("no.incoming.files");
+        }
+        File firstFile = new File(uploadPath, files.get(0));
+        File zip = FileUtil.getFile(firstFile.getParent(), CommonUtil.generateUUID() + ".zip");
+        try (FileOutputStream fos = new FileOutputStream(zip);
+             ZipOutputStream zos = new ZipOutputStream(fos)) {
+            for (String relativePath : files) {
+                if (appConfig.getPrivateDirectories().contains(relativePath)) {
+                    try {
+                        tokenManager.verify(token);
+                    } catch (VerifyFailedException e) {
+                        logger.error("权限不足，跳过私密目录：" + relativePath);
+                        continue;
+                    }
+                }
+                File file = new File(uploadPath, relativePath);
+                FileUtil.zipRecursively(zos, file, null);
             }
         }
-        if (failedFilenames.length() == 0) {
-            return new Result(true, "移动成功");
+//        File zip = new File(zipName);
+        if (zip.isFile()) {
+            return ResponseUtil.buildSuccessResult("compress.success", FileUtil.relativize(uploadPath, zip));
         } else {
-            return new Result(false, "移动失败的文件：\n" + failedFilenames);
+            return ResponseUtil.buildErrorResult("compress.failure");
         }
     }
 
-    public Result rename(String oldName, String newName) {
-        File srcFile = new File(uploadPath, oldName);
-        File dstFile = new File(uploadPath, newName);
-        if (dstFile.exists()) {
-            return new Result(false, "文件名已存在");
+    @Override
+    public void zipAndDownload(List<String> files, HttpServletResponse response, String token) throws Exception {
+        Result<?> result = zip(files, token);
+        if (result.isSuccess()) {
+            File zip = new File(uploadPath, String.valueOf(result.getDetail()));
+            if (zip.isFile()) {
+                FileUtil.download(zip, response);
+                logger.info("自动删除压缩文件 {}: {}", zip.getAbsoluteFile(), zip.delete());
+                return;
+            }
         }
+        throw new BusinessException(ResponseUtil.getMessage("compress.failure"));
+    }
+
+    @Override
+    public Result<?> move(List<String> files, String target) {
+        if (files.isEmpty()) {
+            return ResponseUtil.buildErrorResult("no.incoming.files");
+        }
+        List<String> failures = new ArrayList<>();
+        for (String relativePath : files) {
+            File file = new File(uploadPath, relativePath);
+            File targetFile = FileUtil.getFile(uploadPath, target, file.getName());
+            try {
+                if (targetFile.exists()) {
+                    throw new BusinessException(ResponseUtil.getMessage("file.already.exists"));
+                }
+                if (!file.renameTo(targetFile)) {
+                    throw new BusinessException(ResponseUtil.getMessage("move.failure"));
+                }
+            } catch (Exception e) {
+                failures.add(file.getName() + " (" + e.getLocalizedMessage() + ")");
+            }
+        }
+        if (failures.isEmpty()) {
+            return ResponseUtil.buildSuccessResult("move.success");
+        } else {
+            return new Result<>(false, ResponseUtil.getMessage("some.files.move.failure") + System.lineSeparator() + String.join(System.lineSeparator(), failures));
+        }
+    }
+
+    public Result<?> rename(String relativePath, String target) {
+        File file = new File(uploadPath, relativePath);
+        File targetFile = new File(uploadPath, target);
+
         try {
-            if (srcFile.renameTo(dstFile)) {
-                return new Result(true, "重命名成功");
-            } else {
-                return new Result(false, "重命名失败");
+            if (targetFile.exists()) {
+                throw new BusinessException(ResponseUtil.getMessage("file.already.exists"));
+            }
+            if (!file.renameTo(targetFile)) {
+                throw new BusinessException(ResponseUtil.getMessage("rename.failure"));
             }
         } catch (Exception e) {
-            return new Result(false, e.getMessage());
+            return new Result<>(false, e.getLocalizedMessage());
         }
+        return ResponseUtil.buildSuccessResult("rename.success");
     }
 
+    @Override
+    public Result<?> generateDirectLink(String relativePath) throws IOException {
+        File file = new File(uploadPath, relativePath);
+        if (!file.exists()) {
+            return ResponseUtil.buildErrorResult("file.does.not.exist");
+        }
+        if (file.isFile() && FileUtil.detectFileType(file).startsWith("image")) {
+            String target = "IMG_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + FileUtil.getFileExtension(file);
+            Path targetFile = Paths.get(uploadPath, "images", target);
+            Files.createDirectories(targetFile.getParent());
+            Files.copy(Paths.get(file.toURI()), targetFile, StandardCopyOption.REPLACE_EXISTING);
+            return ResponseUtil.buildSuccessResult("generate.success", "/images/" + target);
+        }
+        return ResponseUtil.buildErrorResult("unsupported.file.type");
+    }
+
+
+    @Override
     public Result getFileInfo(String relativePath) throws Exception {
         File f = new File(uploadPath, relativePath);
         StringBuilder sb = new StringBuilder();
@@ -364,18 +348,5 @@ public class FileServiceImpl implements FileService {
         return new Result(true, "查询成功", sb.toString());
     }
 
-    @Override
-    public Result generateDirectLink(String relativePath) throws IOException {
-        File file = new File(uploadPath, relativePath);
-        if (file.isFile() && Objects.requireNonNull(FileUtil.detectFileType(file), "检查文件类型失败").startsWith("image")) {
-            String newFile = "IMG_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + FileUtil.getFileExtension(file);
-            Path targetFile = Paths.get(new File(imagePath, newFile).toURI());
-            Files.createDirectories(targetFile.getParent());
-            Files.copy(Paths.get(file.toURI()), targetFile, StandardCopyOption.REPLACE_EXISTING);
 
-            return new Result(true, "生成成功", "/images/" + newFile);
-        } else {
-            throw new BusinessException("不支持的文件类型");
-        }
-    }
 }

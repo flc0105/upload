@@ -36,7 +36,8 @@ public class TokenController {
     @PostMapping("/get")
     public Result get(@RequestParam("password") String password, HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (this.password.equals(password)) {
-            String token = JwtUtil.generateToken();
+//            String token = JwtUtil.generateToken();
+            String token = JwtUtil.generateTokenWithUsername(CommonUtil.getBrowser(request) + "@" + CommonUtil.getIp(request));
             CookieUtil.addCookie("token", token, request, response);
             return new Result<>(true, "获取成功", token);
         } else {

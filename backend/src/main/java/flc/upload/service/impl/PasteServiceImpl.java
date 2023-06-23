@@ -53,7 +53,10 @@ public class PasteServiceImpl implements PasteService {
     public Result<?> findById(Integer id) throws Exception {
         deleteExpired();
         Paste paste = Objects.requireNonNull(pasteMapper.findById(id), ResponseUtil.getMessage("query.failure"));
-        if (Objects.equals(paste.getExpiredDate(), "-1")) {
+//        if (Objects.equals(paste.getExpiredDate(), "-1")) {
+//            logger.info("删除 " + pasteMapper.delete(id) + " 条阅后即焚数据");
+//        }
+        if (paste.isBurnAfterReading()) {
             logger.info("删除 " + pasteMapper.delete(id) + " 条阅后即焚数据");
         }
         return ResponseUtil.buildSuccessResult("query.success", paste);

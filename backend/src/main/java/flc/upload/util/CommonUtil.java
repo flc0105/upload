@@ -289,4 +289,9 @@ public class CommonUtil {
         return os.contains("win");
     }
 
+    public static String generateUUID() {
+        UUID uuid = UUID.randomUUID();
+        return uuid.toString();
+    }
+
 }

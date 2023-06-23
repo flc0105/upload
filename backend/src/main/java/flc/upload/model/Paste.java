@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 @ApiModel("Paste")
 public class Paste {
@@ -25,6 +26,10 @@ public class Paste {
 
     @ApiModelProperty("是否私密")
     private Boolean isPrivate;
+
+    public boolean isBurnAfterReading() {
+        return Objects.equals(expiredDate, "-1");
+    }
 
     public Integer getId() {
         return id;

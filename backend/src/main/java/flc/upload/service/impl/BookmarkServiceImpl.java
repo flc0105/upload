@@ -93,13 +93,25 @@ public class BookmarkServiceImpl implements BookmarkService {
 
     public Result rename(Integer id, String title, String url) throws Exception {
         Bookmark bookmark = bookmarkMapper.findById(id);
-        if (title != null) {
-            bookmark.setTitle(title);
-        }
-        if (url != null) {
-            bookmark.setUrl(url);
-        }
+//        if (title != null) {
+//            bookmark.setTitle(title);
+//        }
+//        if (url != null) {
+//            bookmark.setUrl(url);
+//        }
+//
+
+        bookmark.update(title, url);
+
+
         return new Result<>(bookmarkMapper.update(bookmark) != 0, null);
+
+
+
+
+
+
+
     }
 
     @Override

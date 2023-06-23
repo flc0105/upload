@@ -16,7 +16,10 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RestController
@@ -37,7 +40,7 @@ public class FileController {
 
     @Log
     @ApiOperation("文件_查询所有")
-    @PostMapping("/list")
+    @GetMapping("/list")
     public Result list(@RequestParam("currentDirectory") String currentDirectory, HttpServletRequest request) {
         return fileService.list(currentDirectory, CookieUtil.getCookie("token", request));
     }
@@ -69,8 +72,8 @@ public class FileController {
     @Token
     @ApiOperation("文件_删除")
     @PostMapping("/delete")
-    public Result delete(@RequestParam("relativePath") String files, HttpServletRequest request) throws Exception {
-        return fileService.delete(files);
+    public Result delete(@RequestBody Map<String, List<String>> files, HttpServletRequest request) throws Exception {
+        return fileService.delete(files.get("relativePath"));
     }
 
     @Log
@@ -80,43 +83,30 @@ public class FileController {
         fileService.download(relativePath, response);
     }
 
-    @Log
-    @ApiOperation("文件_目录打包下载")
-    @RequestMapping(value = "/downloadFolder", method = {RequestMethod.GET, RequestMethod.POST})
-    public void downloadFolder(@RequestParam("relativePath") String relativePath, HttpServletResponse response, HttpServletRequest request) throws Exception {
-        fileService.downloadFolder(relativePath, response, CookieUtil.getCookie("token", request));
-    }
 
     @Log
     @ApiOperation("文件_预览图片")
     @RequestMapping(value = "/previewImage", method = {RequestMethod.GET, RequestMethod.POST})
     public void previewImage(@RequestParam("relativePath") String relativePath, HttpServletResponse response) throws Exception {
         if (config.isCompressImage()) {
-            fileService.compress(relativePath, response);
+            fileService.downloadCompressedImage(relativePath, response);
         } else {
             fileService.download(relativePath, response);
         }
     }
 
     @Log
-    @ApiOperation("文件_打包")
+    @ApiOperation("文件_压缩")
     @PostMapping("/zip")
-    public Result zip(@RequestParam("relativePath") String relativePath, HttpServletRequest request) throws Exception {
-        return new Result<>(fileService.zipFolder(relativePath, CookieUtil.getCookie("token", request)).isFile(), null);
+    public Result<?> zip(@RequestBody Map<String, List<String>> files, HttpServletRequest request) throws Exception {
+        return fileService.zip(files.get("relativePath"), CookieUtil.getCookie("token", request));
     }
 
     @Log
-    @ApiOperation("文件_批量打包")
-    @PostMapping("/bulkZip")
-    public Result bulkZip(@RequestParam("relativePath") String files, HttpServletRequest request) throws Exception {
-        return new Result<>(fileService.bulkZip(files, CookieUtil.getCookie("token", request)).isFile(), null);
-    }
-
-    @Log
-    @ApiOperation("文件_预览图片")
-    @RequestMapping(value = "/bulk", method = {RequestMethod.GET, RequestMethod.POST})
-    public void bulk(@RequestParam("relativePath") String files, HttpServletResponse response, HttpServletRequest request) throws Exception {
-        fileService.bulkDownload(files, response, CookieUtil.getCookie("token", request));
+    @ApiOperation("文件_压缩并下载")
+    @PostMapping("/zipAndDownload")
+    public void zipAndDownload(@RequestBody Map<String, List<String>> files, HttpServletResponse response, HttpServletRequest request) throws Exception {
+        fileService.zipAndDownload(files.get("relativePath"), response, CookieUtil.getCookie("token", request));
     }
 
     @Log
@@ -130,17 +120,26 @@ public class FileController {
     @Token
     @ApiOperation("文件_移动")
     @PostMapping("/move")
-    public Result move(@RequestParam("src") String src, @RequestParam("dst") String dst, HttpServletRequest request) throws Exception {
-        return fileService.move(src, dst);
+    public Result<?> move(@RequestBody Map<String, Object> params, HttpServletRequest request) throws Exception {
+        List<String> relativePath = ((List<?>) params.get("relativePath")).stream().map(String.class::cast).collect(Collectors.toList());
+        return fileService.move(relativePath, String.valueOf(params.get("target")));
     }
 
     @Log
     @Token
     @ApiOperation("文件_重命名")
     @PostMapping("/rename")
-    public Result rename(@RequestParam("src") String src, @RequestParam("dst") String dst, HttpServletRequest request) {
-        return fileService.rename(src, dst);
+    public Result rename(@RequestBody Map<String, String> params, HttpServletRequest request) {
+        return fileService.rename(params.get("relativePath"), params.get("target"));
     }
+
+
+
+
+
+
+
+
 
     @Log
     @ApiOperation("文件_查询详情")

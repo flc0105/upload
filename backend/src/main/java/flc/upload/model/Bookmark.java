@@ -18,6 +18,16 @@ public class Bookmark {
     @ApiModelProperty("标签列表")
     private List<Tag> tags;
 
+    public void update(String title, String url) {
+        if (title != null) {
+            setTitle(title);
+        }
+        if (url != null) {
+            setUrl(url);
+        }
+
+    }
+
     public Integer getId() {
         return id;
     }

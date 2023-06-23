@@ -4,8 +4,8 @@ import flc.upload.model.Result;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public interface FileService {
 
@@ -17,27 +17,25 @@ public interface FileService {
 
     Result mkdir(String relativePath);
 
-    Result delete(String files) throws Exception;
+    Result delete(List<String> files) throws Exception;
 
     void download(String relativePath, HttpServletResponse response) throws Exception;
 
-    void compress(String relativePath, HttpServletResponse response) throws Exception;
-
-    File zipFolder(String relativePath, String token) throws Exception;
-
-    void downloadFolder(String relativePath, HttpServletResponse response, String token) throws Exception;
-
-    File bulkZip(String files, String token) throws Exception;
-
-    void bulkDownload(String files, HttpServletResponse response, String token) throws Exception;
+    void downloadCompressedImage(String relativePath, HttpServletResponse response) throws Exception;
 
     Result read(String relativePath) throws Exception;
 
     Result move(String src, String dst);
 
-    Result rename(String oldName, String newName);
+    Result<?> move(List<String> files, String target);
+
+    Result<?> rename(String relativePath, String target);
 
     Result getFileInfo(String relativePath) throws Exception;
 
     Result generateDirectLink(String relativePath) throws IOException;
+
+    Result<?> zip(List<String> files, String token) throws IOException;
+
+    void zipAndDownload(List<String> files, HttpServletResponse response, String token) throws Exception;
 }

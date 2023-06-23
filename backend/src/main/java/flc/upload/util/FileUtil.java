@@ -1,7 +1,8 @@
 package flc.upload.util;
 
-import flc.upload.model.MyConfigProperties;
+import flc.upload.model.AppConfig;
 import info.monitorenter.cpdetector.io.*;
+import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.common.ImageMetadata;
 import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
@@ -23,10 +24,7 @@ import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,6 +34,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -43,7 +42,14 @@ import java.util.zip.ZipOutputStream;
 @Component
 public class FileUtil {
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
-    private static MyConfigProperties myConfigProperties;
+//    private static MyConfigProperties myConfigProperties;
+
+    private static AppConfig appConfig;
+
+    @Autowired
+    public void setAppConfig(AppConfig appConfig) {
+        FileUtil.appConfig = appConfig;
+    }
 
     public static String relativize(String uploadPath, File file) {
         String path = new File(uploadPath).toURI().relativize(file.toURI()).getPath();
@@ -59,7 +65,7 @@ public class FileUtil {
             return new Tika().detect(file);
         } catch (IOException e) {
             logger.error(e.getLocalizedMessage());
-            return null;
+            return "";
         }
     }
 
@@ -77,53 +83,96 @@ public class FileUtil {
         }
     }
 
-    public static void download(File file, HttpServletResponse response) throws Exception {
+    private static void setDownloadHeaders(File file, HttpServletResponse response) {
         response.setHeader("Content-type", new MimetypesFileTypeMap().getContentType(file.getName()));
         response.setHeader("Content-Length", "" + file.length());
-//        String filename = new String(file.getName().getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
-//        response.setHeader("Content-Disposition", "attachment;filename=\"" + URLEncoder.encode(file.getName(), "UTF-8") + "\"");
         response.setHeader("Content-Disposition", "attachment;filename=\"" + UriUtils.encode(file.getName(), "UTF-8") + "\"");
         response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
-        FileInputStream in = new FileInputStream(file);
-        OutputStream out = response.getOutputStream();
-
-        int bufferSize = myConfigProperties.getBufferSize();
-        if (bufferSize == 0) {
-            bufferSize = 1024;
-        }
-
-        byte[] buffer = new byte[bufferSize];
-        int len;
-        while ((len = in.read(buffer)) != -1) {
-            out.write(buffer, 0, len);
-        }
-        in.close();
-        out.close();
     }
 
-    public static void zipFile(ZipOutputStream zos, File file, String dir) {
+    public static void download(File file, HttpServletResponse response) throws Exception {
+        setDownloadHeaders(file, response);
+        try (FileInputStream in = new FileInputStream(file);
+             OutputStream out = response.getOutputStream()) {
+            // Java 9: in.transferTo(out);
+            int bufferSize = Math.max(appConfig.getBufferSize(), 1024);
+            byte[] buffer = new byte[bufferSize];
+            int len;
+            while ((len = in.read(buffer)) != -1) {
+                out.write(buffer, 0, len);
+            }
+
+        }
+    }
+
+    public static File getFile(String first, String... more) {
+        return Paths.get(first, more).toFile();
+    }
+
+    public static void downloadCompressedImage(File file, HttpServletResponse response) throws IOException {
+        setDownloadHeaders(file, response);
+        OutputStream out = response.getOutputStream();
+        if (file.getName().endsWith(".png")) {
+            String jpgName = CommonUtil.generateUUID() + ".jpg";
+            Thumbnails.of(file).scale(1f).toFile(jpgName);
+            Thumbnails.of(jpgName).scale(1f).outputQuality(0.5f).toOutputStream(out);
+            logger.info("自动删除转换的 jpg 文件 {}：{}", jpgName, new File(jpgName).delete());
+        } else {
+            Thumbnails.of(file)
+                    .scale(1f)
+                    .outputQuality(0.5f)
+                    .toOutputStream(out);
+        }
+    }
+
+
+    public static void zipFile(File file, String zipName) throws IOException {
+
+
+
+        try (FileOutputStream fos = new FileOutputStream(zipName);
+             ZipOutputStream zos = new ZipOutputStream(fos)) {
+            zipRecursively(zos, file, null);
+        }
+    }
+
+
+
+
+
+    public static void zipRecursively(ZipOutputStream zos, File file, String dir)  {
         String zipName = file.getName();
         if (dir != null && !dir.isEmpty()) {
             zipName = dir + File.separator + file.getName();
         }
         if (file.isDirectory()) {
             for (File f : Objects.requireNonNull(file.listFiles())) {
-                zipFile(zos, f, zipName);
+                zipRecursively(zos, f, zipName);
             }
         } else {
             byte[] buffer = new byte[1024];
-            try {
-                FileInputStream fis = new FileInputStream(file);
+            try (FileInputStream fis = new FileInputStream(file)) {
                 zos.putNextEntry(new ZipEntry(zipName));
                 int length;
                 while ((length = fis.read(buffer)) > 0) {
                     zos.write(buffer, 0, length);
                 }
                 zos.closeEntry();
-                fis.close();
-            } catch (Exception e) {
-                logger.error(e.getLocalizedMessage());
+            } catch (IOException e) {
+                logger.error("压缩文件时出错：" + e.getLocalizedMessage());
             }
+//            try {
+//                FileInputStream fis = new FileInputStream(file);
+//                zos.putNextEntry(new ZipEntry(zipName));
+//                int length;
+//                while ((length = fis.read(buffer)) > 0) {
+//                    zos.write(buffer, 0, length);
+//                }
+//                zos.closeEntry();
+//                fis.close();
+//            } catch (Exception e) {
+//                logger.error(e.getLocalizedMessage());
+//            }
         }
     }
 
@@ -303,9 +352,11 @@ public class FileUtil {
         return fileName.substring(dotIndex);
     }
 
-    @Autowired
-    public void setMyConfigProperties(MyConfigProperties myConfigProperties) {
-        FileUtil.myConfigProperties = myConfigProperties;
-    }
+//    @Autowired
+//    public void setMyConfigProperties(MyConfigProperties myConfigProperties) {
+//        FileUtil.myConfigProperties = myConfigProperties;
+//    }
+
+
 
 }

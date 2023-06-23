@@ -168,8 +168,6 @@ export default {
               item.length != 0 &&
               item.length != undefined
           );
-        console.log(lst);
-        console.log(lst[1]);
         return lst;
       }
 

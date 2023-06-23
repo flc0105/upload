@@ -99,7 +99,7 @@
             v-if="multiSelect"
             :disabled="checkedFiles.length == 0"
             class="btn btn-outline-primary"
-            @click="bulkDownload()"
+            @click="zipAndDownload(this.checkedFiles)"
           >
             下载
           </button>
@@ -127,7 +127,7 @@
             v-if="multiSelect"
             :disabled="checkedFiles.length == 0"
             class="btn btn-outline-primary"
-            @click="bulkZip()"
+            @click="zip(checkedFiles)"
           >
             打包
           </button>
@@ -327,7 +327,9 @@
             {{ folder.lastModified }}
           </td>
           <td class="action">
-            <a class="link-primary" @click="downloadFolder(folder.relativePath)"
+            <a
+              class="link-primary"
+              @click="zipAndDownload([folder.relativePath])"
               ><i class="bi bi-cloud-download"></i
             ></a>
             <a
@@ -349,9 +351,7 @@
               </a>
               <ul class="dropdown-menu">
                 <li>
-                  <a
-                    class="dropdown-item"
-                    @click="zipFolder(folder.relativePath)"
+                  <a class="dropdown-item" @click="zip([folder.relativePath])"
                     >压缩</a
                   >
                 </li>
@@ -446,6 +446,16 @@
                     >预览</a
                   >
                 </li>
+
+                <li>
+                  <a
+                    class="dropdown-item"
+                    v-if="file.name.endsWith('.heic')"
+                    @click="previewHeic(file.relativePath)"
+                    >预览HEIC</a
+                  >
+                </li>
+
                 <li>
                   <a class="dropdown-item" @click="share(file.relativePath)"
                     >分享</a
@@ -566,10 +576,35 @@ import Qs from "qs";
 import "file-saver";
 import "bootstrap/dist/js/bootstrap.bundle";
 
+//import heic2any from "heic2any"; //TODO: 按需加载
+
 import { BlobWriter, HttpReader, TextReader, ZipWriter } from "@zip.js/zip.js";
 
 let cancel;
 const CancelToken = axios.CancelToken;
+
+let heic2any = null; // 用于存储模块的变量
+
+// 在需要的地方调用该方法，实现按需加载
+function loadHeic2Any() {
+  if (heic2any) {
+    // 如果模块已经加载过，直接返回Promise.resolve
+    return Promise.resolve(heic2any);
+  }
+
+  // 如果模块还没有加载，使用动态导入加载它
+  return import("heic2any")
+    .then((module) => {
+      // 保存模块到变量
+      heic2any = module.default || module;
+      return heic2any;
+    })
+    .catch((error) => {
+      // 加载失败的处理
+      console.error("Failed to load heic2any module.", error);
+      throw error;
+    });
+}
 
 export default {
   data() {
@@ -620,10 +655,11 @@ export default {
         cancel(); // 取消之前的操作
       }
       axios
-        .post(
+        .get(
           "file/list",
-          Qs.stringify({ currentDirectory: this.currentDirectory }),
+
           {
+            params: { currentDirectory: this.currentDirectory },
             cancelToken: new CancelToken(function executor(c) {
               cancel = c;
             }),
@@ -761,7 +797,7 @@ export default {
           if (res.success) {
             modal.hide();
             this.list();
-            this.$root.showModal("成功", "上传成功");
+            this.$root.showModal("成功", res.msg);
             this.$root.progress = 0;
           } else {
             modal.hide();
@@ -815,18 +851,29 @@ export default {
       return str;
     },
     // 下载文件
-    download(relativePath, api_url) {
+    download(payload, api_url) {
       this.$root.message.title = "正在下载";
       const modal = new Modal(this.$root.$refs.progressModal);
       modal.show();
       var lastTime = new Date().getTime();
       var lastBytes = 0;
+      var self = this;
       axios({
-        method: "post",
+        method: payload.params ? "get" : "post",
         url: axios.defaults.baseURL + api_url,
-        data: Qs.stringify({
-          relativePath: relativePath,
-        }),
+        ...(payload.params
+          ? { params: payload.params }
+          : { data: payload.data }),
+
+        // params: {
+        //   relativePath: relativePath,
+        // },
+        // // data: Qs.stringify({
+        //   relativePath: relativePath,
+        // }),
+        // data: {
+        //   relativePath: relativePath,
+        // },
         responseType: "blob",
         onDownloadProgress: (e) => {
           const current = e.loaded;
@@ -842,6 +889,19 @@ export default {
         },
       })
         .then((response) => {
+          const contentType = response.headers["content-type"];
+
+          if (contentType === "application/json") {
+            const reader = new FileReader(); // 创建 FileReader 对象
+            reader.onload = (event) => {
+              // 注册 FileReader 的 load 事件回调
+              const jsonData = event.target.result; // 在回调中可以获取到 Blob 对象的数据内容
+              console.log(jsonData); // 输出 JSON 数据内容
+              self.$root.showModal("错误", jsonData);
+            };
+            reader.readAsText(response.data);
+            return;
+          }
           let filename =
             response.headers["content-disposition"].split("filename=")[1];
           filename = decodeURIComponent(filename);
@@ -871,27 +931,91 @@ export default {
       this.$root.loading = false;
     },
     downloadFile(relativePath) {
-      this.download(relativePath, "file/download");
+      const payload = {
+        params: {
+          relativePath: relativePath,
+        },
+      };
+      this.download(payload, "file/download");
     },
-    // 下载文件夹
-    downloadFolder(relativePath) {
-      this.download(relativePath, "file/downloadFolder");
+    zipAndDownload(relativePath) {
+      const payload = {
+        data: {
+          relativePath: relativePath,
+        },
+      };
+      this.download(payload, "file/zipAndDownload");
     },
-    // 批量下载
-    bulkDownload() {
-      this.download(JSON.stringify(this.checkedFiles), "file/bulk");
+    zip(relativePath) {
+      this.$root.loading = true;
+      axios
+        .post(
+          "file/zip",
+          {
+            relativePath: relativePath,
+          }
+          // Qs.stringify({ relativePath: relativePath })
+          // Qs.stringify({ relativePath: JSON.stringify(this.checkedFiles) })
+        )
+        .then((res) => {
+          if (res.success) {
+            this.$root.showModal("成功", "压缩成功");
+            this.list();
+          } else {
+            this.$root.showModal("成功", "压缩失败");
+          }
+        })
+        .catch((err) => {
+          this.$root.showModal("错误", err.message);
+        })
+        .finally(() => {
+          this.$root.loading = false;
+        });
     },
+
+    // 压缩文件夹
+    // zipFolder(folderPath) {
+    //   this.$root.loading = true;
+    //   axios
+    //     .post("file/zip", Qs.stringify({ relativePath: folderPath }))
+    //     .then((res) => {
+    //       if (res.success) {
+    //         this.$root.showModal("成功", "压缩成功");
+    //         this.list();
+    //       } else {
+    //         this.$root.showModal("成功", "压缩失败");
+    //       }
+    //     })
+    //     .catch((err) => {
+    //       this.$root.showModal("错误", err.message);
+    //     })
+    //     .finally(() => {
+    //       this.$root.loading = false;
+    //     });
+    // },
+    // 批量打包
+
+    // // 下载文件夹
+    // downloadFolder(relativePath) {
+    //   this.download(relativePath, "file/downloadFolder");
+    // },
+    // // 批量下载
+    // bulkDownload() {
+    //   this.download(this.checkedFiles.toString(), "file/bulk");
+    //   // this.download(JSON.stringify(this.checkedFiles), "file/bulk");
+    // },
     // 删除文件
     deleteFile(files) {
       if (!this.$root.hasToken(() => this.deleteFile(files))) {
         return;
       }
       this.$root.loading = true;
+      // const params = new URLSearchParams();
+      // params.append("relativePath", files);
+
       axios
-        .post(
-          "file/delete",
-          Qs.stringify({ relativePath: JSON.stringify(files) })
-        )
+        // .post("file/delete", Qs.stringify({ relativePath: files.toString() }))
+        .post("file/delete", { relativePath: files })
         .then((res) => {
           if (res.success) {
             // 判断是不是搜索状态下删除的
@@ -912,49 +1036,7 @@ export default {
           this.$root.loading = false;
         });
     },
-    // 压缩文件夹
-    zipFolder(folderPath) {
-      this.$root.loading = true;
-      axios
-        .post("file/zip", Qs.stringify({ relativePath: folderPath }))
-        .then((res) => {
-          if (res.success) {
-            this.$root.showModal("成功", "压缩成功");
-            this.list();
-          } else {
-            this.$root.showModal("成功", "压缩失败");
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
-    // 批量打包
-    bulkZip() {
-      this.$root.loading = true;
-      axios
-        .post(
-          "file/bulkZip",
-          Qs.stringify({ relativePath: JSON.stringify(this.checkedFiles) })
-        )
-        .then((res) => {
-          if (res.success) {
-            this.$root.showModal("成功", "压缩成功");
-            this.list();
-          } else {
-            this.$root.showModal("成功", "压缩失败");
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
+
     // 重命名
     rename(oldName) {
       // 传入旧文件名
@@ -970,10 +1052,14 @@ export default {
       axios
         .post(
           "file/rename",
-          Qs.stringify({
-            src: oldName,
-            dst: this.currentDirectory + "/" + newName, // 新文件名：当前路径+新文件名
-          })
+          {
+            relativePath: oldName,
+            target: newName,
+          }
+          // Qs.stringify({
+          //   src: oldName,
+          //   dst: this.currentDirectory + "/" + newName, // 新文件名：当前路径+新文件名
+          // })
         )
         .then((res) => {
           if (res.success) {
@@ -1005,10 +1091,14 @@ export default {
       axios
         .post(
           "file/move",
-          Qs.stringify({
-            src: JSON.stringify(this.cutFiles),
-            dst: this.currentDirectory,
-          })
+          {
+            relativePath: this.cutFiles,
+            target: this.currentDirectory,
+          }
+          // Qs.stringify({
+          //   src: JSON.stringify(this.cutFiles),
+          //   dst: this.currentDirectory,
+          // })
         )
         .then((res) => {
           if (res.success) {
@@ -1267,6 +1357,63 @@ export default {
         .finally(() => {
           this.$root.loading = false;
         });
+    },
+    async previewHeic(relativePath) {
+      this.$root.loading = true;
+      try {
+        const heic2anyModule = await loadHeic2Any();
+        fetch(
+          axios.defaults.baseURL + "/file/download?relativePath=" + relativePath
+        )
+          .then((res) => res.blob())
+          .then((blob) =>
+            heic2anyModule({
+              blob,
+              toType: "image/jpeg",
+              //quality: 0.5,
+            })
+          )
+          .then((conversionResult) => {
+            const blob = new Blob([conversionResult], { type: "image/jpeg" });
+            const blobURL = URL.createObjectURL(blob);
+            this.$root.src = "";
+            this.$root.src = blobURL;
+            new Modal(this.$root.$refs.imageModal).show();
+          })
+          .catch((e) => {
+            this.$root.showModal("错误", e.message);
+          })
+          .finally(() => {
+            this.$root.loading = false;
+          });
+      } catch (error) {
+        this.$root.showModal("错误", error.message);
+      }
+
+      // fetch(
+      //   axios.defaults.baseURL + "/file/download?relativePath=" + relativePath
+      // )
+      //   .then((res) => res.blob())
+      //   .then((blob) =>
+      //     heic2any({
+      //       blob,
+      //       toType: "image/jpeg",
+      //       //quality: 0.5,
+      //     })
+      //   )
+      //   .then((conversionResult) => {
+      //     const blob = new Blob([conversionResult], { type: "image/jpeg" });
+      //     const blobURL = URL.createObjectURL(blob);
+      //     this.$root.src = "";
+      //     this.$root.src = blobURL;
+      //     new Modal(this.$root.$refs.imageModal).show();
+      //   })
+      //   .catch((e) => {
+      //     // see error handling section
+      //   })
+      //   .finally(() => {
+      //     this.$root.loading = false;
+      //   });
     },
   },
   mounted() {

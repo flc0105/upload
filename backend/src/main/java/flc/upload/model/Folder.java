@@ -7,8 +7,10 @@ import io.swagger.annotations.ApiModelProperty;
 public class Folder {
     @ApiModelProperty("文件夹名")
     private String name;
+
     @ApiModelProperty("修改时间")
     private String lastModified;
+
     @ApiModelProperty("相对路径")
     private String relativePath;
 
@@ -40,5 +42,14 @@ public class Folder {
 
     public void setRelativePath(String relativePath) {
         this.relativePath = relativePath;
+    }
+
+    @Override
+    public String toString() {
+        return "Folder{" +
+                "name='" + name + '\'' +
+                ", lastModified='" + lastModified + '\'' +
+                ", relativePath='" + relativePath + '\'' +
+                '}';
     }
 }

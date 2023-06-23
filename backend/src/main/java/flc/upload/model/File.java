@@ -7,12 +7,16 @@ import io.swagger.annotations.ApiModelProperty;
 public class File {
     @ApiModelProperty("文件名")
     private String name;
+
     @ApiModelProperty("文件大小")
     private long length;
+
     @ApiModelProperty("修改时间")
     private String lastModified;
+
     @ApiModelProperty("相对路径")
     private String relativePath;
+
     @ApiModelProperty("文件类型")
     private String fileType;
 
@@ -62,5 +66,16 @@ public class File {
 
     public void setFileType(String fileType) {
         this.fileType = fileType;
+    }
+
+    @Override
+    public String toString() {
+        return "File{" +
+                "name='" + name + '\'' +
+                ", length=" + length +
+                ", lastModified='" + lastModified + '\'' +
+                ", relativePath='" + relativePath + '\'' +
+                ", fileType='" + fileType + '\'' +
+                '}';
     }
 }

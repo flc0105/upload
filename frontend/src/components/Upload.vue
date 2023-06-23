@@ -193,7 +193,7 @@ export default {
           if (res.success) {
             modal.hide();
             this.files = [];
-            this.$root.showModal("成功", "上传成功");
+            this.$root.showModal("成功", res.msg);
             this.$root.progress = 0;
           } else {
             modal.hide();
