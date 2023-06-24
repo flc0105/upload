@@ -2,18 +2,15 @@ package flc.upload.controller;
 
 
 import flc.upload.annotation.Log;
+import flc.upload.annotation.Permission;
 import flc.upload.annotation.Token;
 import flc.upload.aspect.LogAspect;
 import flc.upload.model.AppConfig;
-import flc.upload.model.ConfigRequest;
 import flc.upload.model.Result;
-import flc.upload.util.CommonUtil;
-import flc.upload.util.MyBatisUtil;
-import flc.upload.util.ServerInfoUtil;
+import flc.upload.util.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.ibatis.session.SqlSession;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,75 +20,76 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Api(tags = "配置")
 @RestController
-@PropertySource("classpath:app-config.properties")
+//@PropertySource("classpath:app-config.properties")
 public class ConfigController {
-    private final AppConfig config;
+    private final AppConfig appConfig;
 
     private final MyBatisUtil myBatisUtil;
 
-    public ConfigController(AppConfig config, SqlSession sqlSession, MyBatisUtil myBatisUtil) {
-        this.config = config;
+    public ConfigController(AppConfig appConfig, SqlSession sqlSession, MyBatisUtil myBatisUtil) {
+        this.appConfig = appConfig;
         this.myBatisUtil = myBatisUtil;
     }
 
+    @ApiOperation("配置_查询")
     @Log
-    @Token
-    @ApiOperation("修改配置")
-    @PostMapping("/config/set")
-    public Result updateConfig(@RequestBody ConfigRequest configRequest) {
-        String key = configRequest.getKey();
-        Object value = configRequest.getValue();
-        Field field = CommonUtil.getFieldByName(key, config.getClass());
-        if (field != null) {
-            try {
-                field.setAccessible(true);
-                field.set(config, value);
-                return new Result(true, "修改成功", null);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-                return new Result(false, "修改失败：" + e.getMessage(), null);
-            }
-        } else {
-            return new Result(false, "没有找到该配置", null);
-        }
+    @Permission
+    @PostMapping("/config/list")
+    public Result<?> listConfig() {
+        return ResponseUtil.buildSuccessResult("query.success", ReflectionUtil.getClassAttributes(appConfig));
     }
 
+    @ApiOperation("配置_修改")
     @Log
-    @Token
-    @ApiOperation("获取配置列表")
-    @PostMapping("/config/get")
-    public Result getConfig() {
-        return new Result(true, "获取成功", CommonUtil.getClassAttributes(config));
+    @Permission
+    @PostMapping("/config/update")
+    public Result<?> updateConfig(@RequestBody Map<String, Object> params) throws IllegalAccessException {
+        String key = (String) params.get("key");
+        Object value = params.get("value");
+        Field field = Objects.requireNonNull(ReflectionUtil.getFieldByName(key, appConfig.getClass()), InternationalizationUtil.translate("no.such.configuration"));
+        field.setAccessible(true);
+        field.set(appConfig, value);
+        return ResponseUtil.buildSuccessResult("update.success");
     }
 
+
+    @ApiOperation("日志_查询")
     @Log
-    @Token
-    @ApiOperation("获取日志")
-    @PostMapping("/logs")
-    public Result getLogs() {
-        List<Map<String, String>> logs = LogAspect.logs;
-        return new Result(true, "获取成功", logs);
+    @Permission
+    @PostMapping("/logs/list")
+    public Result<?> listLogs() {
+        List<Map<String, String>> result = LogAspect.logs.stream()
+                .map(InternationalizationUtil::translateMapKeys)
+                .collect(Collectors.toList());
+        return ResponseUtil.buildSuccessResult("query.success", result);
     }
 
+    @ApiOperation("日志_删除")
     @Log
-    @Token
-    @ApiOperation("清空日志")
-    @PostMapping("/logs/clear")
-    public Result clearLogs() {
+    @Permission
+    @PostMapping("/logs/delete")
+    public Result<?> deleteLogs() {
         LogAspect.logs.clear();
-        return new Result(true, "清空成功", null);
+        return ResponseUtil.buildSuccessResult("delete.success");
     }
 
+    @ApiOperation("查询服务器信息")
     @Log
-    @Token
-    @ApiOperation("获取服务器信息")
+    @Permission
     @PostMapping("/info")
-    public Result getServerInfo() {
-        return new Result(true, "获取成功", ServerInfoUtil.getInfoMap());
+    public Result<?> getServerInfo() {
+        return ResponseUtil.buildSuccessResult("query.success", ServerUtil.getServerInfo());
     }
+
+
+
+
+
 
     @Log
     @Token
@@ -122,7 +120,7 @@ public class ConfigController {
     @ApiOperation("执行命令")
     @PostMapping("/shell")
     public Result executeCommand(@RequestParam String command) throws IOException, InterruptedException {
-        return CommonUtil.executeCommand(command);
+        return ServerUtil.executeCommand(command);
     }
 
 

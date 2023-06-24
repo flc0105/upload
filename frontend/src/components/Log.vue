@@ -18,7 +18,7 @@
         <!-- <td v-for="(value, key) in item" :key="key">{{ value }}</td> -->
 
         <td v-for="(value, key) in item" :key="key" :title="item[key]">
-          <template v-if="['返回结果', 'Token'].includes(key)">
+          <template v-if="['Stack trace', '堆栈信息', 'Token'].includes(key)">
             <a href="#" @click="showDetails(item[key])" v-if="item[key] != null"
               >查看</a
             ><span v-else>null</span>
@@ -60,7 +60,7 @@ export default {
     list() {
       this.$root.loading = true;
       axios
-        .post("/logs")
+        .post("/logs/list")
         .then((res) => {
           if (res.success) {
             this.logs = res.detail;
@@ -85,7 +85,7 @@ export default {
       }
       this.$root.loading = true;
       axios
-        .post("logs/clear")
+        .post("logs/delete")
         .then((res) => {
           if (res.success) {
             this.list();

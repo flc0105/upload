@@ -2,7 +2,6 @@ package flc.upload.aspect;
 
 import flc.upload.exception.VerifyFailedException;
 import flc.upload.manager.TokenManager;
-import flc.upload.manager.impl.TokenManagerImpl;
 import flc.upload.util.CookieUtil;
 import flc.upload.util.JwtUtil;
 import org.aspectj.lang.JoinPoint;
@@ -41,7 +40,7 @@ public class TokenAspect {
 
                 try {
                     tokenManager.verify(token);
-                    String username = JwtUtil.getUsername(token);
+                    String username = JwtUtil.getRemark(token);
                     logger.info(username + " 验证成功，执行的方法是 " + method.getName());
                 } catch (VerifyFailedException e) {
                     logger.info("验证失败，执行的方法是 " + method.getName());

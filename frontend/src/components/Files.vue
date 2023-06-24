@@ -655,11 +655,10 @@ export default {
         cancel(); // 取消之前的操作
       }
       axios
-        .get(
+        .post(
           "file/list",
-
+          Qs.stringify({ currentDirectory: this.currentDirectory }),
           {
-            params: { currentDirectory: this.currentDirectory },
             cancelToken: new CancelToken(function executor(c) {
               cancel = c;
             }),
@@ -851,7 +850,7 @@ export default {
       return str;
     },
     // 下载文件
-    download(payload, api_url) {
+    download(relativePath, apiUrl) {
       this.$root.message.title = "正在下载";
       const modal = new Modal(this.$root.$refs.progressModal);
       modal.show();
@@ -859,11 +858,16 @@ export default {
       var lastBytes = 0;
       var self = this;
       axios({
-        method: payload.params ? "get" : "post",
-        url: axios.defaults.baseURL + api_url,
-        ...(payload.params
-          ? { params: payload.params }
-          : { data: payload.data }),
+        method: "post",
+
+        // method: payload.params ? "get" : "post",
+        url: axios.defaults.baseURL + apiUrl,
+        data: Qs.stringify({
+          relativePath: relativePath,
+        }),
+        // ...(payload.params
+        //   ? { params: payload.params }
+        //   : { data: payload.data }),
 
         // params: {
         //   relativePath: relativePath,
@@ -931,20 +935,20 @@ export default {
       this.$root.loading = false;
     },
     downloadFile(relativePath) {
-      const payload = {
-        params: {
-          relativePath: relativePath,
-        },
-      };
-      this.download(payload, "file/download");
+      // const payload = {
+      //   params: {
+      //     relativePath: encodeURIComponent(relativePath),
+      //   },
+      // };
+      this.download(relativePath, "file/download");
     },
     zipAndDownload(relativePath) {
-      const payload = {
-        data: {
-          relativePath: relativePath,
-        },
-      };
-      this.download(payload, "file/zipAndDownload");
+      // const payload = {
+      //   data: {
+      //     relativePath: relativePath,
+      //   },
+      // };
+      this.download(relativePath, "file/zipAndDownload");
     },
     zip(relativePath) {
       this.$root.loading = true;
@@ -1054,7 +1058,7 @@ export default {
           "file/rename",
           {
             relativePath: oldName,
-            target: newName,
+            target: this.currentDirectory + "/" + newName,
           }
           // Qs.stringify({
           //   src: oldName,
@@ -1374,10 +1378,7 @@ export default {
 
       this.$root.loading = true;
       axios
-        .post(
-          "file/generateDirectLink",
-          Qs.stringify({ relativePath: relativePath })
-        )
+        .post("file/link", Qs.stringify({ relativePath: relativePath }))
         .then((res) => {
           if (res.success) {
             this.$root.showModal(

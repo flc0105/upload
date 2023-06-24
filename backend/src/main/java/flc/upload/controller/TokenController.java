@@ -4,9 +4,7 @@ import flc.upload.annotation.Log;
 import flc.upload.annotation.Token;
 import flc.upload.model.AppConfig;
 import flc.upload.model.Result;
-import flc.upload.util.CommonUtil;
-import flc.upload.util.CookieUtil;
-import flc.upload.util.JwtUtil;
+import flc.upload.util.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +35,7 @@ public class TokenController {
     public Result get(@RequestParam("password") String password, HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (this.password.equals(password)) {
 //            String token = JwtUtil.generateToken();
-            String token = JwtUtil.generateTokenWithUsername(CommonUtil.getBrowser(request) + "@" + CommonUtil.getIp(request));
+            String token = JwtUtil.generateToken(RequestUtil.getClientBrowser(request) + "@" + RequestUtil.getClientIpAddress(request));
             CookieUtil.addCookie("token", token, request, response);
             return new Result<>(true, "获取成功", token);
         } else {
@@ -50,7 +48,7 @@ public class TokenController {
     @PostMapping("/getWithUsername")
     public Result getWithUsername(@RequestParam("password") String password, String username, HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (this.password.equals(password)) {
-            String token = JwtUtil.generateTokenWithUsername(username);
+            String token = JwtUtil.generateToken(username);
             CookieUtil.addCookie("token", token, request, response);
             return new Result<>(true, "获取成功", token);
         } else {
@@ -63,7 +61,7 @@ public class TokenController {
     @ApiOperation("Token_禁用")
     @PostMapping("/deactivateToken")
     public Result deactivateToken(@RequestParam String token) {
-        Field field = CommonUtil.getFieldByName("deactivatedTokens", config.getClass());
+        Field field = ReflectionUtil.getFieldByName("deactivatedTokens", config.getClass());
         if (field != null) {
             try {
                 field.setAccessible(true);

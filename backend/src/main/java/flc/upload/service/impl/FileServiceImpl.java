@@ -9,6 +9,7 @@ import flc.upload.model.Result;
 import flc.upload.service.FileService;
 import flc.upload.util.CommonUtil;
 import flc.upload.util.FileUtil;
+import flc.upload.util.InternationalizationUtil;
 import flc.upload.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +62,7 @@ public class FileServiceImpl implements FileService {
                 logger.info("自动创建目录 {}：{}", dest.getParentFile(), dest.getParentFile().mkdirs());
             }
             if (dest.exists()) {
-                failures.add(file.getOriginalFilename() + " (" + ResponseUtil.translate("file.already.exists") + ")");
+                failures.add(file.getOriginalFilename() + " (" + InternationalizationUtil.translate("file.already.exists") + ")");
                 continue;
             }
             try {
@@ -73,7 +74,7 @@ public class FileServiceImpl implements FileService {
         if (failures.isEmpty()) {
             return ResponseUtil.buildSuccessResult("upload.success");
         } else {
-            return new Result<>(false, ResponseUtil.translate("some.files.upload.failure") + System.lineSeparator() + String.join(System.lineSeparator(), failures));
+            return new Result<>(false, InternationalizationUtil.translate("some.files.upload.failure") + System.lineSeparator() + String.join(System.lineSeparator(), failures));
         }
     }
 
@@ -109,13 +110,13 @@ public class FileServiceImpl implements FileService {
         List<String> failures = new ArrayList<>();
         for (String relativePath : files) {
             File file = new File(uploadPath, relativePath);
-            File targetFile = FileUtil.getFile(uploadPath, target, file.getName());
+            File targetFile = FileUtil.getFile(uploadPath, relativePath, target, file.getName());
             try {
                 if (targetFile.exists()) {
-                    throw new BusinessException(ResponseUtil.translate("file.already.exists"));
+                    throw new BusinessException(InternationalizationUtil.translate("file.already.exists"));
                 }
                 if (!file.renameTo(targetFile)) {
-                    throw new BusinessException(ResponseUtil.translate("move.failure"));
+                    throw new BusinessException(InternationalizationUtil.translate("move.failure"));
                 }
             } catch (Exception e) {
                 failures.add(file.getName() + " (" + e.getLocalizedMessage() + ")");
@@ -124,7 +125,7 @@ public class FileServiceImpl implements FileService {
         if (failures.isEmpty()) {
             return ResponseUtil.buildSuccessResult("move.success");
         } else {
-            return new Result<>(false, ResponseUtil.translate("some.files.move.failure") + System.lineSeparator() + String.join(System.lineSeparator(), failures));
+            return new Result<>(false, InternationalizationUtil.translate("some.files.move.failure") + System.lineSeparator() + String.join(System.lineSeparator(), failures));
         }
     }
 
@@ -134,10 +135,10 @@ public class FileServiceImpl implements FileService {
         File targetFile = new File(uploadPath, target);
         try {
             if (targetFile.exists()) {
-                throw new BusinessException(ResponseUtil.translate("file.already.exists"));
+                throw new BusinessException(InternationalizationUtil.translate("file.already.exists"));
             }
             if (!file.renameTo(targetFile)) {
-                throw new BusinessException(ResponseUtil.translate("rename.failure"));
+                throw new BusinessException(InternationalizationUtil.translate("rename.failure"));
             }
         } catch (Exception e) {
             return new Result<>(false, e.getLocalizedMessage());
@@ -158,10 +159,10 @@ public class FileServiceImpl implements FileService {
         }
         for (File file : list) {
             if (file.isDirectory()) {
-                folders.add(new Folder(file.getName(), FileUtil.formatDate(file.lastModified()), FileUtil.relativize(uploadPath, file)));
+                folders.add(new Folder(file.getName(), CommonUtil.formatDate(file.lastModified()), FileUtil.relativize(uploadPath, file)));
             }
             if (file.isFile()) {
-                files.add(new flc.upload.model.File(file.getName(), file.length(), FileUtil.formatDate(file.lastModified()), FileUtil.relativize(uploadPath, file), FileUtil.detectFileType(file)));
+                files.add(new flc.upload.model.File(file.getName(), file.length(), CommonUtil.formatDate(file.lastModified()), FileUtil.relativize(uploadPath, file), FileUtil.detectFileType(file)));
             }
         }
         Map<String, List<?>> map = new HashMap<>();
@@ -198,10 +199,10 @@ public class FileServiceImpl implements FileService {
                         if (Paths.get(uploadPath, currentDirectory).equals(path)) {
                             continue;
                         }
-                        folders.add(new Folder(file.getName(), FileUtil.formatDate(file.lastModified()), FileUtil.relativize(uploadPath, file)));
+                        folders.add(new Folder(file.getName(), CommonUtil.formatDate(file.lastModified()), FileUtil.relativize(uploadPath, file)));
                     }
                     if (Files.isRegularFile(path)) {
-                        files.add(new flc.upload.model.File(file.getName(), file.length(), FileUtil.formatDate(file.lastModified()), FileUtil.relativize(uploadPath, file), FileUtil.detectFileType(file)));
+                        files.add(new flc.upload.model.File(file.getName(), file.length(), CommonUtil.formatDate(file.lastModified()), FileUtil.relativize(uploadPath, file), FileUtil.detectFileType(file)));
                     }
                 } else {
                     break;
@@ -220,7 +221,7 @@ public class FileServiceImpl implements FileService {
     public void download(String relativePath, HttpServletResponse response) throws Exception {
         File file = new File(uploadPath, relativePath);
         if (!file.exists()) {
-            throw new BusinessException(ResponseUtil.translate("file.does.not.exist"));
+            throw new BusinessException(InternationalizationUtil.translate("file.does.not.exist"));
         }
         FileUtil.download(file, response);
     }
@@ -229,7 +230,7 @@ public class FileServiceImpl implements FileService {
     public void downloadCompressedImage(String relativePath, HttpServletResponse response) throws Exception {
         File file = new File(uploadPath, relativePath);
         if (!file.exists()) {
-            throw new BusinessException(ResponseUtil.translate("file.does.not.exist"));
+            throw new BusinessException(InternationalizationUtil.translate("file.does.not.exist"));
         }
         FileUtil.downloadCompressedImage(file, response);
     }
@@ -237,7 +238,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public Result<?> read(String relativePath) throws Exception {
         File file = new File(uploadPath, relativePath);
-        if (file.length() > appConfig.getMaxFileSize()) {
+        if (file.length() > appConfig.getPreviewMaxFileSize()) {
             return ResponseUtil.buildErrorResult("file.is.too.large");
         }
         String charsetName = Optional.ofNullable(FileUtil.getFileEncode(file)).orElse(Charset.defaultCharset().name());
@@ -250,19 +251,28 @@ public class FileServiceImpl implements FileService {
     @Override
     public Result<?> getFileInfo(String relativePath) {
         File file = new File(uploadPath, relativePath);
-        Map<String, String> map = new LinkedHashMap<>();
-        map.put(ResponseUtil.translate("filename"), file.getName());
-        map.put(ResponseUtil.translate("relative.path"), FileUtil.relativize(uploadPath, file));
-        map.put(ResponseUtil.translate("creation.time"), FileUtil.getCreationTime(file));
-        map.put(ResponseUtil.translate("modified.time"), FileUtil.getModifiedTime(file));
-        if (file.isDirectory()) {
-            map.put(ResponseUtil.translate("length"), FileUtil.formatSize(FileUtil.calculateDirectorySize(file)));
-            map.put(ResponseUtil.translate("contains"), ResponseUtil.translate("file.folder.count", FileUtil.countFiles(file), FileUtil.countFolders(file)));
-        } else if (file.isFile()) {
-            map.put(ResponseUtil.translate("length"), FileUtil.formatSize(file.length()));
-            map.put(ResponseUtil.translate("file.type"), FileUtil.detectFileType(file));
+        if (!file.exists()) {
+//            return ResponseUtil.buildErrorResult("file.does.not.exist");
+            throw new BusinessException(InternationalizationUtil.translate("file.does.not.exist"));
         }
-        String result = map.entrySet().stream().map(entry -> entry.getKey() + ": " + entry.getValue()).collect(Collectors.joining(System.lineSeparator()));
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("filename", file.getName());
+        map.put("relative.path", FileUtil.relativize(uploadPath, file));
+        map.put("creation.time", FileUtil.getCreationTime(file));
+        map.put("modified.time", FileUtil.getModifiedTime(file));
+        if (file.isDirectory()) {
+            map.put("length", FileUtil.formatSize(FileUtil.calculateDirectorySize(file)));
+            map.put("contains", InternationalizationUtil.translate("file.folder.count", FileUtil.countFiles(file), FileUtil.countFolders(file)));
+        } else if (file.isFile()) {
+            map.put("length", FileUtil.formatSize(file.length()));
+            map.put("file.type", FileUtil.detectFileType(file));
+            if (FileUtil.isImage(file)) {
+                map.putAll(FileUtil.getImageInfo(file));
+            } else if (FileUtil.isAudio(file)) {
+                map.putAll(FileUtil.getAudioInfo(file));
+            }
+        }
+        String result = InternationalizationUtil.translateMapKeys(map).entrySet().stream().map(entry -> entry.getKey() + ": " + entry.getValue()).collect(Collectors.joining(System.lineSeparator()));
         return ResponseUtil.buildSuccessResult("query.success", result);
     }
 
@@ -306,7 +316,7 @@ public class FileServiceImpl implements FileService {
                 return;
             }
         }
-        throw new BusinessException(ResponseUtil.translate("compress.failure"));
+        throw new BusinessException(InternationalizationUtil.translate("compress.failure"));
     }
 
     @Override
@@ -315,7 +325,7 @@ public class FileServiceImpl implements FileService {
         if (!file.exists()) {
             return ResponseUtil.buildErrorResult("file.does.not.exist");
         }
-        if (file.isFile() && FileUtil.detectFileType(file).startsWith("image")) {
+        if (file.isFile() && FileUtil.isImage(file)) {
             String target = "IMG_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + FileUtil.getFileExtension(file);
             Path targetFile = Paths.get(uploadPath, "images", target);
             Files.createDirectories(targetFile.getParent());

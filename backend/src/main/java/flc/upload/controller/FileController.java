@@ -81,7 +81,7 @@ public class FileController {
 
     @ApiOperation("文件_查询所有")
     @Log
-    @GetMapping("/list")
+    @PostMapping("/list")
     public Result<?> list(@RequestParam("currentDirectory") String currentDirectory, HttpServletRequest request) {
         return fileService.list(currentDirectory, CookieUtil.getCookie("token", request));
     }
@@ -96,7 +96,7 @@ public class FileController {
     @ApiOperation("文件_下载")
     @Log
     @Permission
-    @GetMapping("/download")
+    @RequestMapping(value = "/download", method = {RequestMethod.GET, RequestMethod.POST})
     public void download(@RequestParam("relativePath") String relativePath, HttpServletResponse response) throws Exception {
         fileService.download(relativePath, response);
     }
@@ -104,9 +104,9 @@ public class FileController {
     @ApiOperation("文件_预览图片")
     @Log
     @Permission
-    @GetMapping("/preview")
+    @RequestMapping(value = "/preview", method = {RequestMethod.GET, RequestMethod.POST})
     public void preview(@RequestParam("relativePath") String relativePath, HttpServletResponse response) throws Exception {
-        if (appConfig.isCompressImage()) {
+        if (appConfig.isPreviewCompressImage()) {
             fileService.downloadCompressedImage(relativePath, response);
         } else {
             fileService.download(relativePath, response);

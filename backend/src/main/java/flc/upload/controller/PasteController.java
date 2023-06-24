@@ -5,7 +5,7 @@ import flc.upload.annotation.Permission;
 import flc.upload.model.Paste;
 import flc.upload.model.Result;
 import flc.upload.service.PasteService;
-import flc.upload.util.ResponseUtil;
+import flc.upload.util.InternationalizationUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -71,7 +71,7 @@ public class PasteController {
 //    @Permission
     @GetMapping("/get/{id}")
     public String getText(@PathVariable Integer id) throws Exception {
-        Paste paste = (Paste) Objects.requireNonNull(pasteService.findById(id).getDetail(), ResponseUtil.translate("query.failure"));
+        Paste paste = (Paste) Objects.requireNonNull(pasteService.findById(id).getDetail(), InternationalizationUtil.translate("query.failure"));
         return paste.getText();
     }
 
@@ -80,7 +80,7 @@ public class PasteController {
     @Permission
     @GetMapping(value = "/last")
     public String last() throws Exception {
-        Paste paste = (Paste) Objects.requireNonNull(pasteService.findLast().getDetail(), ResponseUtil.translate("query.failure"));
+        Paste paste = (Paste) Objects.requireNonNull(pasteService.findLast().getDetail(), InternationalizationUtil.translate("query.failure"));
         return paste.getText();
     }
 

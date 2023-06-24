@@ -38,10 +38,10 @@ public class BookmarkServiceImpl implements BookmarkService {
         bookmark.setTitle(JsoupUtil.getTitle(bookmark.getUrl()));
         String iconUrl = JsoupUtil.getIcon(bookmark.getUrl());
         if (iconUrl != null) {
-            bookmark.setIcon(JsoupUtil.fileToBase64(iconUrl));
+            bookmark.setIcon(JsoupUtil.convertIconToBase64(iconUrl));
         } else {
             URL url = new URL(bookmark.getUrl());
-            String icon = JsoupUtil.fileToBase64(url.getProtocol() + "://" + url.getAuthority() + "/favicon.ico");
+            String icon = JsoupUtil.convertIconToBase64(url.getProtocol() + "://" + url.getAuthority() + "/favicon.ico");
             if (icon.isEmpty()) {
                 icon = ImageGenerator.generateImageBase64(bookmark.getTitle().charAt(0));
             }

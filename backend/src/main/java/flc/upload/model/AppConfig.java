@@ -12,48 +12,69 @@ import java.util.List;
 @PropertySource("classpath:app-config.properties")
 public class AppConfig {
 
-    @Value("${preview.maxFileSize}")
-    private int maxFileSize;
+    @Value("${preview.max-file-size}")
+    private int previewMaxFileSize;
 
-    @Value("${download.bufferSize}")
-    private int bufferSize;
+    @Value("${download.buffer-size}")
+    private int downloadBufferSize;
 
     @Value("#{'${private.directories}'.split(',')}")
     private List<String> privateDirectories;
 
-    @Value("${preview.compressImage}")
-    private boolean compressImage;
+    @Value("${preview.compress-image}")
+    private boolean previewCompressImage;
 
     @Value("${deactivated.tokens}")
     private List<String> deactivatedTokens;
-    @Value("${bookmark.timeout}")
-    private int bookmarkTimeout;
+    @Value("${request.timeout}")
+    private int requestTimeout;
+
+    @Value("${jwt.secret-key}")
+    private String jwtSecretKey;
+    @Value("${jwt.expiration-time}")
+    private int jwtExpirationTime;
+
+    @Value("${log.max-size}")
+    private int logMaxSize;
+
+    public String getJwtSecretKey() {
+        return jwtSecretKey;
+    }
+
+    public void setJwtSecretKey(String jwtSecretKey) {
+        this.jwtSecretKey = jwtSecretKey;
+    }
+
+    public int getJwtExpirationTime() {
+        return jwtExpirationTime;
+    }
+
+    public void setJwtExpirationTime(int jwtExpirationTime) {
+        this.jwtExpirationTime = jwtExpirationTime;
+    }
 
     public List<String> getDeactivatedTokens() {
         return deactivatedTokens;
     }
-//
-//    @Value("${password}")
-//    private String password;
 
     public void setDeactivatedTokens(List<String> deactivatedTokens) {
         this.deactivatedTokens = deactivatedTokens;
     }
 
-    public int getMaxFileSize() {
-        return maxFileSize;
+    public int getPreviewMaxFileSize() {
+        return previewMaxFileSize;
     }
 
-    public void setMaxFileSize(int maxFileSize) {
-        this.maxFileSize = maxFileSize;
+    public void setPreviewMaxFileSize(int previewMaxFileSize) {
+        this.previewMaxFileSize = previewMaxFileSize;
     }
 
-    public int getBufferSize() {
-        return bufferSize;
+    public int getDownloadBufferSize() {
+        return downloadBufferSize;
     }
 
-    public void setBufferSize(int bufferSize) {
-        this.bufferSize = bufferSize;
+    public void setDownloadBufferSize(int downloadBufferSize) {
+        this.downloadBufferSize = downloadBufferSize;
     }
 
     public List<String> getPrivateDirectories() {
@@ -64,27 +85,27 @@ public class AppConfig {
         this.privateDirectories = privateDirectories;
     }
 
-    public boolean isCompressImage() {
-        return compressImage;
+    public boolean isPreviewCompressImage() {
+        return previewCompressImage;
     }
 
-    public void setCompressImage(boolean compressImage) {
-        this.compressImage = compressImage;
+    public void setPreviewCompressImage(boolean previewCompressImage) {
+        this.previewCompressImage = previewCompressImage;
     }
 
-    public int getBookmarkTimeout() {
-        return bookmarkTimeout;
+    public int getRequestTimeout() {
+        return requestTimeout;
     }
 
-    public void setBookmarkTimeout(int bookmarkTimeout) {
-        this.bookmarkTimeout = bookmarkTimeout;
+    public void setRequestTimeout(int requestTimeout) {
+        this.requestTimeout = requestTimeout;
     }
 
-    //    public String getPassword() {
-//        return password;
-//    }
-//
-//    public void setPassword(String password) {
-//        this.password = password;
-//    }
+    public int getLogMaxSize() {
+        return logMaxSize;
+    }
+
+    public void setLogMaxSize(int logMaxSize) {
+        this.logMaxSize = logMaxSize;
+    }
 }

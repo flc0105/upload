@@ -5,6 +5,7 @@ import flc.upload.model.Paste;
 import flc.upload.model.Result;
 import flc.upload.service.PasteService;
 import flc.upload.util.CommonUtil;
+import flc.upload.util.InternationalizationUtil;
 import flc.upload.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +53,7 @@ public class PasteServiceImpl implements PasteService {
 
     public Result<?> findById(Integer id) throws Exception {
         deleteExpired();
-        Paste paste = Objects.requireNonNull(pasteMapper.findById(id), ResponseUtil.translate("query.failure"));
+        Paste paste = Objects.requireNonNull(pasteMapper.findById(id), InternationalizationUtil.translate("query.failure"));
         if (paste.isBurnAfterReading()) {
             logger.info("删除 " + pasteMapper.delete(id) + " 条阅后即焚数据");
         }
@@ -61,7 +62,7 @@ public class PasteServiceImpl implements PasteService {
 
     public Result<?> findLast() throws Exception {
         deleteExpired();
-        return ResponseUtil.buildSuccessResult("query.success", Objects.requireNonNull(pasteMapper.findLast(), ResponseUtil.translate("query.failure")));
+        return ResponseUtil.buildSuccessResult("query.success", Objects.requireNonNull(pasteMapper.findLast(), InternationalizationUtil.translate("query.failure")));
     }
 
     public Result<?> findPrivate() throws Exception {

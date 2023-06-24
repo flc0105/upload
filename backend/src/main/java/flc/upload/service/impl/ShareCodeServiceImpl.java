@@ -4,6 +4,7 @@ import flc.upload.mapper.ShareCodeMapper;
 import flc.upload.model.Result;
 import flc.upload.model.ShareCode;
 import flc.upload.service.ShareCodeService;
+import flc.upload.util.CommonUtil;
 import flc.upload.util.FileUtil;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,7 +63,7 @@ public class ShareCodeServiceImpl implements ShareCodeService {
         if (shareCode != null) {
             File file = new File(uploadPath, shareCode.getPath());
             if (file.isFile()) {
-                return new Result<>(true, "查询成功", new flc.upload.model.File(file.getName(), file.length(), FileUtil.formatDate(file.lastModified()), FileUtil.relativize(uploadPath, file), FileUtil.detectFileType(file)));
+                return new Result<>(true, "查询成功", new flc.upload.model.File(file.getName(), file.length(), CommonUtil.formatDate(file.lastModified()), FileUtil.relativize(uploadPath, file), FileUtil.detectFileType(file)));
             }
         }
         return new Result<>(false, "查询失败");

@@ -1,297 +1,121 @@
 package flc.upload.util;
 
-import flc.upload.model.Result;
-import io.swagger.annotations.ApiOperation;
-import org.aspectj.lang.ProceedingJoinPoint;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.nio.charset.Charset;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
+/**
+ * 通用工具类，提供常用的通用方法和工具函数。
+ */
 public class CommonUtil {
     /**
-     * 格式化当前时间
+     * 获取当前日期和时间。
      *
-     * @return 日期时间字符串
+     * @return 当前日期和时间的字符串，格式为"yyyy-MM-dd HH:mm:ss"
      */
     public static String getCurrentDate() {
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
     }
 
     /**
-     * 获取类属性的值
+     * 格式化日期。
      *
-     * @param fieldName 属性名
-     * @param clazz     类
-     * @return 属性
+     * @param date 要格式化的日期，以毫秒为单位的时间戳
+     * @return 格式化后的日期字符串，格式为"yyyy-MM-dd HH:mm"
      */
-    public static Field getFieldByName(String fieldName, Class<?> clazz) {
-        try {
-            return clazz.getDeclaredField(fieldName);
-        } catch (NoSuchFieldException e) {
-            Class<?> superclass = clazz.getSuperclass();
-            if (superclass != null) {
-                return getFieldByName(fieldName, superclass);
-            }
-        }
-        return null;
+    public static String formatDate(long date) {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm").format(date);
     }
 
     /**
-     * 获取类的所有属性
+     * 生成UUID字符串。
      *
-     * @param obj 对象
-     * @return 属性和值的map
+     * @return 生成的UUID字符串
      */
-    public static Map<String, Object> getClassAttributes(Object obj) {
-        Map<String, Object> attributeMap = new HashMap<>();
-        Class<?> clazz = obj.getClass();
-        Field[] fields = clazz.getSuperclass().getDeclaredFields();
-        for (Field field : fields) {
-            try {
-                field.setAccessible(true);
-                Object value = field.get(obj);
-                attributeMap.put(field.getName(), value);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return attributeMap;
+    public static String generateUUID() {
+        UUID uuid = UUID.randomUUID();
+        return uuid.toString();
     }
 
     /**
-     * 格式化毫秒
+     * 将给定的时间转换为人类可读的格式。
      *
-     * @param milliseconds 毫秒
-     * @return 格式化后的时间字符串
+     * @param milliseconds 时间，以毫秒为单位
+     * @return 转换后的时间字符串
      */
-    public static String convertTime(long milliseconds) {
-
+    public static String formatDuration(long milliseconds) {
+        // 将时间转换为对应的单位
         long seconds = milliseconds / 1000;
         long minutes = seconds / 60;
         long hours = minutes / 60;
         long days = hours / 24;
-
+        // 计算剩余不足一单位的时间
         seconds = seconds % 60;
         minutes = minutes % 60;
         hours = hours % 24;
-
-        String result = "";
+        // 构建结果字符串
+        StringBuilder result = new StringBuilder();
         if (days > 0) {
-            result += days + "天 ";
+            result.append(days).append(" ").append(InternationalizationUtil.translate("days")).append(" ");
         }
         if (hours > 0) {
-            result += hours + "小时 ";
+            result.append(hours).append(" ").append(InternationalizationUtil.translate("hours")).append(" ");
         }
         if (minutes > 0) {
-            result += minutes + "分钟 ";
+            result.append(minutes).append(" ").append(InternationalizationUtil.translate("minutes")).append(" ");
         }
         if (seconds > 0) {
-            result += seconds + "秒";
+            result.append(seconds).append(" ").append(InternationalizationUtil.translate("seconds")).append(" ");
         }
-
-        return result;
+        return result.toString();
     }
 
     /**
-     * 使用正则表达式解析 SQLite URL 获取文件路径
+     * 格式化给定的秒数为 "mm:ss" 的时间表示形式。
      *
-     * @param sqliteUrl SQLite的JDBC URL
-     * @return 文件路径
+     * @param seconds 待格式化的秒数
+     * @return 格式化后的时间字符串，格式为 "mm:ss"
      */
-    public static String getSQLiteFilePath(String sqliteUrl) {
-        Pattern pattern = Pattern.compile("jdbc:sqlite:(.+)");
-        Matcher matcher = pattern.matcher(sqliteUrl);
-        if (matcher.matches()) {
-            return matcher.group(1);
-        }
-        return null;
+    public static String formatSeconds(int seconds) {
+        int minutes = seconds / 60;
+        int remainingSeconds = seconds % 60;
+        String formattedMinutes = String.format("%02d", minutes);
+        String formattedSeconds = String.format("%02d", remainingSeconds);
+        return formattedMinutes + ":" + formattedSeconds;
     }
 
     /**
-     * 获取内存大小
+     * 将Map对象转换为格式化的JSON字符串。
      *
-     * @return 内存大小（字节）
-     * @throws Exception
+     * @param map 要转换hMap对象
+     * @return 格式化的JSON字符串
+     * @throws JsonProcessingException 如果转换过程中发生错误
      */
-    public static long getTotalPhysicalMemorySize() throws Exception {
-        MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-        return Long.parseLong(mBeanServer.getAttribute(new ObjectName("java.lang", "type", "OperatingSystem"), "TotalPhysicalMemorySize").toString());
-//        OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
-//        long physicalMemorySize = osBean.getTotalPhysicalMemorySize(); //osBean.getFreePhysicalMemorySize();
+    public static String toJsonString(Map<String, String> map) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        return objectMapper.writeValueAsString(map);
     }
 
     /**
-     * 获取内存剩余
+     * 将异常堆栈信息转换为字符串形式
      *
-     * @return 内存剩余（字节）
-     * @throws Exception
+     * @param throwable 异常对象
+     * @return 异常堆栈信息的字符串表示
      */
-    public static long getFreePhysicalMemorySize() throws Exception {
-        MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-        return Long.parseLong(mBeanServer.getAttribute(new ObjectName("java.lang", "type", "OperatingSystem"), "FreePhysicalMemorySize").toString());
-    }
-
-
-    /**
-     * 从方法的@ApiOperation注解获取接口名称
-     *
-     * @param method 方法
-     * @return 接口名称
-     */
-    public static String getApiName(Method method) {
-        if (method.isAnnotationPresent(ApiOperation.class)) {
-            ApiOperation apiOperation = method.getAnnotation(ApiOperation.class);
-            return apiOperation.value();
-        } else {
-            return "null";
-        }
-    }
-
-
-    /**
-     * 从request中获取IP地址
-     *
-     * @param request
-     * @return IP
-     */
-    public static String getIp(HttpServletRequest request) {
-        String ip = request.getRemoteAddr();
-        if (Objects.equals(ip, "0:0:0:0:0:0:0:1")) {
-            ip = "localhost";
-        }
-        return ip;
-    }
-
-    /**
-     * 从request中获取浏览器
-     *
-     * @param request
-     * @return 浏览器
-     */
-    public static String getBrowser(HttpServletRequest request) {
-        String browser = "";
-        String userAgent = request.getHeader("User-Agent");
-        if (userAgent != null && !userAgent.isEmpty()) {
-            if (userAgent.contains("Chrome")) {
-                browser = "Chrome";
-            } else if (userAgent.contains("Firefox")) {
-                browser = "Firefox";
-            } else if (userAgent.contains("Safari")) {
-                browser = "Safari";
-            } else {
-                browser = userAgent;
-            }
-        }
-        return browser;
-    }
-
-    /**
-     * 从request中获取操作系统
-     *
-     * @param request
-     * @return 操作系统
-     */
-    public static String getOS(HttpServletRequest request) {
-        String os = "";
-        String userAgent = request.getHeader("User-Agent");
-        if (userAgent != null && !userAgent.isEmpty()) {
-            if (userAgent.toLowerCase().contains("iphone")) {
-                os = "iOS";
-            } else if (userAgent.toLowerCase().contains("mac")) {
-                os = "Mac";
-            } else if (userAgent.toLowerCase().contains("windows")) {
-                os = "Windows";
-            } else if (userAgent.toLowerCase().contains("android")) {
-                os = "Android";
-            } else if (userAgent.toLowerCase().contains("x11") || userAgent.toLowerCase().contains("linux")) {
-                os = "Unix/Linux";
-            } else {
-                os = "Other";
-            }
-        }
-        return os;
-    }
-
-    /**
-     * 获取方法参数
-     *
-     * @param joinPoint
-     * @return 参数列表字符串
-     */
-    public static String getMethodArguments(ProceedingJoinPoint joinPoint) {
-        Object[] args = joinPoint.getArgs();
-        return Arrays.toString(Arrays.stream(args)
-                .filter(e -> !(e instanceof HttpServletRequest) && !(e instanceof HttpServletResponse))
-                .toArray(Object[]::new));
-    }
-
-    /**
-     * 获取请求地址的相对路径
-     *
-     * @param request
-     * @return 请求地址的相对路径
-     */
-    public static String getRequestURL(HttpServletRequest request) {
-        String contextPath = request.getContextPath();
-        String requestURI = request.getRequestURI();
-        return requestURI.substring(contextPath.length());
-    }
-
-    /**
-     * 执行shell命令
-     *
-     * @param command 命令
-     * @return 执行结果
-     */
-    public static Result executeCommand(String command) throws IOException, InterruptedException {
-        StringBuilder output = new StringBuilder();
-        ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.redirectErrorStream(true);
-        if (isWindows()) {
-            processBuilder.command("cmd.exe", "/c", command);
-        } else {
-            processBuilder.command("sh", "-c", command);
-        }
-        Process process = processBuilder.start();
-        Charset charset = Charset.defaultCharset();
-        if (isWindows()) {
-            charset = Charset.forName("GBK");
-        }
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), charset));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            output.append(line).append("\n");
-        }
-        int exitCode = process.waitFor();
-        return new Result<>(exitCode == 0, "命令执行完成", output.toString());
-    }
-
-    /**
-     * 判断是不是Windows系统
-     *
-     * @return 是或不是
-     */
-    private static boolean isWindows() {
-        String os = System.getProperty("os.name").toLowerCase();
-        return os.contains("win");
-    }
-
-    public static String generateUUID() {
-        UUID uuid = UUID.randomUUID();
-        return uuid.toString();
+    public static String getStackTraceAsString(Throwable throwable) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        throwable.printStackTrace(pw);
+        return sw.toString();
     }
 
 }

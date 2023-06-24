@@ -1,12 +1,9 @@
 package flc.upload.aspect;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import flc.upload.model.AppConfig;
 import flc.upload.model.Result;
-import flc.upload.util.CommonUtil;
-import flc.upload.util.CookieUtil;
-import flc.upload.util.JwtUtil;
+import flc.upload.util.*;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -14,69 +11,133 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * 切面类
+ * 切面类，用于记录日志
  */
 @Aspect
 @Component
 public class LogAspect {
 
+    /**
+     * 存储日志信息的列表
+     */
     public static final List<Map<String, String>> logs = new ArrayList<>();
 
+    /**
+     * 定义切入点，标记使用了 @Log 注解的方法
+     */
     @Pointcut("@annotation(flc.upload.annotation.Log)")
     public void logPointCut() {
-
     }
 
-    private String hashMapToJson(Map<String, String> hashMap) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        return objectMapper.writeValueAsString(hashMap);
+    private static AppConfig appConfig;
+
+    /**
+     * 注入 AppConfig
+     *
+     * @param appConfig AppConfig 实例
+     */
+    @Autowired
+    public void setAppConfig(AppConfig appConfig) {
+        LogAspect.appConfig = appConfig;
     }
 
+    /**
+     * 环绕通知，在被 @Log 注解标记的方法执行前后记录日志
+     *
+     * @param joinPoint ProceedingJoinPoint 对象
+     * @return 目标方法的执行结果
+     * @throws Throwable 抛出的异常
+     */
     @Around("logPointCut()")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
+        // 获取方法的签名信息，包括方法名、参数类型等
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+
+        // 获取当前方法对象
         Method method = signature.getMethod();
+
+        // 使用方法所在类的类名作为 Logger 的名称
         Logger logger = LoggerFactory.getLogger(method.getDeclaringClass());
+
+        // 创建一个有序的 Map，用于存储日志的键值对信息
+        Map<String, String> logMap = new LinkedHashMap<>();
+
+        // 获取请求的上下文信息
+        ServletRequestAttributes attributes = (ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes(), InternationalizationUtil.translate("get.request.information.failure"));
+
+        // 获取当前的 HttpServletRequest 对象
+        HttpServletRequest request = attributes.getRequest();
+
+        // 填充日志信息
+        logMap.put("operation.time", CommonUtil.getCurrentDate());
+        logMap.put("api.name", ReflectionUtil.getApiName(method));
+        logMap.put("request.url", RequestUtil.getRelativeRequestURI(request));
+        logMap.put("ip.address", RequestUtil.getClientIpAddress(request));
+        logMap.put("browser", RequestUtil.getClientBrowser(request));
+        logMap.put("operating.system", RequestUtil.getClientOS(request));
+        logMap.put("request.method", request.getMethod());
+        logMap.put("class.name", signature.getDeclaringTypeName());
+        logMap.put("method.name", method.getName());
+        logMap.put("request.parameters", ReflectionUtil.getMethodArguments(joinPoint));
+        logMap.put("parameter.type", request.getContentType());
+        logMap.put("token", CookieUtil.getCookie("token", request));
+        logMap.put("remark", JwtUtil.getRemark(CookieUtil.getCookie("token", request)));
+        logMap.put("referer", request.getHeader("Referer"));
+
         long startTime = System.nanoTime();
-        Object result = joinPoint.proceed();
-        long endTime = System.nanoTime();
-        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (attributes != null) {
-            HttpServletRequest request = attributes.getRequest();
-            Map<String, String> logMap = new LinkedHashMap<>();
-            logMap.put("操作时间", CommonUtil.getCurrentDate());
-            logMap.put("接口名称", CommonUtil.getApiName(method));
-            logMap.put("请求地址", CommonUtil.getRequestURL(request));
-            logMap.put("IP", CommonUtil.getIp(request));
-            logMap.put("是否执行成功", String.valueOf((result instanceof Result) ? ((Result<?>) result).isSuccess() : null));
-            logMap.put("浏览器", CommonUtil.getBrowser(request));
-            logMap.put("操作系统", CommonUtil.getOS(request));
-            logMap.put("请求方式", request.getMethod());
-            logMap.put("类名", signature.getDeclaringTypeName());
-            logMap.put("方法名", method.getName());
-            logMap.put("请求参数", CommonUtil.getMethodArguments(joinPoint));
-            logMap.put("参数类型", request.getContentType());
-            logMap.put("具体消息", String.valueOf((result instanceof Result) ? ((Result<?>) result).getMsg() : null));
-//            logMap.put("返回结果", result.toString());
-            logMap.put("方法耗时", ((endTime - startTime) / 1_000_000) + " ms");
-            logMap.put("Token", CookieUtil.getCookie("token", request));
-            logMap.put("设备", JwtUtil.getUsername(CookieUtil.getCookie("token", request)));
-            logs.add(logMap);
-            logger.info("\n" + hashMapToJson(logMap));
+        try {
+            // 执行目标方法
+            Object result = joinPoint.proceed();
+            long endTime = System.nanoTime();
+
+            // 添加执行成功的日志信息
+            logMap.put("success", String.valueOf((result instanceof Result) ? ((Result<?>) result).isSuccess() : null));
+            logMap.put("specific.message", String.valueOf((result instanceof Result) ? ((Result<?>) result).getMsg() : null));
+            logMap.put("execution.time", ((endTime - startTime) / 1_000_000) + " ms");
+
+            // 添加日志到列表
+            addLog(logMap, logger);
+
+            return result;
+        } catch (Throwable throwable) {
+            long endTime = System.nanoTime();
+
+            // 添加执行失败的日志信息
+            logMap.put("success", String.valueOf(false));
+            logMap.put("specific.message", throwable.getLocalizedMessage());
+            logMap.put("execution.time", ((endTime - startTime) / 1_000_000) + " ms");
+
+            // 添加日志到列表
+            addLog(logMap, logger);
+
+            // 抛出异常
+            throw throwable;
         }
-        return result;
     }
+
+    /**
+     * 添加日志到列表
+     *
+     * @param map    存储日志信息的 Map
+     * @param logger Logger 实例
+     * @throws JsonProcessingException JSON 解析异常
+     */
+    private void addLog(Map<String, String> map, Logger logger) throws JsonProcessingException {
+        if (logs.size() >= appConfig.getLogMaxSize()) {
+            logs.remove(0);
+        }
+        logs.add(map);
+        logger.info("\n" + CommonUtil.toJsonString(InternationalizationUtil.translateMapKeys(map)));
+    }
+
 }

@@ -105,7 +105,7 @@ export default {
     listConfig() {
       this.$root.loading = true;
       axios
-        .post("/config/get")
+        .post("/config/list")
         .then((res) => {
           if (res.success) {
             this.config = res.detail;
@@ -123,7 +123,7 @@ export default {
     update(key, value) {
       this.$root.loading = true;
       axios
-        .post("/config/set", {
+        .post("/config/update", {
           key: key,
           value: value,
         })
