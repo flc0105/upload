@@ -52,10 +52,7 @@ public class PasteServiceImpl implements PasteService {
 
     public Result<?> findById(Integer id) throws Exception {
         deleteExpired();
-        Paste paste = Objects.requireNonNull(pasteMapper.findById(id), ResponseUtil.getMessage("query.failure"));
-//        if (Objects.equals(paste.getExpiredDate(), "-1")) {
-//            logger.info("删除 " + pasteMapper.delete(id) + " 条阅后即焚数据");
-//        }
+        Paste paste = Objects.requireNonNull(pasteMapper.findById(id), ResponseUtil.translate("query.failure"));
         if (paste.isBurnAfterReading()) {
             logger.info("删除 " + pasteMapper.delete(id) + " 条阅后即焚数据");
         }
@@ -64,7 +61,7 @@ public class PasteServiceImpl implements PasteService {
 
     public Result<?> findLast() throws Exception {
         deleteExpired();
-        return ResponseUtil.buildSuccessResult("query.success", Objects.requireNonNull(pasteMapper.findLast(), ResponseUtil.getMessage("query.failure")));
+        return ResponseUtil.buildSuccessResult("query.success", Objects.requireNonNull(pasteMapper.findLast(), ResponseUtil.translate("query.failure")));
     }
 
     public Result<?> findPrivate() throws Exception {

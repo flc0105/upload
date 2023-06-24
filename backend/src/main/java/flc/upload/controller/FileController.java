@@ -1,6 +1,7 @@
 package flc.upload.controller;
 
 import flc.upload.annotation.Log;
+import flc.upload.annotation.Permission;
 import flc.upload.annotation.Token;
 import flc.upload.model.AppConfig;
 import flc.upload.model.Result;
@@ -29,129 +30,126 @@ import java.util.stream.Collectors;
 public class FileController {
     private final FileService fileService;
 
-    private final AppConfig config;
+    private final AppConfig appConfig;
 
     @Autowired
-    public FileController(FileService fileService, AppConfig config) {
+    public FileController(FileService fileService, AppConfig appConfig) {
         this.fileService = fileService;
-        this.config = config;
+        this.appConfig = appConfig;
     }
 
-
-    @Log
-    @ApiOperation("文件_查询所有")
-    @GetMapping("/list")
-    public Result list(@RequestParam("currentDirectory") String currentDirectory, HttpServletRequest request) {
-        return fileService.list(currentDirectory, CookieUtil.getCookie("token", request));
-    }
-
-    @Log
-    @ApiOperation("文件_搜索")
-    @PostMapping("/search")
-    public Result search(@RequestParam("filter") String filter, @RequestParam("currentDirectory") String currentDirectory, HttpServletRequest request) {
-        return fileService.search(filter, currentDirectory, CookieUtil.getCookie("token", request));
-    }
-
-    @Log
     @ApiOperation("文件_上传")
+    @Log
     @PostMapping("/upload")
-    public Result upload(@RequestParam("files") MultipartFile[] files, @RequestParam("currentDirectory") Optional<String> currentDirectory, HttpServletRequest request) throws Exception {
+    public Result<?> upload(@RequestParam("files") MultipartFile[] files, @RequestParam("currentDirectory") Optional<String> currentDirectory, HttpServletRequest request) throws Exception {
         String value = currentDirectory.orElse("/");
         return fileService.upload(files, value, CookieUtil.getCookie("token", request));
     }
 
-    @Log
-    @Token
     @ApiOperation("文件_创建目录")
+    @Log
+    @Permission
     @PostMapping("/mkdir")
-    public Result mkdir(@RequestParam("relativePath") String relativePath, HttpServletRequest request) {
+    public Result<?> mkdir(@RequestParam("relativePath") String relativePath) {
         return fileService.mkdir(relativePath);
     }
 
-    @Log
-    @Token
     @ApiOperation("文件_删除")
+    @Log
+    @Permission
     @PostMapping("/delete")
-    public Result delete(@RequestBody Map<String, List<String>> files, HttpServletRequest request) throws Exception {
+    public Result<?> delete(@RequestBody Map<String, List<String>> files) throws Exception {
         return fileService.delete(files.get("relativePath"));
     }
 
+    @ApiOperation("文件_移动")
     @Log
+    @Token
+    @PostMapping("/move")
+    public Result<?> move(@RequestBody Map<String, Object> params) throws Exception {
+        List<String> relativePath = ((List<?>) params.get("relativePath")).stream().map(String.class::cast).collect(Collectors.toList());
+        return fileService.move(relativePath, String.valueOf(params.get("target")));
+    }
+
+    @ApiOperation("文件_重命名")
+    @Log
+    @Permission
+    @PostMapping("/rename")
+    public Result<?> rename(@RequestBody Map<String, String> params) {
+        return fileService.rename(params.get("relativePath"), params.get("target"));
+    }
+
+    @ApiOperation("文件_查询所有")
+    @Log
+    @GetMapping("/list")
+    public Result<?> list(@RequestParam("currentDirectory") String currentDirectory, HttpServletRequest request) {
+        return fileService.list(currentDirectory, CookieUtil.getCookie("token", request));
+    }
+
+    @ApiOperation("文件_搜索")
+    @Log
+    @PostMapping("/search")
+    public Result<?> search(@RequestParam("filter") String filter, @RequestParam("currentDirectory") String currentDirectory, HttpServletRequest request) {
+        return fileService.search(filter, currentDirectory, CookieUtil.getCookie("token", request));
+    }
+
     @ApiOperation("文件_下载")
-    @RequestMapping(value = "/download", method = {RequestMethod.GET, RequestMethod.POST})
-    public void download(@RequestParam("relativePath") String relativePath, HttpServletResponse response, HttpServletRequest request) throws Exception {
+    @Log
+    @Permission
+    @GetMapping("/download")
+    public void download(@RequestParam("relativePath") String relativePath, HttpServletResponse response) throws Exception {
         fileService.download(relativePath, response);
     }
 
-
-    @Log
     @ApiOperation("文件_预览图片")
-    @RequestMapping(value = "/previewImage", method = {RequestMethod.GET, RequestMethod.POST})
-    public void previewImage(@RequestParam("relativePath") String relativePath, HttpServletResponse response) throws Exception {
-        if (config.isCompressImage()) {
+    @Log
+    @Permission
+    @GetMapping("/preview")
+    public void preview(@RequestParam("relativePath") String relativePath, HttpServletResponse response) throws Exception {
+        if (appConfig.isCompressImage()) {
             fileService.downloadCompressedImage(relativePath, response);
         } else {
             fileService.download(relativePath, response);
         }
     }
 
+    @ApiOperation("文件_预览文本")
     @Log
+    @Permission
+    @PostMapping("/read")
+    public Result<?> read(@RequestParam("relativePath") String relativePath) throws Exception {
+        return fileService.read(relativePath);
+    }
+
+    @ApiOperation("文件_查询详情")
+    @Log
+    @Permission
+    @PostMapping("/info")
+    public Result<?> info(@RequestParam("relativePath") String relativePath) throws Exception {
+        return fileService.getFileInfo(relativePath);
+    }
+
     @ApiOperation("文件_压缩")
+    @Log
+    @Permission
     @PostMapping("/zip")
     public Result<?> zip(@RequestBody Map<String, List<String>> files, HttpServletRequest request) throws Exception {
         return fileService.zip(files.get("relativePath"), CookieUtil.getCookie("token", request));
     }
 
-    @Log
     @ApiOperation("文件_压缩并下载")
+    @Log
+    @Permission
     @PostMapping("/zipAndDownload")
     public void zipAndDownload(@RequestBody Map<String, List<String>> files, HttpServletResponse response, HttpServletRequest request) throws Exception {
         fileService.zipAndDownload(files.get("relativePath"), response, CookieUtil.getCookie("token", request));
     }
 
-    @Log
-    @ApiOperation("文件_预览文本文件")
-    @PostMapping("/read")
-    public Result read(@RequestParam("relativePath") String relativePath, HttpServletRequest request) throws Exception {
-        return fileService.read(relativePath);
-    }
-
-    @Log
-    @Token
-    @ApiOperation("文件_移动")
-    @PostMapping("/move")
-    public Result<?> move(@RequestBody Map<String, Object> params, HttpServletRequest request) throws Exception {
-        List<String> relativePath = ((List<?>) params.get("relativePath")).stream().map(String.class::cast).collect(Collectors.toList());
-        return fileService.move(relativePath, String.valueOf(params.get("target")));
-    }
-
-    @Log
-    @Token
-    @ApiOperation("文件_重命名")
-    @PostMapping("/rename")
-    public Result rename(@RequestBody Map<String, String> params, HttpServletRequest request) {
-        return fileService.rename(params.get("relativePath"), params.get("target"));
-    }
-
-
-
-
-
-
-
-
-
-    @Log
-    @ApiOperation("文件_查询详情")
-    @PostMapping("/info")
-    public Result info(@RequestParam("relativePath") String relativePath) throws Exception {
-        return fileService.getFileInfo(relativePath);
-    }
-
-    @Log
     @ApiOperation("文件_生成图片直链")
-    @PostMapping("/generateDirectLink")
-    public Result generateDirectLink(@RequestParam("relativePath") String relativePath) throws IOException {
+    @Log
+    @Permission
+    @PostMapping("/link")
+    public Result<?> link(@RequestParam("relativePath") String relativePath) throws IOException {
         return fileService.generateDirectLink(relativePath);
     }
 }

@@ -47,6 +47,105 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    public Result<?> upload(MultipartFile[] files, String currentDirectory, String token) throws Exception {
+        if (!currentDirectory.startsWith("/public/")) {
+            tokenManager.verify(token);
+        }
+        if (files.length == 0) {
+            return ResponseUtil.buildErrorResult("no.incoming.files");
+        }
+        List<String> failures = new ArrayList<>();
+        for (MultipartFile file : files) {
+            File dest = FileUtil.getFile(uploadPath, currentDirectory, file.getOriginalFilename());
+            if (!dest.getParentFile().exists()) {
+                logger.info("自动创建目录 {}：{}", dest.getParentFile(), dest.getParentFile().mkdirs());
+            }
+            if (dest.exists()) {
+                failures.add(file.getOriginalFilename() + " (" + ResponseUtil.translate("file.already.exists") + ")");
+                continue;
+            }
+            try {
+                file.transferTo(dest);
+            } catch (Exception e) {
+                failures.add(file.getOriginalFilename() + " (" + e.getLocalizedMessage() + ")");
+            }
+        }
+        if (failures.isEmpty()) {
+            return ResponseUtil.buildSuccessResult("upload.success");
+        } else {
+            return new Result<>(false, ResponseUtil.translate("some.files.upload.failure") + System.lineSeparator() + String.join(System.lineSeparator(), failures));
+        }
+    }
+
+    @Override
+    public Result<?> mkdir(String relativePath) {
+        File directory = new File(uploadPath, relativePath);
+        if (directory.exists()) {
+            return ResponseUtil.buildErrorResult("file.already.exists");
+        }
+        if (directory.mkdirs()) {
+            return ResponseUtil.buildSuccessResult("create.directory.success");
+        } else {
+            return ResponseUtil.buildErrorResult("create.directory.failure");
+        }
+    }
+
+    @Override
+    public Result<?> delete(List<String> files) throws Exception {
+        if (files.isEmpty()) {
+            return ResponseUtil.buildErrorResult("no.incoming.files");
+        }
+        for (String file : files) {
+            FileUtil.deleteRecursively(new File(uploadPath, file));
+        }
+        return ResponseUtil.buildSuccessResult("delete.success");
+    }
+
+    @Override
+    public Result<?> move(List<String> files, String target) {
+        if (files.isEmpty()) {
+            return ResponseUtil.buildErrorResult("no.incoming.files");
+        }
+        List<String> failures = new ArrayList<>();
+        for (String relativePath : files) {
+            File file = new File(uploadPath, relativePath);
+            File targetFile = FileUtil.getFile(uploadPath, target, file.getName());
+            try {
+                if (targetFile.exists()) {
+                    throw new BusinessException(ResponseUtil.translate("file.already.exists"));
+                }
+                if (!file.renameTo(targetFile)) {
+                    throw new BusinessException(ResponseUtil.translate("move.failure"));
+                }
+            } catch (Exception e) {
+                failures.add(file.getName() + " (" + e.getLocalizedMessage() + ")");
+            }
+        }
+        if (failures.isEmpty()) {
+            return ResponseUtil.buildSuccessResult("move.success");
+        } else {
+            return new Result<>(false, ResponseUtil.translate("some.files.move.failure") + System.lineSeparator() + String.join(System.lineSeparator(), failures));
+        }
+    }
+
+    @Override
+    public Result<?> rename(String relativePath, String target) {
+        File file = new File(uploadPath, relativePath);
+        File targetFile = new File(uploadPath, target);
+        try {
+            if (targetFile.exists()) {
+                throw new BusinessException(ResponseUtil.translate("file.already.exists"));
+            }
+            if (!file.renameTo(targetFile)) {
+                throw new BusinessException(ResponseUtil.translate("rename.failure"));
+            }
+        } catch (Exception e) {
+            return new Result<>(false, e.getLocalizedMessage());
+        }
+        return ResponseUtil.buildSuccessResult("rename.success");
+    }
+
+    @Override
     public Result<?> list(String currentDirectory, String token) {
         List<Folder> folders = new ArrayList<>();
         List<flc.upload.model.File> files = new ArrayList<>();
@@ -82,10 +181,7 @@ public class FileServiceImpl implements FileService {
                 tokenManager.verify(token);
                 iterator = Files.walk(Paths.get(uploadPath, currentDirectory)).filter(matcher::matches).iterator();
             } catch (VerifyFailedException e) {
-                iterator = Files.walk(Paths.get(uploadPath, currentDirectory))
-                        .filter(matcher::matches)
-                        .filter(p -> appConfig.getPrivateDirectories().stream().noneMatch(s -> FileUtil.relativize(uploadPath, p.toFile()).startsWith(s)))
-                        .iterator();
+                iterator = Files.walk(Paths.get(uploadPath, currentDirectory)).filter(matcher::matches).filter(p -> appConfig.getPrivateDirectories().stream().noneMatch(s -> FileUtil.relativize(uploadPath, p.toFile()).startsWith(s))).iterator();
             }
         } catch (IOException e) {
             logger.error("搜索文件时出错：" + e.getLocalizedMessage());
@@ -121,65 +217,10 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public Result<?> upload(MultipartFile[] files, String currentDirectory, String token) throws Exception {
-        if (!currentDirectory.startsWith("/public/")) {
-            tokenManager.verify(token);
-        }
-        if (files.length == 0) {
-            return ResponseUtil.buildErrorResult("no.incoming.files");
-        }
-        List<String> failures = new ArrayList<>();
-        for (MultipartFile file : files) {
-            File dest = FileUtil.getFile(uploadPath, currentDirectory, file.getOriginalFilename());
-            if (!dest.getParentFile().exists()) {
-                logger.info("自动创建目录 {}：{}", dest.getParentFile(), dest.getParentFile().mkdirs());
-            }
-            if (dest.exists()) {
-                failures.add(file.getOriginalFilename() + " (" + ResponseUtil.getMessage("file.already.exists") + ")");
-                continue;
-            }
-            try {
-                file.transferTo(dest);
-            } catch (Exception e) {
-                failures.add(file.getOriginalFilename() + " (" + e.getLocalizedMessage() + ")");
-            }
-        }
-        if (failures.isEmpty()) {
-            return ResponseUtil.buildSuccessResult("upload.success");
-        } else {
-            return new Result<>(false, ResponseUtil.getMessage("some.files.upload.failure") + System.lineSeparator() + String.join(System.lineSeparator(), failures));
-        }
-    }
-
-    @Override
-    public Result<?> mkdir(String relativePath) {
-        File directory = new File(uploadPath, relativePath);
-        if (directory.exists()) {
-            return ResponseUtil.buildErrorResult("file.already.exists");
-        }
-        if (directory.mkdirs()) {
-            return ResponseUtil.buildSuccessResult("create.directory.success");
-        } else {
-            return ResponseUtil.buildErrorResult("create.directory.failure");
-        }
-    }
-
-    @Override
-    public Result<?> delete(List<String> files) throws Exception {
-        if (files.isEmpty()) {
-            return ResponseUtil.buildErrorResult("no.incoming.files");
-        }
-        for (String file : files) {
-            FileUtil.deleteRecursively(new File(uploadPath, file));
-        }
-        return ResponseUtil.buildSuccessResult("delete.success");
-    }
-
-    @Override
     public void download(String relativePath, HttpServletResponse response) throws Exception {
         File file = new File(uploadPath, relativePath);
         if (!file.exists()) {
-            throw new BusinessException(ResponseUtil.getMessage("file.does.not.exist"));
+            throw new BusinessException(ResponseUtil.translate("file.does.not.exist"));
         }
         FileUtil.download(file, response);
     }
@@ -188,7 +229,7 @@ public class FileServiceImpl implements FileService {
     public void downloadCompressedImage(String relativePath, HttpServletResponse response) throws Exception {
         File file = new File(uploadPath, relativePath);
         if (!file.exists()) {
-            throw new BusinessException(ResponseUtil.getMessage("file.does.not.exist"));
+            throw new BusinessException(ResponseUtil.translate("file.does.not.exist"));
         }
         FileUtil.downloadCompressedImage(file, response);
     }
@@ -207,8 +248,22 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public Result move(String src, String dst) {
-        return null;
+    public Result<?> getFileInfo(String relativePath) {
+        File file = new File(uploadPath, relativePath);
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put(ResponseUtil.translate("filename"), file.getName());
+        map.put(ResponseUtil.translate("relative.path"), FileUtil.relativize(uploadPath, file));
+        map.put(ResponseUtil.translate("creation.time"), FileUtil.getCreationTime(file));
+        map.put(ResponseUtil.translate("modified.time"), FileUtil.getModifiedTime(file));
+        if (file.isDirectory()) {
+            map.put(ResponseUtil.translate("length"), FileUtil.formatSize(FileUtil.calculateDirectorySize(file)));
+            map.put(ResponseUtil.translate("contains"), ResponseUtil.translate("file.folder.count", FileUtil.countFiles(file), FileUtil.countFolders(file)));
+        } else if (file.isFile()) {
+            map.put(ResponseUtil.translate("length"), FileUtil.formatSize(file.length()));
+            map.put(ResponseUtil.translate("file.type"), FileUtil.detectFileType(file));
+        }
+        String result = map.entrySet().stream().map(entry -> entry.getKey() + ": " + entry.getValue()).collect(Collectors.joining(System.lineSeparator()));
+        return ResponseUtil.buildSuccessResult("query.success", result);
     }
 
     @Override
@@ -218,8 +273,7 @@ public class FileServiceImpl implements FileService {
         }
         File firstFile = new File(uploadPath, files.get(0));
         File zip = FileUtil.getFile(firstFile.getParent(), CommonUtil.generateUUID() + ".zip");
-        try (FileOutputStream fos = new FileOutputStream(zip);
-             ZipOutputStream zos = new ZipOutputStream(fos)) {
+        try (FileOutputStream fos = new FileOutputStream(zip); ZipOutputStream zos = new ZipOutputStream(fos)) {
             for (String relativePath : files) {
                 if (appConfig.getPrivateDirectories().contains(relativePath)) {
                     try {
@@ -252,51 +306,7 @@ public class FileServiceImpl implements FileService {
                 return;
             }
         }
-        throw new BusinessException(ResponseUtil.getMessage("compress.failure"));
-    }
-
-    @Override
-    public Result<?> move(List<String> files, String target) {
-        if (files.isEmpty()) {
-            return ResponseUtil.buildErrorResult("no.incoming.files");
-        }
-        List<String> failures = new ArrayList<>();
-        for (String relativePath : files) {
-            File file = new File(uploadPath, relativePath);
-            File targetFile = FileUtil.getFile(uploadPath, target, file.getName());
-            try {
-                if (targetFile.exists()) {
-                    throw new BusinessException(ResponseUtil.getMessage("file.already.exists"));
-                }
-                if (!file.renameTo(targetFile)) {
-                    throw new BusinessException(ResponseUtil.getMessage("move.failure"));
-                }
-            } catch (Exception e) {
-                failures.add(file.getName() + " (" + e.getLocalizedMessage() + ")");
-            }
-        }
-        if (failures.isEmpty()) {
-            return ResponseUtil.buildSuccessResult("move.success");
-        } else {
-            return new Result<>(false, ResponseUtil.getMessage("some.files.move.failure") + System.lineSeparator() + String.join(System.lineSeparator(), failures));
-        }
-    }
-
-    public Result<?> rename(String relativePath, String target) {
-        File file = new File(uploadPath, relativePath);
-        File targetFile = new File(uploadPath, target);
-
-        try {
-            if (targetFile.exists()) {
-                throw new BusinessException(ResponseUtil.getMessage("file.already.exists"));
-            }
-            if (!file.renameTo(targetFile)) {
-                throw new BusinessException(ResponseUtil.getMessage("rename.failure"));
-            }
-        } catch (Exception e) {
-            return new Result<>(false, e.getLocalizedMessage());
-        }
-        return ResponseUtil.buildSuccessResult("rename.success");
+        throw new BusinessException(ResponseUtil.translate("compress.failure"));
     }
 
     @Override
@@ -314,39 +324,4 @@ public class FileServiceImpl implements FileService {
         }
         return ResponseUtil.buildErrorResult("unsupported.file.type");
     }
-
-
-    @Override
-    public Result getFileInfo(String relativePath) throws Exception {
-        File f = new File(uploadPath, relativePath);
-        StringBuilder sb = new StringBuilder();
-        if (f.isDirectory()) {
-            sb.append("--------- 文件夹属性 ---------").append("\n");
-            sb.append("文件夹名: ").append(f.getName()).append("\n");
-            sb.append("大小: ").append(FileUtil.formatSize(FileUtil.calculateDirectorySize(f))).append("\n");
-            sb.append("包含: ").append(FileUtil.countFiles(f)).append("个文件，").append(FileUtil.countFolders(f)).append("个文件夹").append("\n");
-            sb.append("相对路径: ").append(FileUtil.relativize(uploadPath, f)).append("\n");
-            sb.append("创建时间: ").append(FileUtil.getCreationTime(f)).append("\n");
-            sb.append("修改时间: ").append(FileUtil.getModifiedTime(f)).append("\n");
-        } else if (f.isFile()) {
-            sb.append("--------- 文件属性 ---------").append("\n");
-            sb.append("文件名: ").append(f.getName()).append("\n");
-            sb.append("大小: ").append(FileUtil.formatSize(f.length())).append("\n");
-            sb.append("相对路径: ").append(FileUtil.relativize(uploadPath, f)).append("\n");
-            String fileType = FileUtil.detectFileType(f);
-            sb.append("文件类型: ").append(fileType).append("\n");
-            sb.append("创建时间: ").append(FileUtil.getCreationTime(f)).append("\n");
-            sb.append("修改时间: ").append(FileUtil.getModifiedTime(f)).append("\n");
-            if (fileType != null) {
-                if (fileType.startsWith("image")) {
-                    sb.append(FileUtil.getImageInfo(f));
-                } else if (fileType.startsWith("audio")) {
-                    sb.append(FileUtil.getAudioInfo(f));
-                }
-            }
-        }
-        return new Result(true, "查询成功", sb.toString());
-    }
-
-
 }

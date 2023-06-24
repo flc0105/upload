@@ -128,7 +128,7 @@ export default {
         this.$root.src = "";
         this.$root.src =
           axios.defaults.baseURL +
-          "/file/previewImage?relativePath=" +
+          "/file/preview?relativePath=" +
           encodeURIComponent(filename);
         new Modal(this.$root.$refs.imageModal).show();
       }

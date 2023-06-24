@@ -1144,7 +1144,7 @@ export default {
         this.$root.src = "";
         this.$root.src =
           axios.defaults.baseURL +
-          "file/previewImage?relativePath=" +
+          "file/preview?relativePath=" +
           encodeURIComponent(filename);
         new Modal(this.$root.$refs.imageModal).show();
       }
@@ -1334,7 +1334,44 @@ export default {
         }
       }
     },
+    getFileExtension(filename) {
+      return filename.slice(filename.lastIndexOf("."));
+    },
+    getFileNameFromPath(filepath) {
+      return filepath.split("/").pop();
+    },
     generateDirectLink(relativePath) {
+      // var filename = Date.now() + this.getFileExtension(relativePath);
+      // this.$root.loading = true;
+      // axios
+      //   .post(
+      //     "file/rename",
+      //     {
+      //       relativePath: relativePath,
+      //       target: "/images/" + filename,
+      //     }
+      //     // Qs.stringify({
+      //     //   src: oldName,
+      //     //   dst: this.currentDirectory + "/" + newName, // 新文件名：当前路径+新文件名
+      //     // })
+      //   )
+      //   .then((res) => {
+      //     if (res.success) {
+      //       this.$root.showModal(
+      //         "成功",
+      //         location.protocol + "//" + location.host + "/image/" + filename
+      //       );
+      //     } else {
+      //       this.$root.showModal("失败", res.msg);
+      //     }
+      //   })
+      //   .catch((err) => {
+      //     this.$root.showModal("错误", err.message);
+      //   })
+      //   .finally(() => {
+      //     this.$root.loading = false;
+      //   });
+
       this.$root.loading = true;
       axios
         .post(

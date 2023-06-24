@@ -38,7 +38,15 @@ public class ResponseUtil {
         return new Result<>(false, errorMessage, data);
     }
 
-    public static String getMessage(String key) {
+    public static String translate(String key) {
         return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
+    }
+
+    private static Object[] argsToArray(Object... args) {
+        return args;
+    }
+
+    public static String translate(String key, Object... args) {
+        return messageSource.getMessage(key, argsToArray(args), LocaleContextHolder.getLocale());
     }
 }

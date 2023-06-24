@@ -71,7 +71,7 @@ public class PasteController {
 //    @Permission
     @GetMapping("/get/{id}")
     public String getText(@PathVariable Integer id) throws Exception {
-        Paste paste = (Paste) Objects.requireNonNull(pasteService.findById(id).getDetail(), ResponseUtil.getMessage("query.failure"));
+        Paste paste = (Paste) Objects.requireNonNull(pasteService.findById(id).getDetail(), ResponseUtil.translate("query.failure"));
         return paste.getText();
     }
 
@@ -80,7 +80,7 @@ public class PasteController {
     @Permission
     @GetMapping(value = "/last")
     public String last() throws Exception {
-        Paste paste = (Paste) Objects.requireNonNull(pasteService.findLast().getDetail(), ResponseUtil.getMessage("query.failure"));
+        Paste paste = (Paste) Objects.requireNonNull(pasteService.findLast().getDetail(), ResponseUtil.translate("query.failure"));
         return paste.getText();
     }
 
