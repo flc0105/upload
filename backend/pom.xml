@@ -10,7 +10,7 @@
     </parent>
     <groupId>flc</groupId>
     <artifactId>upload</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.1-SNAPSHOT</version>
     <name>upload</name>
     <description>Demo project for Spring Boot</description>
 
@@ -19,16 +19,19 @@
     </properties>
 
     <dependencies>
+        <!-- Spring Boot Web Starter: 提供构建Web应用程序的基本依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- Spring Boot Starter Test: 提供测试相关的依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
             <exclusions>
+                <!-- 排除JUnit Vintage Engine，避免与JUnit 5冲突 -->
                 <exclusion>
                     <groupId>org.junit.vintage</groupId>
                     <artifactId>junit-vintage-engine</artifactId>
@@ -36,105 +39,123 @@
             </exclusions>
         </dependency>
 
+        <!-- JSON Lib: 用于操作和处理JSON数据 -->
         <dependency>
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
             <version>2.4</version>
         </dependency>
 
+        <!-- CP Detector: 用于检测文本文件的字符编码 -->
         <dependency>
             <groupId>net.sourceforge.cpdetector</groupId>
             <artifactId>cpdetector</artifactId>
             <version>1.0.10</version>
         </dependency>
 
+        <!-- Mozilla Char Det: 用于检测文本文件的字符编码 -->
         <dependency>
             <groupId>org.mozilla.intl</groupId>
             <artifactId>chardet</artifactId>
             <version>1.0</version>
         </dependency>
 
+        <!-- ANTLR: 用于构建词法和语法分析器 -->
         <dependency>
             <groupId>antlr</groupId>
             <artifactId>antlr</artifactId>
             <version>2.7.4</version>
         </dependency>
 
+        <!-- Apache Tika Core: 用于提取文档的元数据和内容 -->
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
             <version>1.27</version>
         </dependency>
 
+        <!-- MyBatis Spring Boot Starter: 集成MyBatis和Spring Boot的依赖 -->
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
             <version>2.1.3</version>
         </dependency>
 
+        <!-- Spring Boot Starter AOP: 提供AOP（面向切面编程）的支持 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
+        <!-- Spring Boot DevTools: 提供开发工具支持，如自动重启 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
         </dependency>
 
+        <!-- SQLite JDBC: 用于连接和操作SQLite数据库 -->
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
         </dependency>
 
+        <!-- Java JWT: 提供JWT（JSON Web Token）的生成和验证功能 -->
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>4.0.0</version>
         </dependency>
 
+        <!-- Jsoup: 用于解析和处理HTML文档 -->
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.15.3</version>
         </dependency>
 
+        <!-- Thumbnailator: 用于生成和处理图像缩略图 -->
         <dependency>
             <groupId>net.coobird</groupId>
             <artifactId>thumbnailator</artifactId>
             <version>0.4.8</version>
         </dependency>
 
+        <!-- Spring Boot Configuration Processor: 用于处理@ConfigurationProperties注解的配置文件 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
 
+        <!-- Spring Boot Starter Validation: 提供验证框架的支持 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- Commons Imaging: 用于处理各种图像格式的库 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-imaging</artifactId>
             <version>1.0-alpha3</version>
         </dependency>
 
+        <!-- JAudiotagger: 用于处理音频文件的元数据 -->
         <dependency>
             <groupId>org</groupId>
             <artifactId>jaudiotagger</artifactId>
             <version>2.0.3</version>
         </dependency>
 
+        <!-- Springfox Boot Starter: 用于生成和提供Swagger API文档 -->
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-boot-starter</artifactId>
             <version>3.0.0</version>
         </dependency>
 
+        <!-- Knife4j Spring Boot Starter: 基于Swagger的API文档工具 -->
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>knife4j-spring-boot-starter</artifactId>

@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
     @ResponseBody
     @ExceptionHandler(Exception.class)
     public Result<?> handleException(Exception e) {
-        return ResponseUtil.buildErrorResult(InternationalizationUtil.translate("unknown.error") + ": " + e.getMessage());
+        return new Result<>(false, InternationalizationUtil.translate("unknown.error") + ": " + e.getMessage());
     }
 
     @ResponseBody

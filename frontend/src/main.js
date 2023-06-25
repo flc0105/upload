@@ -77,4 +77,24 @@ hljs.registerLanguage("yaml", yaml);
 
 console.log(` %c upload %c https://github.com/flc0105/upload `, "background: #35495e; padding: 1px; border-radius: 3px 0 0 3px; color: #fff", "background: #fadfa3; padding: 1px; border-radius: 0 3px 3px 0; color: #fff");
 
-createApp(App).use(router).use(hljsVuePlugin).mount("#app");
+
+import { createI18n } from 'vue-i18n';
+
+const browserLocale = navigator.language; // 获取浏览器默认语言设置
+import zh from './locales/zh';
+import en from './locales/en';
+
+const i18n = createI18n({
+  // locale: 'zh', // 默认语言设置为中文
+  locale: browserLocale,
+  fallbackLocale: 'en',
+  messages: {
+    zh,
+    en,
+  },
+});
+
+
+
+
+createApp(App).use(router).use(hljsVuePlugin).use(i18n).mount("#app");

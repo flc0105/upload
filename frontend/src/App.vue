@@ -9,7 +9,7 @@
               'nav-link',
               { active: $router.currentRoute.value.meta.title == '文件列表' },
             ]"
-            >文件列表</router-link
+            >{{ $t("files") }}</router-link
           >
         </li>
         <li class="nav-item">
@@ -19,7 +19,7 @@
               'nav-link',
               { active: $router.currentRoute.value.meta.title == '文本共享' },
             ]"
-            >文本共享</router-link
+            >{{ $t("pastes") }}</router-link
           >
         </li>
         <li class="nav-item">
@@ -29,7 +29,7 @@
               'nav-link',
               { active: $router.currentRoute.value.meta.title == '书签列表' },
             ]"
-            >书签列表</router-link
+            >{{ $t("bookmarks") }}</router-link
           >
         </li>
         <li class="nav-item ms-auto dropdown">
@@ -134,12 +134,8 @@
           />
         </div>
         <div class="modal-footer">
-          <button
-            class="btn btn-outline-primary"
-            data-bs-dismiss="modal"
-            ref="btnAuth"
-            @click="getToken()"
-          >
+          <button class="btn btn-outline-primary" ref="btnAuth" @click="func">
+            <!-- @click="getToken()"-->
             确定
           </button>
           <button class="btn btn-outline-primary" data-bs-dismiss="modal">
@@ -364,6 +360,10 @@ export default {
       src: "",
       // 输入框中的默认值
       inputValue: "",
+
+      confirmed: false,
+
+      closeFunc: null,
     };
   },
   methods: {
@@ -403,6 +403,7 @@ export default {
       }
       return true;
     },
+
     // 获取token
     getToken() {
       axios
@@ -421,6 +422,7 @@ export default {
           this.showModal("错误", err.message);
         });
     },
+
     // 格式化文件大小
     formatBytes(bytes) {
       if (bytes === 0) {

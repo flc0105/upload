@@ -1,0 +1,16 @@
+{
+  "files": "Files",
+  "pastes": "Pastes",
+  "bookmarks": "Bookmarks",
+  "title": "Title",
+  "text": "Text",
+  "private": "Private",
+  "minutes": "Minutes",
+  "hours": "Hours",
+  "days": "Days",
+  "weeks": "Weeks",
+  "burn_after_reading": "Burn after reading",
+  "never_expires": "Never expires",
+  "post": "Post",
+  "post_on": "Post on"
+}

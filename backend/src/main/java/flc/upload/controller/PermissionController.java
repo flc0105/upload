@@ -38,4 +38,13 @@ public class PermissionController {
     public Result<?> list() throws Exception {
         return permissionService.findAll();
     }
+
+    @ApiOperation("权限_查询需要验证的端点")
+    @Log
+//    @Token
+    @GetMapping("/permission/protected")
+    public Result<?> findProtectedEndpoints() throws Exception {
+        return permissionService.findProtected();
+    }
+
 }

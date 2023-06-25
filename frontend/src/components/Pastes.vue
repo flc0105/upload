@@ -1,9 +1,9 @@
 <template>
-  <input class="form-control mb-2" placeholder="标题" v-model="title" />
+  <input class="form-control mb-2" :placeholder="$t('title')" v-model="title" />
   <textarea
     class="form-control mb-3"
     rows="10"
-    placeholder="正文"
+    :placeholder="$t('text')"
     v-model="text"
     @keyup.ctrl.enter="add()"
   ></textarea>
@@ -17,25 +17,31 @@
           id="isPrivate"
           ref="isPrivate"
         />
-        <label class="form-check-label" for="isPrivate">私密</label>
+        <label class="form-check-label" for="isPrivate">{{
+          $t("private")
+        }}</label>
       </div>
     </div>
 
     <div class="col-auto">
       <select class="form-select mb-2" ref="select">
-        <option value="10" :selected="$root.noToken()">10分钟</option>
-        <option value="60">1小时</option>
-        <option value="1440">1天</option>
-        <option value="10080">1周</option>
-        <option value="-1">阅后即焚</option>
-        <option value="0" :selected="!$root.noToken()">永不过期</option>
+        <option value="10" :selected="$root.noToken()">
+          10 {{ $t("minutes") }}
+        </option>
+        <option value="60">1 {{ $t("hours") }}</option>
+        <option value="1440">1 {{ $t("days") }}</option>
+        <option value="10080">1 {{ $t("weeks") }}</option>
+        <option value="-1">{{ $t("burn_after_reading") }}</option>
+        <option value="0" :selected="!$root.noToken()">
+          {{ $t("never_expires") }}
+        </option>
         <!-- 只要有名为token的Cookie就默认选中永不过期，但不会去验证token -->
       </select>
     </div>
 
     <div class="col-auto">
       <button class="btn btn-outline-primary mb-2 col-auto" @click="add()">
-        发布
+        {{ $t("post") }}
       </button>
     </div>
   </div>
@@ -67,13 +73,15 @@
           <i>{{ paste.text }}</i>
         </p>
         <p class="text-muted mb-0">
-          发布于 {{ paste.time.slice(0, -3) }}
+          {{ $t("post_on") }} {{ paste.time.slice(0, -3) }}
           <span
             class="text-danger"
             v-if="paste.expiredDate"
             style="font-size: 0.875rem"
             >&nbsp;&nbsp;
-            <span v-if="paste.expiredDate == -1">阅后即焚</span>
+            <span v-if="paste.expiredDate == -1">{{
+              $t("burn_after_reading")
+            }}</span>
             <span v-else>Expired {{ getFromNow(paste.expiredDate) }}</span>
           </span>
         </p>
@@ -95,15 +103,29 @@ import Qs from "qs";
 
 import moment from "moment";
 
+// const endpoints = Vue.prototype.$endpoints;
+
 export default {
   data() {
     return {
       pastes: [],
       title: "",
       text: "",
+      endpoints: [],
     };
   },
   methods: {
+    fetchTokenProtectedEndpoints() {
+      axios
+        .get("/permission/protected") // 替换为实际的后端接口地址
+        .then((response) => {
+          this.endpoints = response.detail;
+        })
+        .catch((error) => {
+          console.error("获取接口列表失败", error);
+        });
+    },
+
     getFromNow(date) {
       return moment(date).fromNow();
     },
@@ -169,6 +191,7 @@ export default {
           }
         })
         .catch((err) => {
+          console.log(err);
           this.$root.showModal("错误", err.message);
         })
         .finally(() => {
@@ -177,9 +200,9 @@ export default {
     },
     // 删除文本
     remove(id) {
-      if (!this.$root.hasToken(() => this.remove(id))) {
-        return;
-      }
+      // if (!this.$root.hasToken(() => this.remove(id))) {
+      //   return;
+      // }
       this.$root.loading = true;
       axios
         .post("/paste/delete", Qs.stringify({ id: id }))
@@ -192,15 +215,103 @@ export default {
           }
         })
         .catch((err) => {
-          this.$root.showModal("错误", err.message);
+          console.log(err);
+          if (err != "cancel") {
+            this.$root.showModal("错误", err.message);
+          }
         })
         .finally(() => {
           this.$root.loading = false;
         });
     },
+    handleVerify() {
+      return new Promise((resolve, reject) => {
+        console.log("弹出密码框");
+        this.$root.$refs.password.value = "";
+        const modal = new Modal(this.$root.$refs.passwordModal);
+        modal.show();
+        this.$root.$refs.password.focus();
+
+        this.$root.func = () => {
+          this.$root.confirmed = true;
+          modal.hide();
+          this.getToken()
+            .then(() => {
+              console.log("token验证成功，继续发送请求");
+              resolve();
+            })
+            .catch((error) => {
+              console.log("token验证失败，中止请求");
+              reject({ message: error });
+            });
+        };
+
+        var hiddenEvent = () => {
+          if (!this.$root.confirmed) {
+            console.log("验证框关闭后，不执行请求，直接中止");
+            reject("cancel");
+          }
+          this.$root.confirmed = false;
+          this.$root.$refs.passwordModal.removeEventListener(
+            "hidden.bs.modal",
+            hiddenEvent
+          );
+        };
+
+        this.$root.$refs.passwordModal.addEventListener(
+          "hidden.bs.modal",
+          hiddenEvent
+        );
+      });
+    },
+    getToken() {
+      return new Promise((resolve, reject) => {
+        axios
+          .post(
+            "/token/get",
+            Qs.stringify({ password: this.$root.$refs.password.value })
+          )
+          .then((res) => {
+            if (res.success) {
+              resolve();
+            } else {
+              reject(res.msg);
+            }
+          })
+          .catch((err) => {
+            reject(err.message);
+          });
+      });
+    },
   },
   created() {
     this.list();
+    this.fetchTokenProtectedEndpoints();
+
+    axios.interceptors.request.use(
+      async (config) => {
+        const isTokenProtected = this.endpoints.includes(config.url);
+        console.log(
+          "判断当前请求的 API 地址是否在权限接口列表中：" +
+            config.url +
+            " " +
+            isTokenProtected
+        );
+
+        if (isTokenProtected) {
+          await this.handleVerify();
+          console.log("验证通过后，继续发送请求：" + config.url);
+          return config;
+        }
+        console.log("不需要验证的接口直接发送请求：" + config.url);
+        return config;
+      },
+      (error) => {
+        console.log(error);
+        // 处理请求错误
+        return Promise.reject(error);
+      }
+    );
   },
 };
 </script>

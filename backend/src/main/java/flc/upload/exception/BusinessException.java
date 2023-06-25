@@ -12,7 +12,8 @@ public class BusinessException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        return InternationalizationUtil.translate(message);
+        return message;
+//        return InternationalizationUtil.translate(message);
     }
 
     public void setMessage(String message) {

@@ -1,0 +1,16 @@
+{
+  "files": "文件列表",
+  "pastes": "文本共享",
+  "bookmarks": "书签列表",
+  "title": "标题",
+  "text": "正文",
+  "private": "私密",
+  "minutes": "分钟",
+  "hours": "小时",
+  "days": "天",
+  "weeks": "周",
+  "burn_after_reading": "阅后即焚",
+  "never_expires": "永不过期",
+  "post": "发布",
+  "post_on": "发布于"
+}

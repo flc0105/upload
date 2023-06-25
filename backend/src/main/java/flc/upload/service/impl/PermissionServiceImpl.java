@@ -33,4 +33,9 @@ public class PermissionServiceImpl implements PermissionService {
     public Result<?> findAll() throws Exception {
         return ResponseUtil.buildSuccessResult("query.success", permissionMapper.findAll());
     }
+
+    @Override
+    public Result<?> findProtected() throws Exception {
+        return ResponseUtil.buildSuccessResult("query.success", permissionMapper.findProtected());
+    }
 }
