@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel("标签")
 public class Tag {
-    @ApiModelProperty("标签id")
+    @ApiModelProperty("id")
     private Integer id;
     @ApiModelProperty("标签名")
     private String title;

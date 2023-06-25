@@ -18,6 +18,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * WebDAV支持类，继承自WebdavServlet，用于处理WebDAV请求。
+ */
 @WebServlet(name = "MyServlet",
         urlPatterns = {"/webdav/*"},
         initParams = {
@@ -35,6 +38,11 @@ public class WebdavSupport extends WebdavServlet {
     @Value("${webdav.password}")
     private String password;
 
+    /**
+     * 初始化方法，配置WebResourceRoot以支持指定路径的资源访问。
+     *
+     * @throws ServletException 如果初始化过程中发生Servlet异常
+     */
     @Override
     public void init() throws ServletException {
         WebResourceRoot webResourceRoot = (WebResourceRoot) getServletContext().getAttribute(Globals.RESOURCES_ATTR);
@@ -43,6 +51,13 @@ public class WebdavSupport extends WebdavServlet {
         super.init();
     }
 
+    /**
+     * 身份验证方法，用于验证请求的Authorization头中的用户名和密码是否匹配。
+     *
+     * @param req 请求对象
+     * @param res 响应对象
+     * @return 如果身份验证通过返回true，否则返回false
+     */
     private boolean auth(ServletRequest req, ServletResponse res) {
         String authorization = ((HttpServletRequest) req).getHeader("Authorization");
         if (authorization != null) {
@@ -60,6 +75,14 @@ public class WebdavSupport extends WebdavServlet {
         return false;
     }
 
+    /**
+     * 重写service方法，对请求进行身份验证后再处理。
+     *
+     * @param req 请求对象
+     * @param res 响应对象
+     * @throws ServletException 如果处理过程中发生Servlet异常
+     * @throws IOException      如果处理过程中发生I/O异常
+     */
     @Override
     public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
         if (auth(req, res)) {

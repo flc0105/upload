@@ -21,28 +21,28 @@ public class ShareCodeController {
     @Log
     @ApiOperation("分享码_添加")
     @PostMapping("/add")
-    public Result add(@RequestParam("path") String path) throws Exception {
+    public Result<?> add(@RequestParam("path") String path) throws Exception {
         return shareCodeService.add(path);
     }
 
     @Log
     @ApiOperation("分享码_删除")
     @PostMapping("/delete")
-    public Result delete(@RequestParam("code") String code) throws Exception {
+    public Result<?> delete(@RequestParam("code") String code) throws Exception {
         return shareCodeService.delete(code);
     }
 
     @Log
     @ApiOperation("分享码_查询所有")
     @PostMapping("/list")
-    public Result list() throws Exception {
+    public Result<?> list() throws Exception {
         return shareCodeService.findAll();
     }
 
     @Log
-    @ApiOperation("分享码_根据分享码查询")
+    @ApiOperation("分享码_查询")
     @PostMapping("/get")
-    public Result get(@RequestParam("code") String code) throws Exception {
+    public Result<?> get(@RequestParam("code") String code) throws Exception {
         return shareCodeService.findByCode(code);
     }
 }

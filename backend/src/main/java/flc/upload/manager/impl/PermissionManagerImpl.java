@@ -6,6 +6,7 @@ import flc.upload.mapper.PermissionMapper;
 import flc.upload.model.AppConfig;
 import flc.upload.model.Permission;
 import flc.upload.model.Result;
+import flc.upload.util.ResponseUtil;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,21 +14,17 @@ public class PermissionManagerImpl implements PermissionManager {
 
     private final PermissionMapper permissionMapper;
 
-    private final AppConfig config;
-
     public PermissionManagerImpl(PermissionMapper permissionMapper, AppConfig config) {
         this.permissionMapper = permissionMapper;
-        this.config = config;
     }
 
     @Override
-    public Result getPermission(String path) throws Exception {
-        Permission permission = permissionMapper.getPermission(path);
+    public Result<?> get(String path) throws Exception {
+        Permission permission = permissionMapper.get(path);
         if (permission == null) {
-            throw new BusinessException("未找到该Path");
+            throw new BusinessException("query.failure");
         }
-        return new Result(true, "查询成功", permissionMapper.getPermission(path));
+        return ResponseUtil.buildSuccessResult("query.success", permissionMapper.get(path));
     }
-
 
 }

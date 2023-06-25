@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
  * 自定义错误页面配置类
  */
 @Configuration
-public class CustomErrorPageConfig {
+public class ErrorPagesConfig {
 
     /**
      * 自定义Web服务器工厂配置器，用于添加错误页面处理逻辑

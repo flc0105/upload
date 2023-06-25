@@ -7,13 +7,13 @@ import java.util.List;
 
 @ApiModel("书签")
 public class Bookmark {
-    @ApiModelProperty("书签id")
+    @ApiModelProperty("id")
     private Integer id;
     @ApiModelProperty("url")
     private String url;
     @ApiModelProperty("标题")
     private String title;
-    @ApiModelProperty("图标base64")
+    @ApiModelProperty("图标")
     private String icon;
     @ApiModelProperty("标签列表")
     private List<Tag> tags;

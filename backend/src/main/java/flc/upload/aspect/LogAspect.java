@@ -90,8 +90,7 @@ public class LogAspect {
         logMap.put("method.name", method.getName());
         logMap.put("request.parameters", ReflectionUtil.getMethodArguments(joinPoint));
         logMap.put("parameter.type", request.getContentType());
-        logMap.put("token", CookieUtil.getCookie("token", request));
-        logMap.put("remark", JwtUtil.getRemark(CookieUtil.getCookie("token", request)));
+        logMap.put("token", CommonUtil.toJsonString(JwtUtil.getTokenInfo(CookieUtil.getCookie("token", request))));
         logMap.put("referer", request.getHeader("Referer"));
 
         long startTime = System.nanoTime();

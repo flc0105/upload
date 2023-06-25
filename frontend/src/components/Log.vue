@@ -19,7 +19,10 @@
 
         <td v-for="(value, key) in item" :key="key" :title="item[key]">
           <template v-if="['Stack trace', '堆栈信息', 'Token'].includes(key)">
-            <a href="#" @click="showDetails(item[key])" v-if="item[key] != null"
+            <a
+              href="#"
+              @click="showDetails(item[key])"
+              v-if="item[key] != null && item[key] != '{ }'"
               >查看</a
             ><span v-else>null</span>
           </template>

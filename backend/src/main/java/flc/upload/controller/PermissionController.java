@@ -22,17 +22,20 @@ public class PermissionController {
         this.permissionService = permissionService;
     }
 
-//    @Log
-//    @Token
+
     @ApiOperation("权限_修改")
-    @PostMapping("/permission/set")
-    public Result setPermission(@RequestBody Permission permission) throws Exception {
-        return permissionService.updatePermissionByPath(permission);
+    @Log
+    @Token
+    @PostMapping("/permission/update")
+    public Result<?> update(@RequestBody Permission permission) throws Exception {
+        return permissionService.update(permission);
     }
 
-    @ApiOperation("权限_查询所有")
+    @ApiOperation("权限_查询")
+    @Log
+    @Token
     @GetMapping("/permission/list")
-    public Result findAll() throws Exception {
+    public Result<?> list() throws Exception {
         return permissionService.findAll();
     }
 }

@@ -35,6 +35,10 @@ public class CommonUtil {
         return new SimpleDateFormat("yyyy-MM-dd HH:mm").format(date);
     }
 
+    public static String formatDate(Date date) {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
+    }
+
     /**
      * 生成UUID字符串。
      *

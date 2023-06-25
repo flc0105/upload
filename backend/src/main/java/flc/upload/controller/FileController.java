@@ -22,11 +22,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service
-@RestController
-@CrossOrigin(origins = "*")
 @Api(tags = "文件")
+@CrossOrigin(origins = "*")
+@RestController
 @RequestMapping("/file")
+@Service
 public class FileController {
     private final FileService fileService;
 

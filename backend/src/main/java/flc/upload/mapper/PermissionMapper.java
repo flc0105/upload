@@ -12,10 +12,10 @@ import java.util.List;
 public interface PermissionMapper {
 
     @Update("update permission set isAdmin=#{isAdmin} where path=#{path}")
-    Integer updatePermissionByPath(Permission permission) throws Exception;
+    Integer update(Permission permission) throws Exception;
 
     @Select("select * from permission where path=#{path}")
-    Permission getPermission(@Param("path") String path) throws Exception;
+    Permission get(@Param("path") String path) throws Exception;
 
     @Select("select * from permission")
     List<Permission> findAll() throws Exception;

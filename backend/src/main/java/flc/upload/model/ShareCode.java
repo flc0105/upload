@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel("分享码")
 public class ShareCode {
-    @ApiModelProperty("分享码id")
+    @ApiModelProperty("id")
     private Integer id;
     @ApiModelProperty("分享码")
     private String code;

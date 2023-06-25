@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class BookmarkServiceImpl implements BookmarkService {
-    private BookmarkMapper bookmarkMapper;
+    private final BookmarkMapper bookmarkMapper;
 
     public BookmarkServiceImpl(BookmarkMapper bookmarkMapper) {
         this.bookmarkMapper = bookmarkMapper;
@@ -55,7 +55,7 @@ public class BookmarkServiceImpl implements BookmarkService {
         List<Bookmark> bookmarks = bookmarkMapper.findAll();
 
         for (Bookmark bookmark : bookmarks) {
-            List<Tag> tags = bookmarkMapper.getTagsForBookmark(bookmark.getId());
+            List<Tag> tags = bookmarkMapper.findTagsByBookmarkId(bookmark.getId());
             bookmark.setTags(tags);
         }
 
@@ -91,7 +91,7 @@ public class BookmarkServiceImpl implements BookmarkService {
         return new Result(true, "成功更新" + i + "条数据");
     }
 
-    public Result rename(Integer id, String title, String url) throws Exception {
+    public Result modify(Integer id, String title, String url) throws Exception {
         Bookmark bookmark = bookmarkMapper.findById(id);
 //        if (title != null) {
 //            bookmark.setTitle(title);
@@ -132,15 +132,15 @@ public class BookmarkServiceImpl implements BookmarkService {
         return new Result<>(true, "查询完成", bookmarkMapper.findAllTags());
     }
 
-    public Result findBookmarksByTags(List<Integer> tagIds) throws Exception {
+    public Result findByTags(List<Integer> tagIds) throws Exception {
 
         String idString = tagIds.stream().map(Object::toString).collect(Collectors.joining(","));
         System.out.println(idString);
-        List<Bookmark> bookmarks = bookmarkMapper.findBookmarksByTags(tagIds, idString);
+        List<Bookmark> bookmarks = bookmarkMapper.findByTags(tagIds, idString);
 
 
         for (Bookmark bookmark : bookmarks) {
-            List<Tag> tags = bookmarkMapper.getTagsForBookmark(bookmark.getId());
+            List<Tag> tags = bookmarkMapper.findTagsByBookmarkId(bookmark.getId());
             bookmark.setTags(tags);
         }
 

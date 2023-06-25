@@ -15,13 +15,21 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+/**
+ * Swagger配置类，用于配置Swagger API文档生成工具。
+ */
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
-
     @Autowired
     private TypeResolver typeResolver;
 
+
+    /**
+     * 创建Swagger Docket实例，配置API信息和要扫描的包路径。
+     *
+     * @return Swagger Docket实例
+     */
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -34,6 +42,11 @@ public class SwaggerConfig {
                 .additionalModels(typeResolver.resolve(Folder.class));
     }
 
+    /**
+     * 创建API文档信息。
+     *
+     * @return API文档信息
+     */
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .title("Upload")

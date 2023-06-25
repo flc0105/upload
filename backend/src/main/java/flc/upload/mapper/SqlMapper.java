@@ -13,7 +13,7 @@ public interface SqlMapper {
     @Select("${sql}")
     List<Map<String, Object>> executeQuery(String sql);
 
-    @Select("${sql}")
+    @Select("select count(1) from ${sql}")
     Integer executeQueryCount(@Param("sql") String sql);
 
     @Update("${sql}")

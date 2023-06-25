@@ -97,6 +97,9 @@ public class FileServiceImpl implements FileService {
             return ResponseUtil.buildErrorResult("no.incoming.files");
         }
         for (String file : files) {
+            if (file.trim().isEmpty()) {
+                continue;
+            }
             FileUtil.deleteRecursively(new File(uploadPath, file));
         }
         return ResponseUtil.buildSuccessResult("delete.success");
@@ -110,13 +113,13 @@ public class FileServiceImpl implements FileService {
         List<String> failures = new ArrayList<>();
         for (String relativePath : files) {
             File file = new File(uploadPath, relativePath);
-            File targetFile = FileUtil.getFile(uploadPath, relativePath, target, file.getName());
+            File targetFile = FileUtil.getFile(uploadPath, target, file.getName());
             try {
                 if (targetFile.exists()) {
-                    throw new BusinessException(InternationalizationUtil.translate("file.already.exists"));
+                    throw new BusinessException("file.already.exists");
                 }
                 if (!file.renameTo(targetFile)) {
-                    throw new BusinessException(InternationalizationUtil.translate("move.failure"));
+                    throw new BusinessException("move.failure");
                 }
             } catch (Exception e) {
                 failures.add(file.getName() + " (" + e.getLocalizedMessage() + ")");
@@ -135,10 +138,10 @@ public class FileServiceImpl implements FileService {
         File targetFile = new File(uploadPath, target);
         try {
             if (targetFile.exists()) {
-                throw new BusinessException(InternationalizationUtil.translate("file.already.exists"));
+                throw new BusinessException("file.already.exists");
             }
             if (!file.renameTo(targetFile)) {
-                throw new BusinessException(InternationalizationUtil.translate("rename.failure"));
+                throw new BusinessException("rename.failure");
             }
         } catch (Exception e) {
             return new Result<>(false, e.getLocalizedMessage());
@@ -221,7 +224,7 @@ public class FileServiceImpl implements FileService {
     public void download(String relativePath, HttpServletResponse response) throws Exception {
         File file = new File(uploadPath, relativePath);
         if (!file.exists()) {
-            throw new BusinessException(InternationalizationUtil.translate("file.does.not.exist"));
+            throw new BusinessException("file.does.not.exist");
         }
         FileUtil.download(file, response);
     }
@@ -230,7 +233,7 @@ public class FileServiceImpl implements FileService {
     public void downloadCompressedImage(String relativePath, HttpServletResponse response) throws Exception {
         File file = new File(uploadPath, relativePath);
         if (!file.exists()) {
-            throw new BusinessException(InternationalizationUtil.translate("file.does.not.exist"));
+            throw new BusinessException("file.does.not.exist");
         }
         FileUtil.downloadCompressedImage(file, response);
     }
@@ -252,8 +255,7 @@ public class FileServiceImpl implements FileService {
     public Result<?> getFileInfo(String relativePath) {
         File file = new File(uploadPath, relativePath);
         if (!file.exists()) {
-//            return ResponseUtil.buildErrorResult("file.does.not.exist");
-            throw new BusinessException(InternationalizationUtil.translate("file.does.not.exist"));
+            throw new BusinessException("file.does.not.exist");
         }
         Map<String, String> map = new LinkedHashMap<>();
         map.put("filename", file.getName());
@@ -316,7 +318,7 @@ public class FileServiceImpl implements FileService {
                 return;
             }
         }
-        throw new BusinessException(InternationalizationUtil.translate("compress.failure"));
+        throw new BusinessException("compress.failure");
     }
 
     @Override

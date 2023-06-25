@@ -64,7 +64,7 @@ export default {
     },
     save(path, event) {
       axios
-        .post("/permission/set", {
+        .post("/permission/update", {
           path: path,
           isAdmin: event.target.checked ? 0 : 1,
         })

@@ -5,21 +5,22 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import flc.upload.aspect.PermissionAspect;
 import flc.upload.model.AppConfig;
-import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * JWT令牌生成工具类。
  */
 @Component
 public class JwtUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
 
     private static AppConfig appConfig;
 
@@ -57,21 +58,23 @@ public class JwtUtil {
                 .sign(Algorithm.HMAC256(appConfig.getJwtSecretKey()));
     }
 
-    /**
-     * 获取JWT令牌中的备注信息。
-     *
-     * @param token 要解析的JWT令牌
-     * @return JWT令牌中的备注信息，如果解析失败则返回空字符串
-     */
-    public static String getRemark(String token) {
+
+    public static Map<String, String> getTokenInfo(String token) {
+        Map<String, String> hashMap = new LinkedHashMap<>();
         try {
             JWTVerifier verifier = JWT.require(Algorithm.HMAC256(appConfig.getJwtSecretKey()))
                     .build();
             DecodedJWT decodedJWT = verifier.verify(token);
-            return decodedJWT.getClaim("remark").asString();
+            hashMap.put("token", token);
+            hashMap.put("issuedAt", CommonUtil.formatDate(decodedJWT.getIssuedAt()));
+            hashMap.put("expiration", CommonUtil.formatDate(decodedJWT.getExpiresAt()));
+            hashMap.put("remark", decodedJWT.getClaim("remark").asString());
+            return hashMap;
         } catch (Exception e) {
-            return Strings.EMPTY;
+            logger.error("获取token信息失败：" + e.getLocalizedMessage());
         }
+        return hashMap;
+
     }
 
     /**

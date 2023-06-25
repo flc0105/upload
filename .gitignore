@@ -4,3 +4,4 @@ backend/target/
 frontend/node_modules/
 frontend/dist/
 backend/src/main/resources/static/
+frontend/.vscode/

@@ -5,12 +5,15 @@ import flc.upload.annotation.Log;
 import flc.upload.annotation.Permission;
 import flc.upload.annotation.Token;
 import flc.upload.aspect.LogAspect;
+import flc.upload.mapper.SqlMapper;
 import flc.upload.model.AppConfig;
 import flc.upload.model.Result;
-import flc.upload.util.*;
+import flc.upload.util.InternationalizationUtil;
+import flc.upload.util.ReflectionUtil;
+import flc.upload.util.ResponseUtil;
+import flc.upload.util.ServerUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.ibatis.session.SqlSession;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,15 +28,14 @@ import java.util.stream.Collectors;
 
 @Api(tags = "配置")
 @RestController
-//@PropertySource("classpath:app-config.properties")
 public class ConfigController {
     private final AppConfig appConfig;
 
-    private final MyBatisUtil myBatisUtil;
+    private final SqlMapper sqlMapper;
 
-    public ConfigController(AppConfig appConfig, SqlSession sqlSession, MyBatisUtil myBatisUtil) {
+    public ConfigController(AppConfig appConfig, SqlMapper sqlMapper) {
         this.appConfig = appConfig;
-        this.myBatisUtil = myBatisUtil;
+        this.sqlMapper = sqlMapper;
     }
 
     @ApiOperation("配置_查询")
@@ -78,6 +80,30 @@ public class ConfigController {
         return ResponseUtil.buildSuccessResult("delete.success");
     }
 
+    @ApiOperation("SQL_查询")
+    @Log
+    @PostMapping("/sql/select")
+    @Token
+    public Result<?> select(@RequestParam String sql) {
+        return ResponseUtil.buildSuccessResult("query.success", sqlMapper.executeQuery(sql));
+    }
+
+    @ApiOperation("SQL_查询数量")
+    @Log
+    @PostMapping("/sql/count")
+    @Token
+    public Result<?> count(@RequestParam String sql) {
+        return ResponseUtil.buildSuccessResult("query.success", sqlMapper.executeQueryCount(sql));
+    }
+
+    @ApiOperation("SQL_更新")
+    @Log
+    @PostMapping("/sql/execute")
+    @Token
+    public Result<?> execute(@RequestParam String sql) {
+        return ResponseUtil.buildSuccessResult("execute.success", sqlMapper.executeStatement(sql));
+    }
+
     @ApiOperation("查询服务器信息")
     @Log
     @Permission
@@ -86,42 +112,12 @@ public class ConfigController {
         return ResponseUtil.buildSuccessResult("query.success", ServerUtil.getServerInfo());
     }
 
-
-
-
-
-
     @Log
-    @Token
-    @ApiOperation("执行SQL查询")
-    @PostMapping("/sql/select")
-    public Result select(@RequestParam String sql) {
-        return new Result(true, "查询成功", myBatisUtil.executeQuery(sql));
-    }
-
-    @Log
-    @Token
-    @ApiOperation("执行SQL查询个数")
-    @PostMapping("/sql/count")
-    public Result count(@RequestParam String sql) {
-        return new Result(true, "查询成功", myBatisUtil.executeQueryCount(sql));
-    }
-
-    @Log
-    @Token
-    @ApiOperation("执行SQL更新")
-    @PostMapping("/sql/execute")
-    public Result execute(@RequestParam String sql) {
-        return new Result(true, "执行成功", myBatisUtil.executeStatement(sql));
-    }
-
-    @Log
-    @Token
-    @ApiOperation("执行命令")
+    @ApiOperation("执行shell命令")
     @PostMapping("/shell")
-    public Result executeCommand(@RequestParam String command) throws IOException, InterruptedException {
-        return ServerUtil.executeCommand(command);
+    @Token
+    public Result<?> executeCommand(@RequestParam String command) throws IOException, InterruptedException {
+        return ResponseUtil.buildSuccessResult("execute.success", ServerUtil.executeCommand(command));
     }
-
 
 }

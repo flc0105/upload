@@ -1,15 +1,21 @@
 package flc.upload.model;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
-
+@ApiModel("权限")
 public class Permission {
 
+    @ApiModelProperty("id")
     private Integer id;
 
+    @ApiModelProperty("接口地址")
     private String path;
 
+    @ApiModelProperty("是否需要管理员权限")
     private Integer isAdmin;
 
+    @ApiModelProperty("接口描述")
     private String desc;
 
     public Integer getId() {

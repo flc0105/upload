@@ -9,24 +9,24 @@ import org.springframework.stereotype.Service;
 @Service
 public class TokenManagerImpl implements TokenManager {
 
-    private final AppConfig config;
+    private final AppConfig appConfig;
 
-    public TokenManagerImpl(AppConfig config) {
-        this.config = config;
+    public TokenManagerImpl(AppConfig appConfig) {
+        this.appConfig = appConfig;
     }
 
     public void verify(String token) {
 
         if (token == null) {
-            throw new VerifyFailedException("没有权限");
+            throw new VerifyFailedException("no.permission");
         }
 
-        if (config.getDeactivatedTokens().contains(token)) {
-            throw new VerifyFailedException("该token已被禁用");
+        if (appConfig.getDeactivatedTokens().contains(token)) {
+            throw new VerifyFailedException("token.deactivated");
         }
 
         if (!JwtUtil.validateToken(token)) {
-            throw new VerifyFailedException("token验证失败");
+            throw new VerifyFailedException("token.verification.failed");
         }
 
     }

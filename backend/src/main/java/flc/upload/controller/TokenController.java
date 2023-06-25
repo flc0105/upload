@@ -1,7 +1,7 @@
 package flc.upload.controller;
 
 import flc.upload.annotation.Log;
-import flc.upload.annotation.Token;
+import flc.upload.annotation.Permission;
 import flc.upload.model.AppConfig;
 import flc.upload.model.Result;
 import flc.upload.util.*;
@@ -14,66 +14,46 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Api(tags = "Token")
-@RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/token")
+@RestController
 public class TokenController {
 
-    private final AppConfig config;
+    private final AppConfig appConfig;
     @Value("${password}")
     private String password;
 
-    public TokenController(AppConfig config) {
-        this.config = config;
+    public TokenController(AppConfig appConfig) {
+        this.appConfig = appConfig;
     }
 
-    @Log
     @ApiOperation("Token_获取")
+    @Log
     @PostMapping("/get")
-    public Result get(@RequestParam("password") String password, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public Result<?> get(@RequestParam("password") String password, @RequestParam("remark") Optional<String> remark, HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (this.password.equals(password)) {
-//            String token = JwtUtil.generateToken();
-            String token = JwtUtil.generateToken(RequestUtil.getClientBrowser(request) + "@" + RequestUtil.getClientIpAddress(request));
+            String token = remark.map(JwtUtil::generateToken).orElseGet(JwtUtil::generateToken);
             CookieUtil.addCookie("token", token, request, response);
-            return new Result<>(true, "获取成功", token);
+            return ResponseUtil.buildSuccessResult("query.success", token);
         } else {
-            return new Result<>(false, "密码错误");
+            return ResponseUtil.buildErrorResult("password.is.incorrect");
         }
     }
 
+    @ApiOperation("Token_停用")
     @Log
-    @ApiOperation("Token_获取_带用户名")
-    @PostMapping("/getWithUsername")
-    public Result getWithUsername(@RequestParam("password") String password, String username, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        if (this.password.equals(password)) {
-            String token = JwtUtil.generateToken(username);
-            CookieUtil.addCookie("token", token, request, response);
-            return new Result<>(true, "获取成功", token);
-        } else {
-            return new Result<>(false, "密码错误");
-        }
-    }
-
-    @Log
-    @Token
-    @ApiOperation("Token_禁用")
-    @PostMapping("/deactivateToken")
-    public Result deactivateToken(@RequestParam String token) {
-        Field field = ReflectionUtil.getFieldByName("deactivatedTokens", config.getClass());
-        if (field != null) {
-            try {
-                field.setAccessible(true);
-                List<String> tokens = config.getDeactivatedTokens();
-                tokens.add(token);
-                field.set(config, tokens);
-                return new Result(true, "Token禁用成功", null);
-            } catch (Exception e) {
-                return new Result(false, "Token禁用失败：" + e.getMessage(), null);
-            }
-        } else {
-            return new Result(false, "Token禁用失败：没有找到配置项", null);
-        }
+    @Permission
+    @PostMapping("/deactivate")
+    public Result<?> deactivate(@RequestParam String token) throws IllegalAccessException {
+        Field field = Objects.requireNonNull(ReflectionUtil.getFieldByName("deactivatedTokens", appConfig.getClass()), InternationalizationUtil.translate("no.such.configuration"));
+        field.setAccessible(true);
+        List<String> tokens = appConfig.getDeactivatedTokens();
+        tokens.add(token);
+        field.set(appConfig, tokens);
+        return ResponseUtil.buildSuccessResult("update.success");
     }
 }

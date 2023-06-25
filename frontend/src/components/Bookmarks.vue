@@ -294,7 +294,7 @@ export default {
       this.$root.loading = true;
       axios
         .post(
-          "bookmark/rename",
+          "bookmark/modify",
           Qs.stringify({ id: id, title: this.$root.$refs.input.value })
         )
         .then((res) => {

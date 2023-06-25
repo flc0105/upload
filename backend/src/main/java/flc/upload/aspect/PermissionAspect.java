@@ -6,6 +6,7 @@ import flc.upload.manager.TokenManager;
 import flc.upload.model.Permission;
 import flc.upload.model.Result;
 import flc.upload.util.CookieUtil;
+import flc.upload.util.InternationalizationUtil;
 import flc.upload.util.RequestUtil;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -44,13 +45,13 @@ public class PermissionAspect {
      */
     @Before("@annotation(flc.upload.annotation.Permission)")
     public void before() throws Throwable {
-        ServletRequestAttributes attributes = Objects.requireNonNull((ServletRequestAttributes) RequestContextHolder.getRequestAttributes(), "无法获取到request信息");
+        ServletRequestAttributes attributes = Objects.requireNonNull((ServletRequestAttributes) RequestContextHolder.getRequestAttributes(), InternationalizationUtil.translate("get.request.information.failure"));
         HttpServletRequest request = attributes.getRequest();
         String path = RequestUtil.getRelativeRequestURI(request);
 
         Result<?> result;
         try {
-            result = Objects.requireNonNull(permissionManager.getPermission(path));
+            result = Objects.requireNonNull(permissionManager.get(path));
         } catch (Exception e) {
             logger.warn("无法获取到该接口的权限信息，默认放行：" + path);
             return;

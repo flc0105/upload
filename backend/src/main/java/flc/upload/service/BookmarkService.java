@@ -18,12 +18,12 @@ public interface BookmarkService {
 
     Result updateAll() throws Exception;
 
-    Result rename(Integer id, String title, String url) throws Exception;
+    Result modify(Integer id, String title, String url) throws Exception;
 
     Result addTags(Integer bookmarkId, List<Integer> tagIds) throws Exception;
 
     Result findAllTags() throws Exception;
 
-    Result findBookmarksByTags(List<Integer> tagIds) throws Exception;
+    Result findByTags(List<Integer> tagIds) throws Exception;
 
 }

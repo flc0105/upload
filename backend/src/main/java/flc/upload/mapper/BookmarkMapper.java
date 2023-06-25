@@ -25,15 +25,15 @@ public interface BookmarkMapper {
     Bookmark findById(Integer id) throws Exception;
 
     @Insert("insert into bookmark_tag (bookmark_id, tag_id) values(#{bookmarkId}, #{tagId})")
-    Integer addTag(Integer bookmarkId, Integer tagId) throws Exception;
+    void addTag(Integer bookmarkId, Integer tagId) throws Exception;
 
     @Select("select * from tag")
     List<Tag> findAllTags() throws Exception;
 
     @Select("SELECT * FROM tag t JOIN bookmark_tag bt ON t.id = bt.tag_id WHERE bt.bookmark_id = #{bookmarkId}")
-    List<Tag> getTagsForBookmark(int bookmarkId);
+    List<Tag> findTagsByBookmarkId(int bookmarkId);
 
     @Select("SELECT b.* FROM bookmark b INNER JOIN bookmark_tag bt ON b.id = bt.bookmark_id WHERE bt.tag_id IN (${idString}) GROUP BY b.id HAVING COUNT(DISTINCT bt.tag_id) = ${tagIds.size()};")
-    List<Bookmark> findBookmarksByTags(List<Integer> tagIds, String idString) throws Exception;
+    List<Bookmark> findByTags(List<Integer> tagIds, String idString) throws Exception;
 
 }
