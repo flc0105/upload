@@ -82,7 +82,9 @@
             <span v-if="paste.expiredDate == -1">{{
               $t("burn_after_reading")
             }}</span>
-            <span v-else>Expired {{ getFromNow(paste.expiredDate) }}</span>
+            <span v-else
+              >Expired {{ calculateFromNow(paste.expiredDate) }}</span
+            >
           </span>
         </p>
       </div>
@@ -98,26 +100,104 @@
 </style>
 
 <script>
-import axios from "axios";
 import Qs from "qs";
 
-import moment from "moment";
-
-// const endpoints = Vue.prototype.$endpoints;
+import {
+  greet,
+  calculateFromNow,
+  calculateExpiresAt,
+  sendRequest,
+} from "../utils/utils.js";
 
 export default {
   data() {
     return {
-      pastes: [],
-      title: "",
-      text: "",
-      endpoints: [],
+      pastes: [], //获取到的paste列表
+      title: "", //标题输入框
+      text: "", //正文输入框
+      // endpoints: [],
     };
   },
   methods: {
+    calculateFromNow,
+
+    // 查询所有
+    list() {
+      sendRequest.call(
+        this,
+        "get",
+        "/paste/list",
+        null,
+        (res) => {
+          this.pastes = res.detail;
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+        }
+      );
+    },
+
+    // 添加
+    add() {
+      if (this.text.trim().length === 0) {
+        this.$root.showModal(this.$t("alert"), this.$t("text_cannot_be_empty"));
+        return;
+      }
+      const data = {
+        title: this.title.trim().length === 0 ? "未命名" : this.title,
+        text: this.text,
+        expiredDate: calculateExpiresAt(this.$refs.select.value),
+        private: this.$refs.isPrivate.checked,
+      };
+      sendRequest.call(
+        this,
+        "post",
+        "/paste/add",
+        data,
+        (res) => {
+          this.list();
+          this.$root.showModal(
+            this.$t("success"),
+            location.protocol +
+              "//" +
+              location.host +
+              "/pastes/" +
+              res.detail.id
+          );
+          this.text = "";
+          this.title = "";
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+        }
+      );
+    },
+    // 删除
+    remove(id) {
+      if (!this.$root.hasToken(() => this.remove(id))) {
+        return;
+      }
+
+      const data = Qs.stringify({ id: id });
+      sendRequest.call(
+        this,
+        "post",
+        "/paste/delete",
+        data,
+        (res) => {
+          this.$root.showModal(this.$t("success"), res.msg);
+          this.list();
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+        }
+      );
+    },
+
+    /*
     fetchTokenProtectedEndpoints() {
       axios
-        .get("/permission/protected") // 替换为实际的后端接口地址
+        .get("/permission/protected")
         .then((response) => {
           this.endpoints = response.detail;
         })
@@ -126,112 +206,16 @@ export default {
         });
     },
 
-    getFromNow(date) {
-      return moment(date).fromNow();
-    },
-    // 计算过期时间
-    calcExpiredDate(minutes) {
-      if (minutes == 0) {
-        return undefined;
-      }
-      if (minutes == -1) {
-        return -1;
-      }
-      var dateObj = moment(new Date()).add(minutes, "m").toDate();
-      return moment(dateObj).format("YYYY-MM-DD HH:mm:ss");
-    },
-    // 获取文本
-    list() {
-      this.$root.loading = true;
-      axios
-        .get("/paste/list")
-        .then((res) => {
-          if (res.success) {
-            this.pastes = res.detail;
-          } else {
-            this.$root.showModal("失败", res.msg);
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
-    // 添加文本
-    add() {
-      if (this.text.trim().length === 0) {
-        this.$root.showModal("提示", "正文不能为空");
-        return;
-      }
-      this.$root.loading = true;
-      axios
-        .post("/paste/add", {
-          title: this.title.trim().length === 0 ? "未命名" : this.title,
-          text: this.text,
-          expiredDate: this.calcExpiredDate(this.$refs.select.value),
-          private: this.$refs.isPrivate.checked,
-        })
-        .then((res) => {
-          if (res.success) {
-            this.list();
-            this.$root.showModal(
-              "发布成功",
-              location.protocol +
-                "//" +
-                location.host +
-                "/pastes/" +
-                res.detail.id
-            );
-            this.text = "";
-            this.title = "";
-          } else {
-            this.$root.showModal("失败", res.msg);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
-    // 删除文本
-    remove(id) {
-      // if (!this.$root.hasToken(() => this.remove(id))) {
-      //   return;
-      // }
-      this.$root.loading = true;
-      axios
-        .post("/paste/delete", Qs.stringify({ id: id }))
-        .then((res) => {
-          if (res.success) {
-            this.$root.showModal("成功", "删除成功");
-            this.list();
-          } else {
-            this.$root.showModal("失败", res.msg);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-          if (err != "cancel") {
-            this.$root.showModal("错误", err.message);
-          }
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
+    // 验证
     handleVerify() {
       return new Promise((resolve, reject) => {
-        console.log("弹出密码框");
+        // 弹出密码框
         this.$root.$refs.password.value = "";
         const modal = new Modal(this.$root.$refs.passwordModal);
         modal.show();
         this.$root.$refs.password.focus();
 
+        // 存储验证token的方法
         this.$root.func = () => {
           this.$root.confirmed = true;
           modal.hide();
@@ -246,24 +230,24 @@ export default {
             });
         };
 
-        var hiddenEvent = () => {
+        // 关闭密码框的事件
+        var hideEvent = () => {
           if (!this.$root.confirmed) {
-            console.log("验证框关闭后，不执行请求，直接中止");
             reject("cancel");
           }
           this.$root.confirmed = false;
           this.$root.$refs.passwordModal.removeEventListener(
             "hidden.bs.modal",
-            hiddenEvent
+            hideEvent
           );
         };
-
         this.$root.$refs.passwordModal.addEventListener(
           "hidden.bs.modal",
-          hiddenEvent
+          hideEvent
         );
       });
     },
+    // 验证token
     getToken() {
       return new Promise((resolve, reject) => {
         axios
@@ -273,6 +257,11 @@ export default {
           )
           .then((res) => {
             if (res.success) {
+              if (this.$root.noToken()) {
+                this.fetchTokenProtectedEndpoints();
+              } else {
+                this.endpoints = [];
+              }
               resolve();
             } else {
               reject(res.msg);
@@ -282,11 +271,15 @@ export default {
             reject(err.message);
           });
       });
-    },
+    },*/
   },
   created() {
     this.list();
-    this.fetchTokenProtectedEndpoints();
+    greet();
+    /*
+    if (this.$root.noToken()) {
+      this.fetchTokenProtectedEndpoints();
+    }
 
     axios.interceptors.request.use(
       async (config) => {
@@ -297,12 +290,12 @@ export default {
             " " +
             isTokenProtected
         );
-
         if (isTokenProtected) {
           await this.handleVerify();
           console.log("验证通过后，继续发送请求：" + config.url);
           return config;
         }
+
         console.log("不需要验证的接口直接发送请求：" + config.url);
         return config;
       },
@@ -312,6 +305,7 @@ export default {
         return Promise.reject(error);
       }
     );
+    */
   },
 };
 </script>

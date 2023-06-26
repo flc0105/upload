@@ -2,7 +2,9 @@
   <div class="card">
     <div class="card-body border-bottom" style="padding: 0.781rem 1rem">
       <div class="d-flex justify-content-between flex-wrap align-items-center">
-        <a class="link-primary" @click="$router.push('/pastes')">返回</a>
+        <a class="link-primary" @click="$router.push('/pastes')">{{
+          $t("back")
+        }}</a>
         <div class="paste-title text-muted text-truncate mw-50">
           <span
             class="editable"
@@ -18,7 +20,7 @@
             v-if="expiredDate"
             style="font-size: 0.875rem"
             >&nbsp;
-            <span v-if="expiredDate == -1">阅后即焚</span>
+            <span v-if="expiredDate == -1">{{ $t("burn_after_reading") }}</span>
             <span v-else>Expired {{ getFromNow(expiredDate) }}</span>
           </span>
         </div>
@@ -35,30 +37,30 @@
               class="form-check-label"
               for="highlight"
               style="user-select: none"
-              >代码高亮</label
+              >{{ $t("syntax_highlighting") }}</label
             >
           </form>
           <a
             class="btn btn-outline-primary btn-sm"
             id="btnCopy"
             :data-clipboard-text="text"
-            >复制</a
+            >{{ $t("copy") }}</a
           >
           <!-- <a class="btn btn-outline-primary btn-sm" id="btnCopy" data-clipboard-target="#textarea">复制</a> -->
-          <a class="btn btn-outline-primary btn-sm ms-1" @click="download()"
-            >下载</a
-          >
+          <a class="btn btn-outline-primary btn-sm ms-1" @click="download()">{{
+            $t("download")
+          }}</a>
           <button
             :disabled="checked"
             class="btn btn-outline-primary btn-sm ms-1"
             @click="update()"
           >
-            提交修改
+            {{ $t("submit_changes") }}
           </button>
           <a
             class="btn btn-outline-danger btn-sm ms-1"
             @click="$root.showConfirm(() => remove())"
-            >删除</a
+            >{{ $t("delete") }}</a
           >
         </div>
       </div>

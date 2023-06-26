@@ -39,11 +39,30 @@
             href="#"
           ></a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="/share">文件分享</a></li>
-            <li><a class="dropdown-item" href="/upload">拖拽上传</a></li>
-            <li><a class="dropdown-item" href="/log">操作日志</a></li>
-            <li><a class="dropdown-item" href="/server">服务器信息</a></li>
-            <li><a class="dropdown-item" href="/permissions">权限控制</a></li>
+            <li>
+              <a class="dropdown-item" href="/upload">{{
+                $t("drag_and_drop")
+              }}</a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/share">{{ $t("file_share") }}</a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/log">{{
+                $t("operation_logs")
+              }}</a>
+            </li>
+
+            <li>
+              <a class="dropdown-item" href="/permissions">{{
+                $t("permission_control")
+              }}</a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/server">{{
+                $t("server_info")
+              }}</a>
+            </li>
           </ul>
         </li>
       </ul>
@@ -74,7 +93,7 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-outline-primary" data-bs-dismiss="modal">
-            关闭
+            {{ $t("close") }}
           </button>
         </div>
       </div>
@@ -86,7 +105,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">删除</h5>
+          <h5 class="modal-title">{{ $t("delete") }}</h5>
           <button
             class="btn-close"
             data-bs-dismiss="modal"
@@ -94,7 +113,7 @@
           ></button>
         </div>
         <div class="modal-body">
-          <p>确定要删除吗？</p>
+          <p>{{ $t("confirm_delete") }}</p>
         </div>
         <div class="modal-footer">
           <button
@@ -102,10 +121,10 @@
             data-bs-dismiss="modal"
             @click="func()"
           >
-            确定
+            {{ $t("ok") }}
           </button>
           <button class="btn btn-outline-primary" data-bs-dismiss="modal">
-            关闭
+            {{ $t("close") }}
           </button>
         </div>
       </div>
@@ -117,7 +136,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">验证</h5>
+          <h5 class="modal-title">{{ $t("verification") }}</h5>
           <button
             class="btn-close"
             data-bs-dismiss="modal"
@@ -125,7 +144,9 @@
           ></button>
         </div>
         <div class="modal-body">
-          <label for="password" class="form-label">请输入密码</label>
+          <label for="password" class="form-label">{{
+            $t("please_enter_the_password")
+          }}</label>
           <input
             type="password"
             class="form-control"
@@ -134,12 +155,18 @@
           />
         </div>
         <div class="modal-footer">
-          <button class="btn btn-outline-primary" ref="btnAuth" @click="func">
+          <button
+            class="btn btn-outline-primary"
+            ref="btnAuth"
+            @click="getToken()"
+            data-bs-dismiss="modal"
+          >
+            <!--@click="func"-->
             <!-- @click="getToken()"-->
-            确定
+            {{ $t("ok") }}
           </button>
           <button class="btn btn-outline-primary" data-bs-dismiss="modal">
-            关闭
+            {{ $t("close") }}
           </button>
         </div>
       </div>
@@ -198,10 +225,10 @@
             @click="func()"
             ref="btnInput"
           >
-            确定
+            {{ $t("ok") }}
           </button>
           <button class="btn btn-outline-primary" data-bs-dismiss="modal">
-            关闭
+            {{ $t("close") }}
           </button>
         </div>
       </div>
@@ -362,8 +389,6 @@ export default {
       inputValue: "",
 
       confirmed: false,
-
-      closeFunc: null,
     };
   },
   methods: {
@@ -500,7 +525,7 @@ export default {
   },
   created() {
     new ClipboardJS("#btnCopy").on("success", () => {
-      this.showModal("成功", "复制成功");
+      this.showModal(this.$t("success"), this.$t("copy_success"));
     });
   },
   mounted() {
