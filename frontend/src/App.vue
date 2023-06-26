@@ -52,7 +52,6 @@
                 $t("operation_logs")
               }}</a>
             </li>
-
             <li>
               <a class="dropdown-item" href="/permissions">{{
                 $t("permission_control")
@@ -161,8 +160,6 @@
             @click="getToken()"
             data-bs-dismiss="modal"
           >
-            <!--@click="func"-->
-            <!-- @click="getToken()"-->
             {{ $t("ok") }}
           </button>
           <button class="btn btn-outline-primary" data-bs-dismiss="modal">
@@ -293,18 +290,21 @@
           aria-label="Close"
         ></button>
       </div>
-      <div class="toast-body">
+      <div
+        class="toast-body"
+        style="white-space: pre-wrap; word-break: break-all"
+      >
         {{ message.text }}
       </div>
     </div>
   </div>
 
-  <!-- 命令执行框 -->
+  <!-- 命令模态框 -->
   <div class="modal fade" tabindex="-1" ref="commandModal">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">执行命令</h5>
+          <h5 class="modal-title">{{ $t("command") }}</h5>
           <button
             class="btn-close"
             data-bs-dismiss="modal"
@@ -316,18 +316,17 @@
             <div class="input-group">
               <input
                 class="form-control monospace"
-                placeholder="命令"
-                ref="inputCmd"
-                id="inputCmd"
-                @keyup.enter="$refs.btnCmd.click()"
+                :placeholder="this.$t('command')"
+                ref="command"
+                @keyup.enter="$refs.btnExecute.click()"
               />
               <button
                 type="submit"
                 class="btn btn-outline-primary"
-                ref="btnCmd"
-                @click="exec"
+                ref="btnExecute"
+                @click="executeCommand"
               >
-                执行
+                {{ $t("execute") }}
               </button>
             </div>
           </div>
@@ -336,7 +335,7 @@
             <textarea
               class="form-control monospace"
               rows="12"
-              ref="txtResult"
+              ref="executionResult"
             ></textarea>
           </div>
         </div>
@@ -366,58 +365,108 @@ import axios from "axios";
 import Qs from "qs";
 import Cookies from "js-cookie";
 import ClipboardJS from "clipboard";
+import { getCurrentTime } from "./utils/utils.js";
 
 export default {
   data() {
     return {
-      // 消息框的标题和内容
+      /**
+       * 消息框的标题和内容
+       * @type {{title:String, text:String}}
+       */
       message: {
         title: "",
         text: "",
       },
-      // 旋转器的状态
-      loading: false,
-      // 回调函数
-      func: null,
-      // 上传进度
-      progress: 0,
-      // 传输实时速度
-      speed: "",
-      // 图片或视频链接
-      src: "",
-      // 输入框中的默认值
-      inputValue: "",
 
-      confirmed: false,
+      /**
+       * 旋转器的状态
+       * @type {boolean}
+       */
+      loading: false,
+
+      /**
+       * 回调函数
+       * @type {Function|null}
+       */
+      func: null,
+
+      /**
+       * 上传进度
+       * @type {number}
+       */
+      progress: 0,
+
+      /**
+       * 传输实时速度
+       * @type {string}
+       */
+      speed: "",
+
+      /**
+       * 图片链接
+       * @type {string}
+       */
+      src: "",
+
+      /**
+       * 输入框中的默认值
+       * @type {string}
+       */
+      inputValue: "",
     };
   },
   methods: {
-    // 显示消息框
+    getCurrentTime,
+    /**
+     * 显示模态框
+     * @param {string} title 模态框的标题
+     * @param {string} text 模态框的内容
+     */
     showModal(title, text) {
       this.message.title = title;
       this.message.text = text;
       new Modal(this.$refs.messageModal).show();
     },
-    // 显示确认框
+
+    /**
+     * 显示确认模态框
+     * @param {Function} func 确认按钮点击后执行的函数
+     */
     showConfirm(func) {
       new Modal(this.$refs.confirmModal).show();
       this.func = func;
     },
-    // 显示输入框
+
+    /**
+     * 显示带有输入框的模态框
+     * @param {string} title 模态框标题
+     * @param {string} text 模态框内容
+     * @param {Function} func 确认按钮点击后执行的函数
+     */
     showInput(title, text, func) {
       this.func = func;
       this.message.title = title;
       this.message.text = text;
-      //this.$refs.input.value = "";
       this.$refs.input.value = this.inputValue;
       new Modal(this.$refs.inputModal).show();
       this.$refs.input.focus();
     },
-    // 检查token
-    noToken() {
+
+    /**
+     * 检查是否缺少 "token" cookie
+     * @returns {boolean} 返回是否缺少 "token" cookie
+     */
+    isTokenMissing() {
       return !Cookies.get("token");
     },
-    // 授权
+
+    /**
+     * 检查是否存在令牌
+     * 如果不存在令牌，则显示密码框，以进行验证
+     * @param {Function} func 需要进行的操作
+     * @returns {boolean} 如果存在令牌，则返回 true；否则返回 false
+     */
     hasToken(func) {
       if (!Cookies.get("token")) {
         this.func = func; // 保存当前进行的操作
@@ -429,7 +478,9 @@ export default {
       return true;
     },
 
-    // 获取token
+    /**
+     * 获取令牌
+     */
     getToken() {
       axios
         .post(
@@ -440,15 +491,19 @@ export default {
           if (res.success) {
             this.func(); // 如果通过验证，继续之前的操作
           } else {
-            this.showModal("验证失败", res.msg);
+            this.showModal(this.$t("error"), res.msg);
           }
         })
         .catch((err) => {
-          this.showModal("错误", err.message);
+          this.showModal(this.$t("error"), err.message);
         });
     },
 
-    // 格式化文件大小
+    /**
+     * 格式化字节大小
+     * @param {number} bytes 字节数
+     * @returns {string} 格式化后的字节大小
+     */
     formatBytes(bytes) {
       if (bytes === 0) {
         return "0 B";
@@ -460,66 +515,60 @@ export default {
         ["B", "kB", "MB", "GB"][i]
       );
     },
-    // 关闭图片预览框后清除图片资源
-    modalClose() {
-      this.src = "";
-    },
+
+    /**
+     * 显示 Toast 提示
+     * @param {string} title 标题
+     * @param {string} text 文本内容
+     */
     showToast(title, text) {
       this.message.title = title;
       this.message.text = text;
-      const toastLiveExample = document.getElementById("liveToast");
-      const toastBootstrap = Toast.getOrCreateInstance(toastLiveExample);
+      const toast = document.getElementById("liveToast");
+      const toastBootstrap = Toast.getOrCreateInstance(toast);
       toastBootstrap.show();
     },
-    getCurrentTime() {
-      return new Date().toLocaleString("zh-CN", {
-        hour12: false,
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-        second: "2-digit",
-      });
-    },
-    // 监听按键按下的动作
-    handleKeyDown(event) {
+
+    /**
+     * 处理按下组合键的事件
+     * 如果按下了 Ctrl + Alt + C 键，则显示命令模态框
+     * @param {KeyboardEvent} event 键盘事件对象
+     */
+    handleShortcutKeyPress(event) {
       if (event.ctrlKey && event.altKey && event.key === "c") {
-        this.showCommandModal();
+        this.$refs.executionResult.value = "";
+        new Modal(this.$refs.commandModal).show();
+        this.$refs.command.focus();
       }
     },
-    // 显示命令执行框
-    showCommandModal() {
-      this.$refs.txtResult.value = "";
-      new Modal(this.$refs.commandModal).show();
-      this.$refs.inputCmd.focus();
-    },
-    // 执行命令
-    exec() {
-      this.$refs.inputCmd.disabled = true;
-      this.$refs.btnCmd.disabled = true;
-      this.$refs.btnCmd.innerHTML =
-        "<span class='spinner-grow spinner-grow-sm' role='status' aria-hidden='true'></span><span>&nbsp;正在执行...</span>";
+
+    /**
+     * 执行命令
+     * 发送命令请求，并在请求完成后更新执行结果
+     */
+    executeCommand() {
+      this.$refs.command.disabled = true;
+      this.$refs.btnExecute.disabled = true;
+      this.$refs.btnExecute.innerHTML =
+        "<span class='spinner-grow spinner-grow-sm' role='status' aria-hidden='true'></span>";
       axios
-        .post("/shell", Qs.stringify({ command: this.$refs.inputCmd.value }))
+        .post("/shell", Qs.stringify({ command: this.$refs.command.value }))
         .then((res) => {
           if (res.success) {
-            this.$refs.txtResult.value = res.detail;
+            this.$refs.executionResult.value = res.detail;
           } else {
-            this.$refs.txtResult.value = res.msg + "\n" + res.detail;
+            this.$refs.executionResult.value = res.msg;
           }
         })
         .catch((err) => {
-          this.$refs.txtResult.value = err;
+          this.$refs.executionResult.value = err.message;
         })
         .finally(() => {
-          // this.$refs.inputCmd.value = "";
-
-          this.$refs.btnCmd.innerHTML = "执行";
-          this.$refs.inputCmd.disabled = false;
-          this.$refs.btnCmd.disabled = false;
-          this.$refs.inputCmd.focus();
-          this.$refs.inputCmd.select();
+          this.$refs.btnExecute.innerHTML = this.$t("execute");
+          this.$refs.command.disabled = false;
+          this.$refs.btnExecute.disabled = false;
+          this.$refs.command.focus();
+          this.$refs.command.select();
         });
     },
   },
@@ -529,15 +578,20 @@ export default {
     });
   },
   mounted() {
-    this.$refs.imageModal.addEventListener("hidden.bs.modal", this.modalClose);
-    window.addEventListener("keydown", this.handleKeyDown);
+    // 监听图片预览框的隐藏事件，并清除图片资源
+    this.$refs.imageModal.addEventListener("hidden.bs.modal", () => {
+      this.src = "";
+    });
+    // 注册快捷键事件的监听器
+    window.addEventListener("keydown", this.handleShortcutKeyPress);
+    // 注册命令模态框显示事件的监听器
     this.$refs.commandModal.addEventListener("shown.bs.modal", () => {
-      this.$refs.inputCmd.focus();
+      this.$refs.command.focus();
     });
   },
-
   beforeDestroy() {
-    window.removeEventListener("keydown", this.handleKeyDown);
+    //取消快捷键事件的监听器
+    window.removeEventListener("keydown", this.handleShortcutKeyPress);
   },
 };
 </script>

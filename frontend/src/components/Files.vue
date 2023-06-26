@@ -4,7 +4,7 @@
       <ol class="breadcrumb float-start" style="margin: 0.5rem 0">
         <li
           class="filename text-truncate"
-          v-for="directory in directories"
+          v-for="directory in pathMapping"
           :key="directory"
           :class="[
             'breadcrumb-item',
@@ -53,25 +53,29 @@
           class="btn btn-outline-primary"
           onclick="document.getElementById('file').value=null; document.getElementById('file').click()"
         >
-          上传文件
+          {{ $t("upload_files") }}
         </button>
         <button
           class="btn btn-outline-primary ms-1 me-1"
           onclick="document.getElementById('folder').value=null; document.getElementById('folder').click()"
         >
-          上传文件夹
+          {{ $t("upload_folder") }}
         </button>
         <button
           class="btn btn-outline-primary me-1"
           @click="
             $root.inputValue = '';
-            $root.showInput('新建文件夹', '输入文件夹名', createDirectory);
+            $root.showInput(
+              $t('new_folder'),
+              $t('enter_a_new_folder_name'),
+              createDirectory
+            );
           "
         >
-          新建文件夹
+          {{ $t("new_folder") }}
         </button>
         <button class="btn btn-outline-primary me-1" @click="list()">
-          刷新
+          {{ $t("refresh") }}
         </button>
         <button
           v-if="
@@ -80,28 +84,30 @@
             !currentDirectory.startsWith(cutFiles[0])
           "
           class="btn btn-outline-primary me-1"
-          @click="paste()"
+          @click="move()"
         >
-          粘贴
+          {{ $t("paste") }}
         </button>
+
+        <button
+          class="btn btn-outline-primary me-1"
+          :disabled="files.length === 0"
+          @click="
+            multiSelect = !multiSelect;
+            checkedFiles = [];
+          "
+        >
+          {{ $t("multi_select") }}
+        </button>
+
         <div class="btn-group">
-          <button
-            class="btn btn-outline-primary"
-            :disabled="files.length === 0"
-            @click="
-              multiSelect = !multiSelect;
-              checkedFiles = [];
-            "
-          >
-            多选
-          </button>
           <button
             v-if="multiSelect"
             :disabled="checkedFiles.length == 0"
             class="btn btn-outline-primary"
-            @click="zipAndDownload(this.checkedFiles)"
+            @click="zipAndDownload(checkedFiles)"
           >
-            下载
+            {{ $t("download") }}
           </button>
           <button
             v-if="multiSelect"
@@ -113,7 +119,7 @@
               })
             "
           >
-            删除
+            {{ $t("delete") }}
           </button>
           <button
             v-if="multiSelect"
@@ -121,7 +127,7 @@
             class="btn btn-outline-primary"
             @click="cut(checkedFiles)"
           >
-            剪切
+            {{ $t("cut") }}
           </button>
           <button
             v-if="multiSelect"
@@ -129,15 +135,15 @@
             class="btn btn-outline-primary"
             @click="zip(checkedFiles)"
           >
-            打包
+            {{ $t("zip") }}
           </button>
           <button
             v-if="multiSelect"
             :disabled="checkedFiles.length == 0"
             class="btn btn-outline-primary"
-            @click="clientZip()"
+            @click="zipFiles()"
           >
-            客户端打包
+            {{ $t("zip_files") }}
           </button>
         </div>
       </div>
@@ -146,7 +152,7 @@
           <input
             class="form-control"
             style="flex: 1 1 auto; width: 1%"
-            placeholder="搜索"
+            :placeholder="$t('search')"
             v-model="filter"
             @keyup.enter="search()"
           />
@@ -168,7 +174,9 @@
                     :checked="columns.includes('size')"
                     @click="hideColumn('size')"
                   />
-                  <label class="form-check-label" for="size">大小</label>
+                  <label class="form-check-label" for="size">
+                    {{ $t("size") }}</label
+                  >
                 </div>
               </li>
               <li class="dropdown-item">
@@ -180,7 +188,9 @@
                     :checked="columns.includes('contentType')"
                     @click="hideColumn('contentType')"
                   />
-                  <label class="form-check-label" for="contentType">类型</label>
+                  <label class="form-check-label" for="contentType">
+                    {{ $t("type") }}</label
+                  >
                 </div>
               </li>
               <li class="dropdown-item">
@@ -192,8 +202,8 @@
                     :checked="columns.includes('lastModified')"
                     @click="hideColumn('lastModified')"
                   />
-                  <label class="form-check-label" for="lastModified"
-                    >修改日期</label
+                  <label class="form-check-label" for="lastModified">
+                    {{ $t("last_modified") }}</label
                   >
                 </div>
               </li>
@@ -217,7 +227,7 @@
             <input
               type="checkbox"
               class="form-check-input"
-              @click="(event) => checkAll(event)"
+              @click="(event) => handleSelectAll(event)"
               :checked="
                 Object.keys(files).length > 0 &&
                 checkedFiles.length > 0 &&
@@ -236,9 +246,9 @@
           </th>
           <th
             class="filename text-truncate cursor-pointer"
-            @click="sortBy('name')"
+            @click="toggleSortDirectionForKey('name')"
           >
-            文件名
+            {{ $t("filename") }}
             <div class="sort-by-filename">
               <i
                 v-if="sort.key === 'name' && sort.direction === 'asc'"
@@ -250,16 +260,16 @@
               ></i>
             </div>
           </th>
-          <th class="size" v-if="columns.includes('size')">大小</th>
+          <th class="size" v-if="columns.includes('size')">{{ $t("size") }}</th>
           <th class="contentType" v-if="columns.includes('contentType')">
-            类型
+            {{ $t("type") }}
           </th>
           <th
             class="lastModified cursor-pointer"
             v-if="columns.includes('lastModified')"
-            @click="sortBy('time')"
+            @click="toggleSortDirectionForKey('time')"
           >
-            修改时间
+            {{ $t("last_modified") }}
             <div class="sort-by-time">
               <i
                 v-if="sort.key === 'time' && sort.direction === 'asc'"
@@ -271,7 +281,7 @@
               ></i>
             </div>
           </th>
-          <th class="action">操作</th>
+          <th class="action">{{ $t("action") }}</th>
         </tr>
         <tr v-if="currentDirectory != '/'">
           <td
@@ -304,22 +314,6 @@
           >
             <i class="bi bi-folder2"></i>&nbsp;
             <a class="link-primary">{{ folder.name }}</a>
-
-            <!-- <span
-              v-if="folder.relativePath == '/images'"
-              class="badge text-bg-primary ms-2"
-              >直链图片文件夹</span
-            >
-            <span
-              v-if="folder.relativePath == '/public'"
-              class="badge text-bg-primary ms-2"
-              >公共文件夹</span
-            >
-            <span
-              v-if="folder.relativePath == '/private'"
-              class="badge text-bg-primary ms-2"
-              >私密文件夹</span
-            > -->
           </td>
           <td class="size" v-if="columns.includes('size')">-</td>
           <td class="contentType" v-if="columns.includes('contentType')">-</td>
@@ -351,13 +345,17 @@
               </a>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item" @click="zip([folder.relativePath])"
-                    >压缩</a
+                  <a
+                    class="dropdown-item"
+                    @click="zip([folder.relativePath])"
+                    >{{ $t("zip") }}</a
                   >
                 </li>
                 <li>
-                  <a class="dropdown-item" @click="cut([folder.relativePath])"
-                    >剪切</a
+                  <a
+                    class="dropdown-item"
+                    @click="cut([folder.relativePath])"
+                    >{{ $t("cut") }}</a
                   >
                 </li>
                 <li>
@@ -365,18 +363,22 @@
                     class="dropdown-item"
                     @click="
                       $root.inputValue = folder.name;
-                      $root.showInput('重命名', '输入新文件夹名', function () {
-                        rename(folder.relativePath);
-                      });
+                      $root.showInput(
+                        $t('rename'),
+                        $t('enter_a_new_folder_name'),
+                        function () {
+                          rename(folder.relativePath);
+                        }
+                      );
                     "
-                    >重命名</a
+                    >{{ $t("rename") }}</a
                   >
                 </li>
                 <li>
                   <a
                     class="dropdown-item"
-                    @click="directoryStats(folder.relativePath)"
-                    >详细信息</a
+                    @click="showFileStats(folder.relativePath)"
+                    >{{ $t("view_details") }}</a
                   >
                 </li>
               </ul>
@@ -436,6 +438,37 @@
               </a>
               <ul class="dropdown-menu">
                 <li>
+                  <a class="dropdown-item" @click="cut([file.relativePath])">{{
+                    $t("cut")
+                  }}</a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    @click="
+                      $root.inputValue = file.name;
+                      $root.showInput(
+                        $t('rename'),
+                        $t('enter_a_new_file_name'),
+                        function () {
+                          rename(file.relativePath);
+                        }
+                      );
+                    "
+                    >{{ $t("rename") }}</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    @click="showFileStats(file.relativePath)"
+                    >{{ $t("view_details") }}</a
+                  >
+                </li>
+                <li>
+                  <hr class="dropdown-divider" />
+                </li>
+                <li>
                   <a
                     class="dropdown-item"
                     v-if="
@@ -443,54 +476,20 @@
                       file.fileType.includes('text')
                     "
                     @click="preview(file.fileType, file.relativePath)"
-                    >预览</a
-                  >
-                </li>
-
-                <li>
-                  <a
-                    class="dropdown-item"
-                    v-if="file.name.endsWith('.heic')"
-                    @click="previewHeic(file.relativePath)"
-                    >预览HEIC</a
-                  >
-                </li>
-
-                <li>
-                  <a class="dropdown-item" @click="share(file.relativePath)"
-                    >分享</a
+                    >{{ $t("preview") }}</a
                   >
                 </li>
                 <li>
-                  <a class="dropdown-item" @click="cut([file.relativePath])"
-                    >剪切</a
-                  >
-                </li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    @click="
-                      $root.inputValue = file.name;
-                      $root.showInput('重命名', '输入新文件名', function () {
-                        rename(file.relativePath);
-                      });
-                    "
-                    >重命名</a
-                  >
-                </li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    @click="directoryStats(file.relativePath)"
-                    >详细信息</a
-                  >
+                  <a class="dropdown-item" @click="share(file.relativePath)">{{
+                    $t("share")
+                  }}</a>
                 </li>
                 <li>
                   <a
                     class="dropdown-item"
                     v-if="file.fileType.includes('image')"
                     @click="generateDirectLink(file.relativePath)"
-                    >生成图片直链</a
+                    >{{ $t("generate_direct_link") }}</a
                   >
                 </li>
               </ul>
@@ -514,11 +513,6 @@
 
 .lastModified:hover .sort-by-time {
   display: inline;
-}
-
-.btn-group > .btn-group:not(:first-child),
-.btn-group > :not(.btn-check:first-child) + .btn {
-  margin-left: -0.9px !important;
 }
 
 .table > tbody > tr > td {
@@ -553,7 +547,7 @@
   }
 }
 
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 1200px) {
   .files-left,
   .files-right {
     float: none;
@@ -575,57 +569,73 @@ import Qs from "qs";
 
 import "file-saver";
 import "bootstrap/dist/js/bootstrap.bundle";
-
-//import heic2any from "heic2any"; //TODO: 按需加载
-
 import { BlobWriter, HttpReader, TextReader, ZipWriter } from "@zip.js/zip.js";
+
+import {
+  sendRequest,
+  removeOuterQuotes,
+  loadHeic2Any,
+} from "../utils/utils.js";
 
 let cancel;
 const CancelToken = axios.CancelToken;
 
-let heic2any = null; // 用于存储模块的变量
-
-// 在需要的地方调用该方法，实现按需加载
-function loadHeic2Any() {
-  if (heic2any) {
-    // 如果模块已经加载过，直接返回Promise.resolve
-    return Promise.resolve(heic2any);
-  }
-
-  // 如果模块还没有加载，使用动态导入加载它
-  return import("heic2any")
-    .then((module) => {
-      // 保存模块到变量
-      heic2any = module.default || module;
-      return heic2any;
-    })
-    .catch((error) => {
-      // 加载失败的处理
-      console.error("Failed to load heic2any module.", error);
-      throw error;
-    });
-}
-
 export default {
   data() {
     return {
-      // 当前路径
+      /**
+       * 当前路径
+       * @type {string}
+       */
       currentDirectory: "/",
-      // 当前路径拆分的目录名和其相对路径
-      directories: [],
-      // 目录和文件
-      files: [],
-      // 搜索的关键字
+
+      /**
+       * 当前路径拆分的目录名和其相对路径映射
+       * @type {Array<{ displayName: string, relativePath: string }>}
+       */
+      pathMapping: [],
+
+      /**
+       * 目录和文件
+       * @type {{ folders: Array<{ name: string, lastModified: string, relativePath: string }>,
+       *          files: Array<{ name: string, length: number, lastModified: string, relativePath: string, fileType: string }> }}
+       */
+      files: {},
+
+      /**
+       * 搜索的关键字
+       * @type {string}
+       */
       filter: "",
-      // 是否多选
+
+      /**
+       * 是否多选
+       * @type {boolean}
+       */
       multiSelect: false,
-      // 已选中的文件
+
+      /**
+       * 已选中的文件
+       * @type {Array<string>}
+       */
       checkedFiles: [],
-      // 要移动的文件
+
+      /**
+       * 要移动的文件
+       * @type {Array<string>}
+       */
       cutFiles: [],
-      // 显示的列
+
+      /**
+       * 显示的列
+       * @type {Array<string>}
+       */
       columns: ["size", "lastModified"],
-      // 排序方式
+
+      /**
+       * 排序方式
+       * @type {{ key: string, direction: string }}
+       */
       sort: {
         key: "name",
         direction: "asc",
@@ -633,20 +643,9 @@ export default {
     };
   },
   methods: {
-    // 排序
-    sortBy(key) {
-      if (key !== this.sort.key) {
-        this.sort.key = key;
-        this.sort.direction = "asc";
-      } else {
-        if (this.sort.direction === "asc") {
-          this.sort.direction = "desc";
-        } else {
-          this.sort.direction = "asc";
-        }
-      }
-    },
-    // 获取文件列表
+    /**
+     * 查询所有文件
+     */
     list() {
       this.$root.loading = true;
       this.files = [];
@@ -667,7 +666,7 @@ export default {
         .then((res) => {
           if (res.success) {
             this.files = res.detail;
-            this.doSort(this.sort);
+            this.sortFilesByCriteria(this.sort);
           } else {
             if (res.msg === "没有权限") {
               if (!this.$root.hasToken(() => this.list())) {
@@ -684,7 +683,10 @@ export default {
           this.$root.loading = false;
         });
     },
-    // 搜索文件
+
+    /**
+     * 搜索文件
+     */
     search() {
       if (this.filter.trim().length === 0) {
         this.list();
@@ -712,7 +714,7 @@ export default {
         .then((res) => {
           if (res.success) {
             this.files = res.detail;
-            this.doSort(this.sort);
+            this.sortFilesByCriteria(this.sort);
           } else {
             this.$root.showModal("失败", res.msg);
           }
@@ -727,40 +729,16 @@ export default {
           this.$root.loading = false;
         });
     },
-    // 切换目录
-    changeDirectory(relativePath) {
-      this.currentDirectory = relativePath;
-      this.list();
-      this.getDirectoryHierachy();
-    },
-    // 将当前路径上的每一部分目录名拆分，保存显示名称和相对路径
-    getDirectoryHierachy() {
-      this.directories = [];
-      const displayNames = this.currentDirectory.split("/");
-      const relativePaths = [];
-      for (let i = 0; i < displayNames.length; i++) {
-        relativePaths.push(displayNames[i]);
-        const relativePath = relativePaths.join("/");
-        this.directories.push({
-          displayName: displayNames[i],
-          relativePath: relativePath.length === 0 ? "/" : relativePath,
-        });
-      }
-      this.directories[0].displayName = "Home";
-    },
-    // 获取文件所在目录
-    getParentDirectory(file) {
-      let currentDirectory = file.split("/");
-      currentDirectory.pop();
-      let parentDirectory = currentDirectory.join("/");
-      return parentDirectory.length === 0 ? "/" : parentDirectory;
-    },
-    // 上传文件
+
+    /**
+     * 上传文件
+     * @param {Event} event
+     */
     upload(event) {
       if (!this.$root.hasToken(() => this.upload(event))) {
         return;
       }
-      this.$root.message.title = "上传进度";
+      this.$root.message.title = this.$t("upload_progress");
       const modal = new Modal(this.$root.$refs.progressModal);
       modal.show();
       const formData = new FormData();
@@ -796,62 +774,28 @@ export default {
           if (res.success) {
             modal.hide();
             this.list();
-            this.$root.showModal("成功", res.msg);
+            this.$root.showModal(this.$t("success"), res.msg);
             this.$root.progress = 0;
           } else {
             modal.hide();
-            this.$root.showModal("失败", res.msg);
+            this.$root.showModal(this.$t("error"), res.msg);
             this.$root.progress = 0;
           }
         })
         .catch((err) => {
           modal.hide();
-          this.$root.showModal("错误", err.message);
+          this.$root.showModal(this.$t("error"), err.message);
           this.$root.progress = 0;
         });
     },
-    // 新建文件夹
-    createDirectory() {
-      const directoryName = this.$root.$refs.input.value;
-      if (directoryName.trim().length === 0) {
-        this.$root.showModal("提示", "文件夹名不能为空");
-        return;
-      }
-      if (!this.$root.hasToken(() => this.createDirectory())) {
-        return;
-      }
-      this.$root.loading = true;
-      axios
-        .post(
-          "file/mkdir",
-          Qs.stringify({
-            relativePath: this.currentDirectory + "/" + directoryName,
-          })
-        )
-        .then((res) => {
-          if (res.success) {
-            this.list();
-            this.$root.showModal("成功", "新建文件夹成功");
-          } else {
-            this.$root.showModal("失败", res.msg);
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
-    removeOuterQuotes(str) {
-      if (str.startsWith('"') && str.endsWith('"')) {
-        return str.slice(1, -1);
-      }
-      return str;
-    },
-    // 下载文件
-    download(relativePath, apiUrl) {
-      this.$root.message.title = "正在下载";
+
+    /**
+     * 下载
+     * @param {String|Array<string>} relativePath
+     * @param {String} api
+     */
+    download(relativePath, api) {
+      this.$root.message.title = this.$t("download_progress");
       const modal = new Modal(this.$root.$refs.progressModal);
       modal.show();
       var lastTime = new Date().getTime();
@@ -859,25 +803,10 @@ export default {
       var self = this;
       axios({
         method: "post",
-
-        // method: payload.params ? "get" : "post",
-        url: axios.defaults.baseURL + apiUrl,
+        url: axios.defaults.baseURL + api,
         data: Qs.stringify({
           relativePath: relativePath,
         }),
-        // ...(payload.params
-        //   ? { params: payload.params }
-        //   : { data: payload.data }),
-
-        // params: {
-        //   relativePath: relativePath,
-        // },
-        // // data: Qs.stringify({
-        //   relativePath: relativePath,
-        // }),
-        // data: {
-        //   relativePath: relativePath,
-        // },
         responseType: "blob",
         onDownloadProgress: (e) => {
           const current = e.loaded;
@@ -894,7 +823,6 @@ export default {
       })
         .then((response) => {
           const contentType = response.headers["content-type"];
-
           if (contentType === "application/json") {
             const reader = new FileReader(); // 创建 FileReader 对象
             reader.onload = (event) => {
@@ -909,7 +837,7 @@ export default {
           let filename =
             response.headers["content-disposition"].split("filename=")[1];
           filename = decodeURIComponent(filename);
-          saveAs(response.data, this.removeOuterQuotes(filename));
+          saveAs(response.data, removeOuterQuotes(filename));
         })
         .catch((error) => {
           modal.hide();
@@ -920,538 +848,551 @@ export default {
           modal.hide();
         });
     },
-    async clientZip() {
-      this.$root.loading = true;
-      const zipWriter = new ZipWriter(new BlobWriter("application/zip"));
-      this.checkedFiles.forEach(async (f) => {
-        var url = axios.defaults.baseURL + "file/download?relativePath=" + f;
-        await zipWriter.add(
-          url.substring(url.lastIndexOf("/") + 1),
-          new HttpReader(url)
-        );
-      });
-      var blob = await zipWriter.close();
-      saveAs(blob, "客户端打包.zip");
-      this.$root.loading = false;
-    },
+
+    /**
+     * 下载文件
+     * @param {String} relativePath
+     */
     downloadFile(relativePath) {
-      // const payload = {
-      //   params: {
-      //     relativePath: encodeURIComponent(relativePath),
-      //   },
-      // };
       this.download(relativePath, "file/download");
     },
+
+    /**
+     * 压缩并下载
+     * @param {Array<string>} relativePath
+     */
     zipAndDownload(relativePath) {
-      // const payload = {
-      //   data: {
-      //     relativePath: relativePath,
-      //   },
-      // };
       this.download(relativePath, "file/zipAndDownload");
     },
-    zip(relativePath) {
-      this.$root.loading = true;
-      axios
-        .post(
-          "file/zip",
-          {
-            relativePath: relativePath,
-          }
-          // Qs.stringify({ relativePath: relativePath })
-          // Qs.stringify({ relativePath: JSON.stringify(this.checkedFiles) })
-        )
-        .then((res) => {
-          if (res.success) {
-            this.$root.showModal("成功", "压缩成功");
-            this.list();
-          } else {
-            this.$root.showModal("成功", "压缩失败");
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
+
+    /**
+     * 创建目录
+     */
+    createDirectory() {
+      const directoryName = this.$root.$refs.input.value;
+      if (directoryName.trim().length === 0) {
+        this.$root.showModal(
+          this.$t("alert"),
+          this.$t("folder_name_cannot_be_empty")
+        );
+        return;
+      }
+      if (!this.$root.hasToken(() => this.createDirectory())) {
+        return;
+      }
+      const data = Qs.stringify({
+        relativePath: this.currentDirectory + "/" + directoryName,
+      });
+      sendRequest.call(
+        this,
+        "post",
+        "file/mkdir",
+        data,
+        (res) => {
+          this.$root.showModal(this.$t("success"), res.msg);
+          this.list();
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+        }
+      );
     },
 
-    // 压缩文件夹
-    // zipFolder(folderPath) {
-    //   this.$root.loading = true;
-    //   axios
-    //     .post("file/zip", Qs.stringify({ relativePath: folderPath }))
-    //     .then((res) => {
-    //       if (res.success) {
-    //         this.$root.showModal("成功", "压缩成功");
-    //         this.list();
-    //       } else {
-    //         this.$root.showModal("成功", "压缩失败");
-    //       }
-    //     })
-    //     .catch((err) => {
-    //       this.$root.showModal("错误", err.message);
-    //     })
-    //     .finally(() => {
-    //       this.$root.loading = false;
-    //     });
-    // },
-    // 批量打包
+    /**
+     * 压缩
+     * @param {Array<string>} relativePath
+     */
+    zip(relativePath) {
+      const data = {
+        relativePath: relativePath,
+      };
+      sendRequest.call(
+        this,
+        "post",
+        "file/zip",
+        data,
+        (res) => {
+          this.$root.showModal(this.$t("success"), res.msg);
+          this.list();
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+        }
+      );
+    },
 
-    // // 下载文件夹
-    // downloadFolder(relativePath) {
-    //   this.download(relativePath, "file/downloadFolder");
-    // },
-    // // 批量下载
-    // bulkDownload() {
-    //   this.download(this.checkedFiles.toString(), "file/bulk");
-    //   // this.download(JSON.stringify(this.checkedFiles), "file/bulk");
-    // },
-    // 删除文件
+    /**
+     * 删除文件
+     * @param {Array<string>} files
+     */
     deleteFile(files) {
       if (!this.$root.hasToken(() => this.deleteFile(files))) {
         return;
       }
-      this.$root.loading = true;
-      // const params = new URLSearchParams();
-      // params.append("relativePath", files);
-
-      axios
-        // .post("file/delete", Qs.stringify({ relativePath: files.toString() }))
-        .post("file/delete", { relativePath: files })
-        .then((res) => {
-          if (res.success) {
-            // 判断是不是搜索状态下删除的
-            if (this.filter.length === 0) {
-              this.list();
-            } else {
-              this.search(this.filter);
-            }
-            this.$root.showModal("成功", "删除成功");
-          } else {
-            this.$root.showModal("失败", res.msg);
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
-
-    // 重命名
-    rename(oldName) {
-      // 传入旧文件名
-      const newName = this.$root.$refs.input.value; // 从根组件获取输入的文件名
-      if (newName.trim().length === 0) {
-        this.$root.showModal("提示", "新文件名不能为空");
-        return;
-      }
-      if (!this.$root.hasToken(() => this.rename(oldName))) {
-        return;
-      }
-      this.$root.loading = true;
-      axios
-        .post(
-          "file/rename",
-          {
-            relativePath: oldName,
-            target: this.currentDirectory + "/" + newName,
-          }
-          // Qs.stringify({
-          //   src: oldName,
-          //   dst: this.currentDirectory + "/" + newName, // 新文件名：当前路径+新文件名
-          // })
-        )
-        .then((res) => {
-          if (res.success) {
-            this.$root.showModal("成功", res.msg);
+      const data = {
+        relativePath: files,
+      };
+      sendRequest.call(
+        this,
+        "post",
+        "file/delete",
+        data,
+        (res) => {
+          // 判断是不是搜索状态下删除的
+          if (this.filter.length === 0) {
             this.list();
           } else {
-            this.$root.showModal("失败", res.msg);
+            this.search(this.filter);
           }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
+          this.$root.showModal(this.$t("success"), res.msg);
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+        }
+      );
     },
-    // 剪切文件
+
+    /**
+     * 重命名文件
+     * @param {String} relativePath
+     */
+    rename(relativePath) {
+      // 传入旧文件名
+      const name = this.$root.$refs.input.value; // 从根组件获取输入的文件名
+      if (name.trim().length === 0) {
+        this.$root.showModal(
+          this.$t("alert"),
+          this.$t("folder_name_cannot_be_empty")
+        );
+        return;
+      }
+      if (!this.$root.hasToken(() => this.rename(relativePath))) {
+        return;
+      }
+      const data = {
+        relativePath: relativePath,
+        target: this.currentDirectory + "/" + name,
+      };
+      sendRequest.call(
+        this,
+        "post",
+        "file/rename",
+        data,
+        (res) => {
+          this.$root.showModal(this.$t("success"), res.msg);
+          this.list();
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+        }
+      );
+    },
+
+    /**
+     * 移动文件
+     */
+    move() {
+      if (this.cutFiles.length === 0) return;
+      if (!this.$root.hasToken(() => this.move())) {
+        return;
+      }
+      const data = {
+        relativePath: this.cutFiles,
+        target: this.currentDirectory,
+      };
+      sendRequest.call(
+        this,
+        "post",
+        "file/move",
+        data,
+        (res) => {
+          this.$root.showModal(this.$t("success"), res.msg);
+          this.cutFiles = [];
+          this.list();
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+          this.cutFiles = [];
+        }
+      );
+    },
+
+    /**
+     * 预览文件
+     * @param {String} fileType 预览的文件类型
+     * @param {String} relativePath 预览的文件名
+     */
+    preview(fileType, relativePath) {
+      if (fileType.includes("text")) {
+        this.$root.message.title = relativePath;
+        this.$root.message.text = "";
+        const data = Qs.stringify({ relativePath: relativePath });
+        sendRequest.call(
+          this,
+          "post",
+          "file/read",
+          data,
+          (res) => {
+            this.$root.message.text = res.detail;
+            new Modal(this.$root.$refs.textModal).show();
+          },
+          (err) => {
+            this.$root.showModal(this.$t("error"), err);
+          }
+        );
+      } else if (fileType.includes("image")) {
+        if (relativePath.split(".").pop() == "heic") {
+          this.previewHeic(relativePath);
+        } else {
+          this.$root.src = "";
+          this.$root.src =
+            axios.defaults.baseURL +
+            "file/preview?relativePath=" +
+            encodeURIComponent(relativePath);
+          new Modal(this.$root.$refs.imageModal).show();
+        }
+      }
+    },
+
+    /**
+     * 创建文件分享链接
+     * @param {String} relativePath
+     */
+    share(relativePath) {
+      sendRequest.call(
+        this,
+        "post",
+        "shareCode/add",
+        Qs.stringify({ path: relativePath }),
+        (res) => {
+          this.$root.showModal(
+            this.$t("success"),
+            location.protocol + "//" + location.host + "/files/" + res.detail
+          );
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+        }
+      );
+    },
+
+    /**
+     * 查询文件详细信息
+     * @param {String} relativePath
+     */
+    showFileStats(relativePath) {
+      sendRequest.call(
+        this,
+        "post",
+        "file/info",
+        Qs.stringify({ relativePath: relativePath }),
+        (res) => {
+          this.$root.showModal(this.$t("file_info"), res.detail);
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+        }
+      );
+    },
+
+    /**
+     * 生成图片直链
+     * @param {String} relativePath
+     */
+    generateDirectLink(relativePath) {
+      sendRequest.call(
+        this,
+        "post",
+        "file/link",
+        Qs.stringify({ relativePath: relativePath }),
+        (res) => {
+          this.$root.showModal(
+            this.$t("success"),
+            location.protocol + "//" + location.host + res.detail
+          );
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+        }
+      );
+    },
+
+    /**
+     * 客户端压缩文件
+     */
+    async zipFiles() {
+      this.$root.loading = true;
+      try {
+        const zipWriter = new ZipWriter(new BlobWriter("application/zip"));
+        const promises = this.checkedFiles.map(async (file) => {
+          const url =
+            axios.defaults.baseURL + "file/download?relativePath=" + file;
+          try {
+            await zipWriter.add(
+              url.substring(url.lastIndexOf("/") + 1),
+              new HttpReader(url)
+            );
+          } catch (error) {
+            console.log("Error while adding file:", file, error.message);
+          }
+        });
+        await zipWriter.add(
+          "hello.txt",
+          new TextReader("https://github.com/flc0105/upload")
+        );
+        await Promise.all(promises);
+        const blob = await zipWriter.close();
+        saveAs(blob, Date.now() + ".zip");
+      } catch (error) {
+        this.$root.showModal("错误", error.message);
+      } finally {
+        this.$root.loading = false;
+      }
+    },
+
+    /**
+     * 切换目录
+     * @param {String} relativePath 要切换到的目录的相对路径
+     */
+    changeDirectory(relativePath) {
+      this.currentDirectory = relativePath;
+      this.list();
+      this.getDirectoryHierachy();
+    },
+    /**
+     * 将当前路径上的每一部分目录名拆分，保存显示名称和相对路径
+     */
+    getDirectoryHierachy() {
+      this.pathMapping = [];
+      const displayNames = this.currentDirectory.split("/");
+      const relativePaths = [];
+      for (let i = 0; i < displayNames.length; i++) {
+        relativePaths.push(displayNames[i]);
+        const relativePath = relativePaths.join("/");
+        this.pathMapping.push({
+          displayName: displayNames[i],
+          relativePath: relativePath.length === 0 ? "/" : relativePath,
+        });
+      }
+      this.pathMapping[0].displayName = "Home";
+    },
+    /**
+     * 获取文件所在的父目录路径
+     * @param {string} file - 文件路径
+     * @returns {string} - 父目录路径
+     */
+    getParentDirectory(file) {
+      let currentDirectory = file.split("/");
+      currentDirectory.pop();
+      let parentDirectory = currentDirectory.join("/");
+      return parentDirectory.length === 0 ? "/" : parentDirectory;
+    },
+
+    /**
+     * 剪切文件
+     * @param {*} files 文件相对路径列表
+     */
     cut(files) {
       this.cutFiles = files;
-      this.$root.showModal("剪切成功", this.cutFiles.join("\n"));
+      this.$root.showToast(this.$t("cut_success"), this.cutFiles.join("\n"));
     },
-    // 粘贴文件
-    paste() {
-      if (this.cutFiles.length === 0) return;
-      if (!this.$root.hasToken(() => this.paste())) {
-        return;
-      }
-      this.$root.loading = true;
-      axios
-        .post(
-          "file/move",
-          {
-            relativePath: this.cutFiles,
-            target: this.currentDirectory,
-          }
-          // Qs.stringify({
-          //   src: JSON.stringify(this.cutFiles),
-          //   dst: this.currentDirectory,
-          // })
-        )
-        .then((res) => {
-          if (res.success) {
-            this.$root.showModal("成功", res.msg);
-            this.cutFiles = [];
-            this.list();
-          } else {
-            this.$root.showModal("失败", res.msg);
-            this.cutFiles = [];
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-          this.cutFiles = [];
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
-    // 预览文件
-    preview(fileType, filename) {
-      if (fileType.includes("text")) {
-        this.$root.loading = true;
-        this.$root.message.title = filename;
-        this.$root.message.text = "";
-        axios
-          .post("file/read", Qs.stringify({ relativePath: filename }))
-          .then((res) => {
-            if (res.success) {
-              this.$root.message.text = res.detail;
-              new Modal(this.$root.$refs.textModal).show();
-            } else {
-              this.$root.showModal("失败", res.msg);
-            }
-          })
-          .catch((err) => {
-            this.$root.showModal("错误", err.message);
-          })
-          .finally(() => {
-            this.$root.loading = false;
-          });
-      } else if (fileType.includes("image")) {
-        this.$root.src = "";
-        this.$root.src =
-          axios.defaults.baseURL +
-          "file/preview?relativePath=" +
-          encodeURIComponent(filename);
-        new Modal(this.$root.$refs.imageModal).show();
-      }
-    },
-    // 创建文件分享链接
-    share(path) {
-      this.$root.loading = true;
-      axios
-        .post("shareCode/add", Qs.stringify({ path: path }))
-        .then((res) => {
-          if (res.success) {
-            this.$root.showModal(
-              "分享成功",
-              location.protocol + "//" + location.host + "/files/" + res.detail
-            );
-          } else {
-            this.$root.showModal("失败", res.msg);
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
-    directoryStats(relativePath) {
-      this.$root.loading = true;
-      axios
-        .post("file/info", Qs.stringify({ relativePath: relativePath }))
-        .then((res) => {
-          if (res.success) {
-            this.$root.showModal("详细信息", res.detail);
-          } else {
-            this.$root.showModal("失败", res.msg);
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
-    // 全选
-    checkAll(event) {
+
+    /**
+     * 处理全选/全不选事件
+     * @param {Event} event - 复选框事件对象
+     */
+    handleSelectAll(event) {
       if (event.target.checked) {
-        this.files.folders.forEach((folder) => {
-          this.checkedFiles.push(folder.relativePath);
-        });
-        this.files.files.forEach((file) => {
-          this.checkedFiles.push(file.relativePath);
-        });
+        // 全选
+        this.checkedFiles = [
+          ...this.files.folders.map((folder) => folder.relativePath),
+          ...this.files.files.map((file) => file.relativePath),
+        ];
       } else {
+        // 全不选
         this.checkedFiles = [];
       }
     },
-    // 隐藏列
+    /**
+     * 切换列的显示状态
+     * @param {string} column - 列名
+     */
     hideColumn(column) {
       this.columns.includes(column)
         ? (this.columns = this.columns.filter((item) => item !== column))
         : this.columns.push(column);
     },
-    // 根据文件后缀名获取相应图标
+
+    /**
+     * 按指定条件对文件进行排序
+     * @param {Object} sort - 排序条件对象，包括 key（排序关键字）和 direction（排序方向）
+     */
+    sortFilesByCriteria(sort) {
+      const sortDirection = sort.direction === "desc" ? 1 : -1;
+
+      // 根据名称排序函数
+      const sortByName = (a, b) => {
+        const nameA = a.name.toUpperCase();
+        const nameB = b.name.toUpperCase();
+        if (nameA < nameB) return sortDirection;
+        if (nameA > nameB) return -sortDirection;
+        return 0;
+      };
+
+      // 根据时间排序函数
+      const sortByTime = (a, b) => {
+        const dateA = new Date(a.lastModified);
+        const dateB = new Date(b.lastModified);
+        const nameA = a.name.toUpperCase();
+        const nameB = b.name.toUpperCase();
+        if (dateA < dateB) return sortDirection;
+        if (dateA > dateB) return -sortDirection;
+        if (nameA < nameB) return -1;
+        if (nameA > nameB) return 1;
+        return 0;
+      };
+
+      if (sort.key === "time") {
+        // 按时间排序
+        this.files.folders.sort(sortByTime);
+        this.files.files.sort(sortByTime);
+      }
+
+      if (sort.key === "name") {
+        // 按名称排序
+        this.files.folders.sort(sortByName);
+        this.files.files.sort(sortByName);
+      }
+    },
+
+    /**
+     * 切换指定关键字的排序方向
+     * @param {string} key - 排序关键字
+     */
+    toggleSortDirectionForKey(key) {
+      // 如果指定关键字与当前排序关键字不同，则重置为指定关键字且升序排序
+      if (key !== this.sort.key) {
+        this.sort.key = key;
+        this.sort.direction = "asc";
+      } else {
+        // 如果指定关键字与当前排序关键字相同，则切换排序方向
+        if (this.sort.direction === "asc") {
+          this.sort.direction = "desc"; // 切换为降序
+        } else {
+          this.sort.direction = "asc"; // 切换为降序
+        }
+      }
+    },
+
+    /**
+     * 获取文件图标样式类名
+     * @param {string} filename - 文件名
+     * @param {string} fileType - 文件类型
+     * @returns {string} - 文件图标样式类名
+     */
     getIcon(filename, fileType) {
       const ext = filename.split(".").pop();
       const exts = {
         "bi-file-earmark-binary": ["exe"],
         "bi-file-earmark-zip": ["zip", "7z", "rar"],
-        "bi-file-earmark-code": ["py", "java", "c", "cpp", "html", "js", "css"],
+        "bi-file-earmark-code": [
+          "py",
+          "java",
+          "c",
+          "cpp",
+          "html",
+          "js",
+          "css",
+          "json",
+        ],
         "bi-file-earmark-pdf": ["pdf"],
         "bi-file-earmark-word": ["doc", "docx"],
         "bi-file-earmark-excel": ["xls", "xlsx"],
         "bi-file-earmark-ppt": ["ppt", "pptx"],
       };
-      for (const [key, value] of Object.entries(exts)) {
-        if (value.includes(ext)) {
-          return key;
+      // 检查文件后缀是否匹配已知的扩展名
+      for (const [icon, extensions] of Object.entries(exts)) {
+        if (extensions.includes(ext)) {
+          return icon;
         }
       }
-      const type = {
+      const fileTypeMapping = {
         text: "bi-file-earmark-text",
         image: "bi-file-earmark-image",
         audio: "bi-file-earmark-music",
         video: "bi-file-earmark-play",
       };
-      let icon = type[fileType.split("/")[0]];
-      if (icon != null) {
+      // 根据文件类型映射获取对应的图标样式类名
+      let icon = fileTypeMapping[fileType.split("/")[0]];
+      if (icon) {
         return icon;
       }
-      return " bi-file-earmark";
+      return "bi-file-earmark";
     },
-    // 排序
-    doSort(sort) {
-      if (sort.key === "time") {
-        // 按时间排序
-        if (sort.direction === "desc") {
-          // 降序
-          this.files.folders.sort((a, b) => {
-            const dateA = new Date(a.lastModified);
-            const dateB = new Date(b.lastModified);
-            const nameA = a.name.toUpperCase();
-            const nameB = b.name.toUpperCase();
-            // 如果日期不同，按日期排序
-            if (dateA < dateB) return 1;
-            if (dateA > dateB) return -1;
-            // 如果日期相同，按名称排序
-            if (nameA < nameB) return -1;
-            if (nameA > nameB) return 1;
-            return 0;
-          });
-          this.files.files.sort((a, b) => {
-            const dateA = new Date(a.lastModified);
-            const dateB = new Date(b.lastModified);
-            const nameA = a.name.toUpperCase();
-            const nameB = b.name.toUpperCase();
-            if (dateA < dateB) return 1;
-            if (dateA > dateB) return -1;
-            if (nameA < nameB) return -1;
-            if (nameA > nameB) return 1;
-            return 0;
-          });
-          // this.files.folders.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
-          // this.files.files.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
-        } else {
-          // 升序
-          this.files.folders.sort((a, b) => {
-            const dateA = new Date(a.lastModified);
-            const dateB = new Date(b.lastModified);
-            const nameA = a.name.toUpperCase();
-            const nameB = b.name.toUpperCase();
-            if (dateA < dateB) return -1;
-            if (dateA > dateB) return 1;
-            if (nameA < nameB) return -1;
-            if (nameA > nameB) return 1;
-            return 0;
-          });
-          this.files.files.sort((a, b) => {
-            const dateA = new Date(a.lastModified);
-            const dateB = new Date(b.lastModified);
-            const nameA = a.name.toUpperCase();
-            const nameB = b.name.toUpperCase();
-            if (dateA < dateB) return -1;
-            if (dateA > dateB) return 1;
-            if (nameA < nameB) return -1;
-            if (nameA > nameB) return 1;
-            return 0;
-          });
-          // this.files.folders.sort((a, b) => new Date(a.lastModified) - new Date(b.lastModified));
-          // this.files.files.sort((a, b) => new Date(a.lastModified) - new Date(b.lastModified));
-        }
-      }
-      if (sort.key == "name") {
-        // 按名称排序
-        if (sort.direction === "desc") {
-          // 降序
-          this.files.files.sort((a, b) => {
-            const nameA = a.name.toUpperCase();
-            const nameB = b.name.toUpperCase();
-            if (nameA < nameB) return 1;
-            if (nameA > nameB) return -1;
-            return 0;
-          });
-          this.files.folders.sort((a, b) => {
-            const nameA = a.name.toUpperCase();
-            const nameB = b.name.toUpperCase();
-            if (nameA < nameB) return 1;
-            if (nameA > nameB) return -1;
-            return 0;
-          });
-        } else {
-          // 升序
-          this.files.files.sort((a, b) => {
-            const nameA = a.name.toUpperCase();
-            const nameB = b.name.toUpperCase();
-            if (nameA < nameB) return -1;
-            if (nameA > nameB) return 1;
-            return 0;
-          });
-          this.files.folders.sort((a, b) => {
-            const nameA = a.name.toUpperCase();
-            const nameB = b.name.toUpperCase();
-            if (nameA < nameB) return -1;
-            if (nameA > nameB) return 1;
-            return 0;
-          });
-        }
-      }
-    },
-    getFileExtension(filename) {
-      return filename.slice(filename.lastIndexOf("."));
-    },
-    getFileNameFromPath(filepath) {
-      return filepath.split("/").pop();
-    },
-    generateDirectLink(relativePath) {
-      // var filename = Date.now() + this.getFileExtension(relativePath);
-      // this.$root.loading = true;
-      // axios
-      //   .post(
-      //     "file/rename",
-      //     {
-      //       relativePath: relativePath,
-      //       target: "/images/" + filename,
-      //     }
-      //     // Qs.stringify({
-      //     //   src: oldName,
-      //     //   dst: this.currentDirectory + "/" + newName, // 新文件名：当前路径+新文件名
-      //     // })
-      //   )
-      //   .then((res) => {
-      //     if (res.success) {
-      //       this.$root.showModal(
-      //         "成功",
-      //         location.protocol + "//" + location.host + "/image/" + filename
-      //       );
-      //     } else {
-      //       this.$root.showModal("失败", res.msg);
-      //     }
-      //   })
-      //   .catch((err) => {
-      //     this.$root.showModal("错误", err.message);
-      //   })
-      //   .finally(() => {
-      //     this.$root.loading = false;
-      //   });
 
-      this.$root.loading = true;
-      axios
-        .post("file/link", Qs.stringify({ relativePath: relativePath }))
-        .then((res) => {
-          if (res.success) {
-            this.$root.showModal(
-              "生成成功",
-              location.protocol + "//" + location.host + res.detail
-            );
-          } else {
-            this.$root.showModal("失败", res.msg);
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
+    /**
+     * 预览heic
+     * @param {String} relativePath
+     */
     async previewHeic(relativePath) {
       this.$root.loading = true;
       try {
         const heic2anyModule = await loadHeic2Any();
-        fetch(
+        const response = await fetch(
           axios.defaults.baseURL + "/file/download?relativePath=" + relativePath
-        )
-          .then((res) => res.blob())
-          .then((blob) =>
-            heic2anyModule({
-              blob,
-              toType: "image/jpeg",
-              //quality: 0.5,
-            })
-          )
-          .then((conversionResult) => {
-            const blob = new Blob([conversionResult], { type: "image/jpeg" });
-            const blobURL = URL.createObjectURL(blob);
-            this.$root.src = "";
-            this.$root.src = blobURL;
-            new Modal(this.$root.$refs.imageModal).show();
-          })
-          .catch((e) => {
-            this.$root.showModal("错误", e.message);
-          })
-          .finally(() => {
-            this.$root.loading = false;
-          });
+        );
+        if (!response.ok) {
+          throw new Error(
+            this.$t("network_request_error") + "：" + response.status
+          );
+        }
+        const blob = await response.blob();
+        const result = await heic2anyModule({
+          blob,
+          toType: "image/jpeg",
+        });
+        const convertedBlob = new Blob([result], {
+          type: "image/jpeg",
+        });
+        const blobURL = URL.createObjectURL(convertedBlob);
+        this.$root.src = "";
+        this.$root.src = blobURL;
+        new Modal(this.$root.$refs.imageModal).show();
       } catch (error) {
-        this.$root.showModal("错误", error.message);
+        this.$root.showModal(this.$t("error"), error.message);
+      } finally {
+        this.$root.loading = false;
       }
 
-      // fetch(
-      //   axios.defaults.baseURL + "/file/download?relativePath=" + relativePath
-      // )
-      //   .then((res) => res.blob())
-      //   .then((blob) =>
-      //     heic2any({
-      //       blob,
-      //       toType: "image/jpeg",
-      //       //quality: 0.5,
-      //     })
+      // this.$root.loading = true;
+      // try {
+      //   const heic2anyModule = await loadHeic2Any();
+      //   fetch(
+      //     axios.defaults.baseURL + "/file/download?relativePath=" + relativePath
       //   )
-      //   .then((conversionResult) => {
-      //     const blob = new Blob([conversionResult], { type: "image/jpeg" });
-      //     const blobURL = URL.createObjectURL(blob);
-      //     this.$root.src = "";
-      //     this.$root.src = blobURL;
-      //     new Modal(this.$root.$refs.imageModal).show();
-      //   })
-      //   .catch((e) => {
-      //     // see error handling section
-      //   })
-      //   .finally(() => {
-      //     this.$root.loading = false;
-      //   });
+      //     .then((res) => res.blob())
+      //     .then((blob) =>
+      //       heic2anyModule({
+      //         blob,
+      //         toType: "image/jpeg",
+      //       })
+      //     )
+      //     .then((result) => {
+      //       const blob = new Blob([result], { type: "image/jpeg" });
+      //       const blobURL = URL.createObjectURL(blob);
+      //       this.$root.src = "";
+      //       this.$root.src = blobURL;
+      //       new Modal(this.$root.$refs.imageModal).show();
+      //     })
+      //     .catch((e) => {
+      //       this.$root.showModal("错误", e.message);
+      //     })
+      //     .finally(() => {
+      //       this.$root.loading = false;
+      //     });
+      // } catch (error) {
+      //   this.$root.showModal("错误", error.message);
+      // }
     },
   },
   mounted() {
@@ -1461,7 +1402,7 @@ export default {
   watch: {
     sort: {
       handler(newValue, oldValue) {
-        this.doSort(newValue);
+        this.sortFilesByCriteria(newValue);
       },
       deep: true,
       flush: "post",
