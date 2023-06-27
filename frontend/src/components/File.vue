@@ -89,7 +89,7 @@ export default {
           }
         })
         .catch((err) => {
-          this.$root.showModal("错误", err.message);
+          this.$root.showModal(this.$t("error"), err.message);
           this.$router.push("/");
         })
         .finally(() => {
@@ -115,11 +115,11 @@ export default {
               this.$root.message.text = res.detail;
               new Modal(this.$root.$refs.textModal).show();
             } else {
-              this.$root.showModal("失败", res.msg);
+              this.$root.showModal(this.$t("error"), res.msg);
             }
           })
           .catch((err) => {
-            this.$root.showModal("错误", err.message);
+            this.$root.showModal(this.$t("error"), err.message);
           })
           .finally(() => {
             this.$root.loading = false;

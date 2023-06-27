@@ -67,10 +67,11 @@
       </ul>
     </div>
 
-    <div v-if="this.$route.path == '/log'" style="overflow-x: scroll">
+    <!-- <div v-if="this.$route.path == '/log'" style="overflow-x: scroll">
       <router-view></router-view>
     </div>
-    <router-view v-else></router-view>
+    <router-view v-else></router-view> -->
+    <router-view></router-view>
   </div>
 
   <!-- 消息框 -->

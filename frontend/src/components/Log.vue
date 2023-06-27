@@ -2,54 +2,70 @@
   <div id="alert"></div>
 
   <div class="btn-group mb-3">
-    <button class="btn btn-outline-primary" @click="list()">刷新</button>
-    <button class="btn btn-outline-primary" @click="exportLogs()">导出</button>
-    <button class="btn btn-outline-primary" @click="clearLogs()">清空</button>
+    <button class="btn btn-outline-primary" @click="list()">
+      {{ $t("refresh") }}
+    </button>
+    <button class="btn btn-outline-primary" @click="exportLogs()">
+      {{ $t("export") }}
+    </button>
+    <button class="btn btn-outline-primary" @click="clearLogs()">
+      {{ $t("clear") }}
+    </button>
   </div>
 
-  <table class="table table-hover" style="white-space: nowrap">
-    <thead>
-      <tr>
-        <th v-for="(value, key) in logs[0]" :key="key">{{ key }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="(item, index) in logs" :key="index">
-        <!-- <td v-for="(value, key) in item" :key="key">{{ value }}</td> -->
-
-        <td v-for="(value, key) in item" :key="key" :title="item[key]">
-          <template v-if="['Stack trace', '堆栈信息', 'Token'].includes(key)">
-            <a
-              href="#"
-              @click="showDetails(item[key])"
-              v-if="item[key] != null && item[key] != '{ }'"
-              >查看</a
-            ><span v-else>null</span>
-          </template>
-          <template v-else>{{ value }}</template>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div style="overflow-x: scroll; height: 450px">
+    <table class="table table-hover" style="white-space: nowrap">
+      <thead>
+        <tr>
+          <th v-for="(value, key) in logs[0]" :key="key">{{ key }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(item, index) in logs" :key="index">
+          <td v-for="(value, key) in item" :key="key" :title="item[key]">
+            <template
+              v-if="
+                [
+                  'Token',
+                  'Referer',
+                  'Parameter type',
+                  '访问来源',
+                  '参数类型',
+                ].includes(key)
+              "
+            >
+              <a
+                href="#"
+                class="link-primary"
+                @click="showDetails(item[key])"
+                v-if="item[key] != null && item[key] != '{ }'"
+                >{{ $t("view") }}</a
+              ><span v-else>null</span>
+            </template>
+            <template v-else>{{ value }}</template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <style scoped>
-/* .table th,
+th {
+  text-align: center;
+}
 td {
   text-align: center;
-} */
-
-td {
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-style: italic;
 }
 </style>
 
 <script>
 import axios from "axios";
-import Qs from "qs";
 
 import "bootstrap/dist/js/bootstrap.bundle";
 import "file-saver";
@@ -68,18 +84,18 @@ export default {
           if (res.success) {
             this.logs = res.detail;
           } else {
-            this.$root.showModal("失败", res.msg);
+            this.$root.showModal(this.$t("error"), res.msg);
           }
         })
         .catch((err) => {
-          this.$root.showModal("错误", err.message);
+          this.$root.showModal(this.$t("error"), err.message);
         })
         .finally(() => {
           this.$root.loading = false;
         });
     },
     showDetails(value) {
-      this.$root.showModal("查看", value);
+      this.$root.showModal(this.$t("view"), value);
     },
     // 新建文件夹
     clearLogs() {
@@ -92,13 +108,13 @@ export default {
         .then((res) => {
           if (res.success) {
             this.list();
-            this.$root.showModal("成功", res.msg);
+            this.$root.showModal(this.$t("success"), res.msg);
           } else {
-            this.$root.showModal("失败", res.msg);
+            this.$root.showModal(this.$t("error"), res.msg);
           }
         })
         .catch((err) => {
-          this.$root.showModal("错误", err.message);
+          this.$root.showModal(this.$t("error"), err.message);
         })
         .finally(() => {
           this.$root.loading = false;

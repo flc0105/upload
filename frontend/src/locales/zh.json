@@ -47,6 +47,9 @@
   "invalid": "无效",
   "file_size": "文件大小",
   "file_type": "文件类型",
+  "clear": "清空",
+  "export": "导出",
+  "view": "查看",
 
   "command": "命令",
   "execute": "执行",
