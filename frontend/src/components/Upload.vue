@@ -12,7 +12,7 @@
       name="file"
       id="file"
       class="d-none"
-      @change="(event) => addFromClick(event)"
+      @change="(event) => click(event)"
       multiple
     />
 
@@ -21,8 +21,8 @@
       v-show="files.length == 0"
       onclick="document.getElementById('file').value = null; document.getElementById('file').click()"
     >
-      <p class="title">未选择文件/文件夹</p>
-      <p class="subtile">支持拖拽到此区域上传，支持选择多个文件/文件夹</p>
+      <p class="title">{{ $t("no_files_selected") }}</p>
+      <p class="subtile">{{ $t("support_drag_and_drop_upload") }}</p>
     </div>
     <div v-show="files.length != 0">
       <div class="table-wrapper">
@@ -30,9 +30,9 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>文件名</th>
-              <th>大小</th>
-              <th>操作</th>
+              <th>{{ $t("filename") }}</th>
+              <th>{{ $t("size") }}</th>
+              <th>{{ $t("action") }}</th>
             </tr>
           </thead>
           <tbody>
@@ -55,7 +55,7 @@
       </div>
       <div class="text-center">
         <button class="btn btn-sm btn-outline-primary mt-2" @click="upload">
-          上传文件
+          {{ $t("upload_files") }}
         </button>
       </div>
     </div>
@@ -132,7 +132,7 @@ export default {
         }
       });
     },
-    addFromClick(e) {
+    click(e) {
       let files = Array.from(e.target.files);
       files.forEach((file) => {
         this.files.push(file);
@@ -159,7 +159,7 @@ export default {
       });
     },
     upload() {
-      this.$root.message.title = "上传进度";
+      this.$root.message.title = this.$t("upload_progress");
       const modal = new Modal(this.$root.$refs.progressModal);
       modal.show();
       const formData = new FormData();
@@ -193,17 +193,17 @@ export default {
           if (res.success) {
             modal.hide();
             this.files = [];
-            this.$root.showModal("成功", res.msg);
+            this.$root.showModal(this.$t("success"), res.msg);
             this.$root.progress = 0;
           } else {
             modal.hide();
-            this.$root.showModal("失败", res.msg);
+            this.$root.showModal(this.$t("error"), res.msg);
             this.$root.progress = 0;
           }
         })
         .catch((err) => {
           modal.hide();
-          this.$root.showModal("错误", err.message);
+          this.$root.showModal(this.$t("error"), err.message);
           this.$root.progress = 0;
         });
     },

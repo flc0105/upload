@@ -299,55 +299,7 @@
     </div>
   </div>
 
-  <!-- 命令模态框 -->
-  <div class="modal fade" tabindex="-1" ref="commandModal">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">{{ $t("command") }}</h5>
-          <button
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <div class="input-group">
-              <input
-                class="form-control monospace"
-                :placeholder="this.$t('command')"
-                ref="command"
-                @keyup.enter="$refs.btnExecute.click()"
-              />
-              <button
-                type="submit"
-                class="btn btn-outline-primary"
-                ref="btnExecute"
-                @click="executeCommand"
-              >
-                {{ $t("execute") }}
-              </button>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <textarea
-              class="form-control monospace"
-              rows="12"
-              ref="executionResult"
-            ></textarea>
-          </div>
-        </div>
-
-        <!-- <div class="modal-footer">
-          <button class="btn btn-outline-primary" data-bs-dismiss="modal">
-            关闭
-          </button>
-        </div> -->
-      </div>
-    </div>
-  </div>
+  <Command ref="commandModal" />
 </template>
 
 <style scoped>
@@ -367,7 +319,15 @@ import Cookies from "js-cookie";
 import ClipboardJS from "clipboard";
 import { getCurrentTime } from "./utils/utils.js";
 
+// import watermark from "./utils/watermark.js";
+
+import Command from "./components/Command.vue";
+
 export default {
+  components: {
+    // watermark,
+    Command,
+  },
   data() {
     return {
       /**
@@ -536,9 +496,7 @@ export default {
      */
     handleShortcutKeyPress(event) {
       if (event.ctrlKey && event.altKey && event.key === "c") {
-        this.$refs.executionResult.value = "";
-        new Modal(this.$refs.commandModal).show();
-        this.$refs.command.focus();
+        this.$refs.commandModal.show();
       }
     },
 
@@ -578,20 +536,19 @@ export default {
     });
   },
   mounted() {
+    // watermark.set("https://github.com/flc0105/upload");
+
     // 监听图片预览框的隐藏事件，并清除图片资源
     this.$refs.imageModal.addEventListener("hidden.bs.modal", () => {
       this.src = "";
     });
     // 注册快捷键事件的监听器
     window.addEventListener("keydown", this.handleShortcutKeyPress);
-    // 注册命令模态框显示事件的监听器
-    this.$refs.commandModal.addEventListener("shown.bs.modal", () => {
-      this.$refs.command.focus();
-    });
   },
   beforeDestroy() {
     //取消快捷键事件的监听器
     window.removeEventListener("keydown", this.handleShortcutKeyPress);
+    // watermark.set("");
   },
 };
 </script>

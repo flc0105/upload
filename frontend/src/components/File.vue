@@ -1,23 +1,23 @@
 <template>
   <div class="card">
-    <div class="card-header">文件分享</div>
+    <div class="card-header">{{ $t("file_share") }}</div>
     <div class="card-body text-center">
       <table class="table table-borderless table-sm">
         <tbody>
           <tr>
-            <td>文件名：</td>
+            <td>{{ $t("filename") }}:&nbsp;</td>
             <td>{{ file.name }}</td>
           </tr>
           <tr>
-            <td>文件大小：</td>
+            <td>{{ $t("file_size") }}:&nbsp;</td>
             <td>{{ $root.formatBytes(file.length) }}</td>
           </tr>
           <tr>
-            <td>修改时间：</td>
+            <td>{{ $t("last_modified") }}:&nbsp;</td>
             <td>{{ file.lastModified }}</td>
           </tr>
           <tr>
-            <td>文件类型：</td>
+            <td>{{ $t("file_type") }}:&nbsp;</td>
             <td>{{ file.fileType }}</td>
           </tr>
         </tbody>
@@ -26,7 +26,7 @@
         class="btn btn-sm btn-outline-primary mt-3"
         @click="download(file.relativePath)"
       >
-        下载
+        {{ $t("download") }}
       </button>
       <button
         v-if="
@@ -36,7 +36,7 @@
         class="btn btn-sm btn-outline-primary mt-3 ms-1"
         @click="preview(file.fileType, file.relativePath)"
       >
-        预览
+        {{ $t("preview") }}
       </button>
     </div>
   </div>

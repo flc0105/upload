@@ -2,10 +2,10 @@
   <table class="table">
     <thead>
       <tr>
-        <th>分享码</th>
-        <th>文件路径</th>
-        <th class="status">状态</th>
-        <th>操作</th>
+        <th>{{ $t("share_code") }}</th>
+        <th>{{ $t("relative_path") }}</th>
+        <th class="status">{{ $t("status") }}</th>
+        <th>{{ $t("action") }}</th>
       </tr>
     </thead>
     <tbody>
@@ -17,8 +17,10 @@
           <i>{{ code.path }}</i>
         </td>
         <td class="status">
-          <span class="badge text-bg-success" v-if="code.valid">有效</span>
-          <span class="badge text-bg-danger" v-else>无效</span>
+          <span class="badge text-bg-success" v-if="code.valid">{{
+            $t("valid")
+          }}</span>
+          <span class="badge text-bg-danger" v-else>{{ $t("invalid") }}</span>
         </td>
         <td>
           <a
@@ -83,11 +85,11 @@ export default {
           if (res.success) {
             this.codes = res.detail;
           } else {
-            this.$root.showModal("失败", res.msg);
+            this.$root.showModal(this.$t("error"), res.msg);
           }
         })
         .catch((err) => {
-          this.$root.showModal("错误", err.message);
+          this.$root.showModal(this.$t("error"), err.message);
         })
         .finally(() => {
           this.$root.loading = false;
@@ -104,13 +106,13 @@ export default {
         .then((res) => {
           if (res.success) {
             this.list();
-            this.$root.showModal("成功", "删除成功");
+            this.$root.showModal(this.$t("success"), res.msg);
           } else {
-            this.$root.showModal("失败", res.msg);
+            this.$root.showModal(this.$t("error"), res.msg);
           }
         })
         .catch((err) => {
-          this.$root.showModal("错误", err.message);
+          this.$root.showModal(this.$t("error"), err.message);
         })
         .finally(() => {
           this.$root.loading = false;

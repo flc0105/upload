@@ -137,14 +137,14 @@
           >
             {{ $t("zip") }}
           </button>
-          <button
+          <!-- <button
             v-if="multiSelect"
             :disabled="checkedFiles.length == 0"
             class="btn btn-outline-primary"
             @click="zipFiles()"
           >
             {{ $t("zip_files") }}
-          </button>
+          </button> -->
         </div>
       </div>
       <div class="files-right">

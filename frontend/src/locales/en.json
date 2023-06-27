@@ -38,6 +38,16 @@
   "cut_success": "Cut successfully.",
   "file_info": "File information",
   "network_request_error": "Network request error",
+  "no_files_selected": "No file/folder selected",
+  "support_drag_and_drop_upload": "Support drag and drop to this area for uploading, support selecting multiple files/folders",
+  "share_code": "Share code",
+  "relative_path": "Relative path",
+  "status": "Status",
+  "valid": "Valid",
+  "invalid": "Invalid",
+  "file_size": "File size",
+  "file_type": "File type",
+
   "command": "Command",
   "execute": "Execute",
   "verification": "Verification",
@@ -62,6 +72,6 @@
   "syntax_highlighting": "Syntax highlighting",
   "copy": "Copy",
   "download": "Download",
-  "submit_changes": "Submit changes",
+  "submit_changes": "Submit",
   "delete": "Delete"
 }

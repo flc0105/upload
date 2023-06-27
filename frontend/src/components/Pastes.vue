@@ -25,14 +25,14 @@
 
     <div class="col-auto">
       <select class="form-select mb-2" ref="select">
-        <option value="10" :selected="$root.noToken()">
+        <option value="10" :selected="$root.isTokenMissing()">
           10 {{ $t("minutes") }}
         </option>
         <option value="60">1 {{ $t("hours") }}</option>
         <option value="1440">1 {{ $t("days") }}</option>
         <option value="10080">1 {{ $t("weeks") }}</option>
         <option value="-1">{{ $t("burn_after_reading") }}</option>
-        <option value="0" :selected="!$root.noToken()">
+        <option value="0" :selected="!$root.isTokenMissing()">
           {{ $t("never_expires") }}
         </option>
         <!-- 只要有名为token的Cookie就默认选中永不过期，但不会去验证token -->
@@ -257,7 +257,7 @@ export default {
           )
           .then((res) => {
             if (res.success) {
-              if (this.$root.noToken()) {
+              if (this.$root.isTokenMissing()) {
                 this.fetchTokenProtectedEndpoints();
               } else {
                 this.endpoints = [];
@@ -277,7 +277,7 @@ export default {
     this.list();
     greet();
     /*
-    if (this.$root.noToken()) {
+    if (this.$root.isTokenMissing()) {
       this.fetchTokenProtectedEndpoints();
     }
 
