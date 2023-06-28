@@ -36,7 +36,8 @@ public class TokenController {
     @PostMapping("/get")
     public Result<?> get(@RequestParam("password") String password, @RequestParam("remark") Optional<String> remark, HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (this.password.equals(password)) {
-            String token = remark.map(JwtUtil::generateToken).orElseGet(JwtUtil::generateToken);
+            String token = JwtUtil.generateToken(remark.orElseGet(() -> RequestUtil.getClientBrowser(request)));
+            //String token = remark.map(JwtUtil::generateToken).orElseGet(JwtUtil::generateToken);
             CookieUtil.addCookie("token", token, request, response);
             return ResponseUtil.buildSuccessResult("query.success", token);
         } else {

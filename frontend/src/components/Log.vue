@@ -1,7 +1,7 @@
 <template id="share-list">
   <div id="alert"></div>
 
-  <div class="btn-group mb-3">
+  <!-- <div class="btn-group mb-3">
     <button class="btn btn-outline-primary" @click="list()">
       {{ $t("refresh") }}
     </button>
@@ -11,9 +11,9 @@
     <button class="btn btn-outline-primary" @click="clearLogs()">
       {{ $t("clear") }}
     </button>
-  </div>
+  </div> -->
 
-  <div style="overflow-x: scroll; height: 450px">
+  <div style="overflow-x: scroll; height: 460px">
     <table class="table table-hover" style="white-space: nowrap">
       <thead>
         <tr>
@@ -97,7 +97,7 @@ export default {
     showDetails(value) {
       this.$root.showModal(this.$t("view"), value);
     },
-    // 新建文件夹
+    // 清空日志
     clearLogs() {
       if (!this.$root.hasToken(() => this.clearLogs())) {
         return;
@@ -120,6 +120,7 @@ export default {
           this.$root.loading = false;
         });
     },
+    // 导出日志
     exportLogs() {
       var blob = new Blob([JSON.stringify(this.logs, null, 2)], {
         type: "text/plain;charset=utf-8",

@@ -3,10 +3,10 @@
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>操作</th>
-          <th>接口地址</th>
-          <th>管理员</th>
-          <th>匿名用户</th>
+          <th>{{ $t("api_name") }}</th>
+          <th>{{ $t("api_url") }}</th>
+          <th>{{ $t("admin") }}</th>
+          <th>{{ $t("anonymous") }}</th>
         </tr>
       </thead>
       <tbody>
@@ -52,11 +52,11 @@ export default {
           if (res.success) {
             this.permissions = res.detail;
           } else {
-            this.$root.showModal("失败", res.msg);
+            this.$root.showModal(this.$t("error"), res.msg);
           }
         })
         .catch((err) => {
-          this.$root.showModal("错误", err.message);
+          this.$root.showModal(this.$t("error"), err.message);
         })
         .finally(() => {
           this.$root.loading = false;
@@ -70,13 +70,13 @@ export default {
         })
         .then((res) => {
           if (res.success) {
-            this.$root.showToast(path, "修改权限成功");
+            this.$root.showToast(this.$t("success"), res.msg);
           } else {
-            this.$root.showModal(path, res.msg);
+            this.$root.showModal(this.$t("error"), res.msg);
           }
         })
         .catch((err) => {
-          this.$root.showModal("错误", err.message);
+          this.$root.showModal(this.$t("error"), err.message);
         })
         .finally(() => {
           this.$root.loading = false;

@@ -49,4 +49,14 @@ public class Permission {
     public void setDesc(String desc) {
         this.desc = desc;
     }
+
+    @Override
+    public String toString() {
+        return "Permission{" +
+                "id=" + id +
+                ", path='" + path + '\'' +
+                ", isAdmin=" + isAdmin +
+                ", desc='" + desc + '\'' +
+                '}';
+    }
 }

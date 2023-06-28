@@ -45,4 +45,14 @@ public class ShareCode {
     public void setValid(boolean valid) {
         isValid = valid;
     }
+
+    @Override
+    public String toString() {
+        return "ShareCode{" +
+                "id=" + id +
+                ", code='" + code + '\'' +
+                ", path='" + path + '\'' +
+                ", isValid=" + isValid +
+                '}';
+    }
 }

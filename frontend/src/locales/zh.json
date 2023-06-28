@@ -50,7 +50,12 @@
   "clear": "清空",
   "export": "导出",
   "view": "查看",
-
+  "configuration": "修改配置",
+  "enter_configuration_value": "请输入配置项“{item}”的新值",
+  "api_name": "接口名称",
+  "api_url": "接口地址",
+  "admin": "管理员",
+  "anonymous": "匿名用户",
   "command": "命令",
   "execute": "执行",
   "verification": "验证",

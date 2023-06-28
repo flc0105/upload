@@ -1,6 +1,6 @@
 <template>
   <div id="alert"></div>
-  <h2 class="pt-2 pb-2 border-bottom">服务器信息</h2>
+  <h2 class="pt-2 pb-2 border-bottom">{{ $t("server_info") }}</h2>
 
   <div class="row g-4 py-5 row-cols-1 row-cols-lg-4">
     <div class="col" v-for="(value, key) in info" :key="key">
@@ -15,9 +15,8 @@
     </div>
   </div>
 
-  <h2 class="pt-2 pb-2 border-bottom">配置信息</h2>
+  <h2 class="pt-2 pb-2 border-bottom">{{ $t("configuration") }}</h2>
 
-  <!-- <div class="row row-cols-4 g-4 py-4"> -->
   <div class="row g-4 py-5 row-cols-1 row-cols-lg-4">
     <div class="col" v-for="(value, key) in config" :key="key">
       <div class="card rounded-3 shadow-sm" style="min-height: 10rem">
@@ -50,8 +49,8 @@
                 @click="
                   $root.inputValue = value;
                   $root.showInput(
-                    '修改配置',
-                    '输入配置项【' + key + '】的新值',
+                    $t('update_configuration'),
+                    $t('enter_configuration_value', { item: key }),
                     function () {
                       update(key, parseValue($root.$refs.input.value));
                     }
@@ -72,7 +71,6 @@
 
 <script>
 import axios from "axios";
-import Qs from "qs";
 
 import "bootstrap/dist/js/bootstrap.bundle";
 export default {
@@ -91,11 +89,11 @@ export default {
           if (res.success) {
             this.info = res.detail;
           } else {
-            this.$root.showModal("失败", res.msg);
+            this.$root.showModal(this.$t("error"), res.msg);
           }
         })
         .catch((err) => {
-          this.$root.showModal("错误", err.message);
+          this.$root.showModal(this.$t("error"), err.message);
         })
         .finally(() => {
           this.$root.loading = false;
@@ -110,11 +108,11 @@ export default {
           if (res.success) {
             this.config = res.detail;
           } else {
-            this.$root.showModal("失败", res.msg);
+            this.$root.showModal(this.$t("error"), res.msg);
           }
         })
         .catch((err) => {
-          this.$root.showModal("错误", err.message);
+          this.$root.showModal(this.$t("error"), err.message);
         })
         .finally(() => {
           this.$root.loading = false;
@@ -129,14 +127,14 @@ export default {
         })
         .then((res) => {
           if (res.success) {
-            this.$root.showModal("成功", "修改成功");
+            this.$root.showModal(this.$t("success"), res.msg);
             this.listConfig();
           } else {
-            this.$root.showModal("失败", res.msg);
+            this.$root.showModal(this.$t("error"), res.msg);
           }
         })
         .catch((err) => {
-          this.$root.showModal("错误", err.message);
+          this.$root.showModal(this.$t("error"), err.message);
         })
         .finally(() => {
           this.$root.loading = false;
@@ -144,7 +142,7 @@ export default {
     },
 
     showDetails(value) {
-      this.$root.showModal("查看", value);
+      this.$root.showModal(this.$t("view"), value);
     },
     parseValue(value) {
       // 尝试解析为布尔值
