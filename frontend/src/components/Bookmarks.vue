@@ -1,42 +1,15 @@
 <template>
-  <input
-    type="file"
-    name="file"
-    id="file"
-    class="d-none"
-    @change="(event) => importBookmarks(event)"
-    multiple
-  />
-
-  <div class="mb-2 custom-btn-group">
-    <!-- <input type="radio" id="radio" class="btn-check" autocomplete="off" />
-    <label
-      class="btn btn-outline-primary"
-      for="radio"
-      @click="
-        this.currentTags = [];
-        list();
-      "
-      >All</label
-    > -->
-
-    <div v-for="tag in tags" :key="tag" class="d-inline">
-      <input
-        type="checkbox"
-        class="btn-check"
-        :id="tag.id"
-        :value="tag.id"
-        v-model="this.currentTags"
-        autocomplete="off"
-        @change="findByTags()"
+  <div>
+    <ul>
+      <bookmark-item
+        v-for="bookmark in bookmarks"
+        :bookmark="bookmark"
+        :key="bookmark.name"
       />
-      <label class="btn btn-outline-primary" :for="tag.id">{{
-        tag.title
-      }}</label>
-    </div>
+    </ul>
   </div>
 
-  <div class="input-group mb-2">
+  <!-- <div class="input-group mb-2">
     <input
       class="form-control"
       v-model="url"
@@ -58,34 +31,43 @@
       <i class="bi bi-three-dots-vertical"></i>
       <ul class="dropdown-menu">
         <li>
-          <a
-            class="dropdown-item"
-            onclick="document.getElementById('file').value=null; document.getElementById('file').click()"
-            >导入</a
-          >
-        </li>
-        <li>
-          <a class="dropdown-item" @click="exportBookmarks()">导出</a>
-        </li>
-        <li>
-          <a class="dropdown-item" @click="updateAll()">更新</a>
+          <a class="dropdown-item">...</a>
         </li>
       </ul>
     </button>
-  </div>
+  </div> -->
+
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" v-for="(value, key) in mapping" :key="key">
+        <a v-if="isActive(key)">{{ key }}</a>
+        <router-link v-else :to="`/bookmark${value}`" class="link-primary">{{
+          key
+        }}</router-link>
+      </li>
+    </ol>
+  </nav>
+
   <table class="table table-hover table-borderless border shadow-sm">
     <tbody>
-      <tr v-for="bookmark in bookmarks" :key="bookmark">
+      <tr v-for="bookmark in page" :key="bookmark">
         <td class="text-truncate" style="max-width: 200px">
-          <img
-            v-if="bookmark.icon"
-            class="icon"
-            v-bind:src="'data:image/jpeg;base64,' + bookmark.icon"
-          />
-          <img v-else class="icon" src="/vite.svg" />
-          <span v-if="bookmark.title" class="align-middle">{{
-            bookmark.title
-          }}</span>
+          <i
+            v-if="bookmark.type == 'bookmark'"
+            class="bi bi-file-earmark me-2"
+          ></i>
+          <i v-else class="bi bi-folder2 me-2"></i>
+          <span v-if="bookmark.name"
+            ><!--class="align-middle"-->
+            <router-link
+              :to="appendPath(bookmark.name)"
+              v-if="bookmark.type == 'directory'"
+              class="link-primary"
+              >{{ bookmark.name }}</router-link
+            >
+
+            <a v-else>{{ bookmark.name }}</a>
+          </span>
           <span v-else class="align-middle text-muted"
             ><i>{{ extractDomain(bookmark.url) }}</i></span
           >
@@ -105,39 +87,6 @@
                   >打开</a
                 >
               </li>
-              <li>
-                <a
-                  class="dropdown-item"
-                  id="btnCopy"
-                  :data-clipboard-text="bookmark.url"
-                  >复制</a
-                >
-              </li>
-              <li>
-                <hr class="dropdown-divider" />
-              </li>
-              <li>
-                <a
-                  class="dropdown-item"
-                  @click="$root.showConfirm(() => remove(bookmark.id))"
-                  >删除</a
-                >
-              </li>
-              <li>
-                <a
-                  class="dropdown-item"
-                  @click="
-                    $root.inputValue = bookmark.title;
-                    $root.showInput('修改标题', '输入新标题', function () {
-                      rename(bookmark.id);
-                    });
-                  "
-                  >修改</a
-                >
-              </li>
-              <li>
-                <a class="dropdown-item" @click="update(bookmark.id)">更新</a>
-              </li>
             </ul>
           </div>
         </td>
@@ -154,24 +103,6 @@
   vertical-align: middle;
 }
 
-.custom-btn-group :not(:first-child):not(:last-child) .btn {
-  border-radius: 0 !important;
-  border-left: 0 !important;
-  /* background: black !important; */
-}
-
-.custom-btn-group :first-child .btn {
-  /* border-right: 0 !important; */
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
-.custom-btn-group :last-child .btn {
-  border-left: 0 !important;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
 @media screen and (max-width: 768px) {
   .url {
     display: none;
@@ -186,15 +117,127 @@ import "bootstrap/dist/js/bootstrap.bundle";
 import "file-saver";
 
 export default {
+  name: "BookmarkList",
   data() {
     return {
-      bookmarks: {}, // 书签
+      page: [],
+      mapping: {},
+      bookmarks: "",
+      currentId: 0,
       url: "", // 输入的url
-      tags: "", //全部tag
-      currentTags: [], // 当前已选中tag
     };
   },
   methods: {
+    /**
+     * breadcrumb显示的链接是否应该处于激活状态
+     * 检查给定的键是否与当前路径匹配
+     * @param {string} key - 要检查的键
+     * @returns {boolean} - 如果匹配则为 true，否则为 false
+     */
+    isActive(key) {
+      const path = this.$route.params.path;
+      if (path.length === 0) {
+        // 如果路径为空，则必须匹配 "Home"
+        return key === "Home";
+      } else {
+        // 否则必须匹配路径中的最后一个元素
+        return key === path[path.length - 1];
+      }
+    },
+    /**
+     * 在当前路径后追加新的路径
+     * @param {string} path - 要追加的路径
+     * @returns {string} - 追加后的新路径
+     */
+    appendPath(path) {
+      // 获取当前路由的路径
+      const currentPath = this.$route.path;
+      // 判断当前路径是否已以斜杠结尾
+      const newPath = currentPath.endsWith("/")
+        ? currentPath + path
+        : currentPath + "/" + path;
+      return newPath;
+    },
+    /**
+     * 创建路径映射字典
+     * @param {string[]} pathArray - 路径数组
+     * @returns {Object} - 路径映射字典对象
+     */
+    createPathMapping(pathArray) {
+      const pathMapping = {};
+
+      let path = "";
+      for (const element of pathArray) {
+        path += `/${element}`;
+        pathMapping[element] = path;
+      }
+
+      //return pathMapping;
+      const baseMapping = { Home: "/" };
+      return { ...baseMapping, ...pathMapping };
+    },
+    /**
+     * 根据路径查找对应的书签
+     * @param {Bookmark[]} bookmarks - 书签数组
+     * @param {string[]} path - 路径数组
+     * @returns {Bookmark[]} - 匹配路径的书签数组
+     */
+    findBookmarksByPath(bookmarks, path) {
+      // 递归查找目录
+      function find(bookmarks, pathArr) {
+        if (pathArr.length === 0) {
+          return JSON.parse(JSON.stringify(bookmarks));
+        }
+
+        const currentDir = pathArr[0];
+        const nextPathArr = pathArr.slice(1);
+
+        for (const bookmark of bookmarks) {
+          if (bookmark.type === "directory" && bookmark.name === currentDir) {
+            return JSON.parse(
+              JSON.stringify(find(bookmark.children, nextPathArr))
+            );
+          }
+        }
+
+        // 目录不存在
+        return [];
+      }
+      const result = find(bookmarks, path);
+      return result;
+    },
+
+    getIdByPath(bookmarks, pathArr) {
+      if (pathArr.length === 0) {
+        return 0;
+      }
+
+      const currentDir = pathArr[0];
+      const nextPathArr = pathArr.slice(1);
+
+      for (const bookmark of bookmarks) {
+        if (bookmark.type === "directory" && bookmark.name === currentDir) {
+          if (nextPathArr.length === 0) {
+            return bookmark.id; // 如果已经匹配到最后一个路径，则返回当前节点的 id
+          }
+
+          return this.getIdByPath(bookmark.children, nextPathArr); // 递归查找下一级目录
+        }
+      }
+
+      return null; // 目录不存在
+    },
+
+    /**
+     * 根据给定路径数组创建路径映射并存储在 mapping 属性中，同时查找给定路径下的书签并存储在 page 属性中
+     * @param {string[]} pathArray - 路径数组
+     */
+    processPathArray(pathArray) {
+      this.mapping = this.createPathMapping(pathArray);
+      this.page = this.findBookmarksByPath(this.bookmarks, pathArray);
+      console.log(this.page);
+    },
+
     // 判断是不是json数据
     isJSON(str) {
       try {
@@ -213,242 +256,10 @@ export default {
       }
     },
     // 获取书签列表
-    list() {
-      if (this.currentTags.length != 0) {
-        this.findByTags();
-        return;
-      }
-
+    async list() {
       this.$root.loading = true;
-      axios
-        .post("bookmark/list")
-        .then((res) => {
-          if (res.success) {
-            this.bookmarks = res.detail;
-          } else {
-            this.$root.showModal("失败", res.msg);
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
-    // 添加书签
-    add() {
-      if (this.url.trim().length === 0) {
-        this.$root.showModal("提示", "URL不能为空");
-        return;
-      }
-      this.$root.loading = true;
-      axios
-        .post("bookmark/add", Qs.stringify({ url: this.url }))
-        .then((res) => {
-          if (res.success) {
-            this.list();
-            this.addTags(res.detail);
-            this.update(res.detail);
-          } else {
-            this.$root.showModal("添加失败", res.msg);
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.url = "";
-          this.$root.loading = false;
-        });
-    },
-    // 删除书签
-    remove(id) {
-      if (!this.$root.hasToken(() => this.remove(id))) {
-        return;
-      }
-      this.$root.loading = true;
-      axios
-        .post("bookmark/delete", Qs.stringify({ id: id }))
-        .then((res) => {
-          if (res.success) {
-            this.$root.showModal("成功", "删除成功");
-            this.list();
-          } else {
-            this.$root.showModal("失败", "删除失败");
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
-    // 修改书签标题
-    rename(id) {
-      if (this.$root.$refs.input.value.trim().length === 0) {
-        this.$root.showModal("提示", "标题不能为空");
-        return;
-      }
-      this.$root.loading = true;
-      axios
-        .post(
-          "bookmark/modify",
-          Qs.stringify({ id: id, title: this.$root.$refs.input.value })
-        )
-        .then((res) => {
-          if (res.success) {
-            this.$root.showModal("成功", "修改成功");
-            this.list();
-          } else {
-            this.$root.showModal("失败", "修改失败");
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
-    // 更新书签
-    update(id) {
-      this.$root.loading = true;
-      axios
-        .post("bookmark/update", Qs.stringify({ id: id }))
-        .then((res) => {
-          if (res.success) {
-            this.$root.showModal("成功", "更新成功");
-            this.list();
-          } else {
-            this.$root.showModal("失败", "更新失败");
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
-    // 添加标签
-    addTags(id) {
-      this.$root.loading = true;
-      axios
-        .post(
-          "bookmark/addTags",
-          Qs.stringify({ bookmarkId: id, tagIds: this.currentTags.join(",") })
-        )
-        .then((res) => {
-          if (res.success) {
-          } else {
-            console.log("添加标签失败：" + res.msg);
-          }
-        })
-        .catch((err) => {
-          console.log("添加标签失败：" + err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
-    // 导入书签
-    importBookmarks(event) {
-      this.$root.loading = true;
-      var reader = new FileReader();
-      reader.readAsText(event.target.files[0]);
-      reader.onload = (e) => {
-        var data = e.target.result;
-        if (!this.isJSON(data)) {
-          this.$root.showModal("错误", "不是合法的json数据");
-          this.$root.loading = false;
-          return;
-        }
-        axios
-          .post("bookmark/bulkAdd", Qs.stringify({ data: data }))
-          .then((res) => {
-            if (res.success) {
-              this.list();
-              this.$root.showModal("成功", res.msg);
-            } else {
-              this.$root.showModal("失败", res.msg);
-            }
-          })
-          .catch((err) => {
-            this.$root.showModal("错误", err.message);
-          })
-          .finally(() => {
-            this.$root.loading = false;
-          });
-      };
-    },
-    // 导出书签
-    exportBookmarks() {
-      this.$root.loading = true;
-      var bookmarks = [];
-      for (const [key, value] of Object.entries(this.bookmarks)) {
-        var obj = new Object();
-        obj.title = value.title;
-        obj.url = value.url;
-        bookmarks.push(obj);
-      }
-      var json = JSON.stringify(bookmarks, null, 2);
-      var blob = new Blob([json], { type: "text/plain;charset=utf-8" });
-      saveAs(blob, "bookmarks.json");
-      this.$root.loading = false;
-    },
-    // 更新全部书签
-    updateAll() {
-      this.$root.loading = true;
-      axios
-        .post("bookmark/updateAll")
-        .then((res) => {
-          if (res.success) {
-            this.list();
-            this.$root.showModal("成功", res.msg);
-          } else {
-            this.$root.showModal("失败", res.msg);
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
-    // 获取tags列表
-    listTags() {
-      this.$root.loading = true;
-      axios
-        .post("bookmark/findAllTags")
-        .then((res) => {
-          if (res.success) {
-            this.tags = res.detail;
-          } else {
-            this.$root.showModal("失败", res.msg);
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal("错误", err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
-    // 根据标签获取书签列表
-    findByTags() {
-      if (this.currentTags.length == 0) {
-        this.list();
-        return;
-      }
-      this.$root.loading = true;
-      axios
-        .post(
-          "bookmark/findByTags",
-          Qs.stringify({ tagIds: this.currentTags.join(",") })
-        )
+      await axios
+        .get("/bookmarks")
         .then((res) => {
           if (res.success) {
             this.bookmarks = res.detail;
@@ -465,8 +276,17 @@ export default {
     },
   },
   mounted() {
-    this.list();
-    this.listTags();
+    this.list().then(() => {
+      var paths = this.$route.params.path;
+      this.processPathArray(paths);
+      this.currentId = this.getIdByPath(this.bookmarks, paths);
+    });
+  },
+  beforeRouteUpdate(to, from, next) {
+    var paths = to.params.path;
+    this.processPathArray(paths);
+    this.currentId = this.getIdByPath(this.bookmarks, paths);
+    next();
   },
 };
 </script>

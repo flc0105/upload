@@ -1,5 +1,6 @@
 package flc.upload.model;
 
+import flc.upload.enums.BookmarkType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -9,23 +10,32 @@ import java.util.List;
 public class Bookmark {
     @ApiModelProperty("id")
     private Integer id;
+
     @ApiModelProperty("url")
     private String url;
-    @ApiModelProperty("标题")
-    private String title;
+
+    @ApiModelProperty("名称")
+    private String name;
+
     @ApiModelProperty("图标")
     private String icon;
-    @ApiModelProperty("标签列表")
-    private List<Tag> tags;
 
-    public void update(String title, String url) {
-        if (title != null) {
-            setTitle(title);
-        }
-        if (url != null) {
-            setUrl(url);
-        }
+    @ApiModelProperty("父级目录id")
+    private Integer parentId;
 
+    @ApiModelProperty("书签类型")
+    private Integer bookmarkType;
+
+    public boolean isDirectory() {
+        return bookmarkType == BookmarkType.DIRECTORY.getValue();
+    }
+
+    public boolean isBookmark() {
+        return bookmarkType == BookmarkType.BOOKMARK.getValue();
+    }
+
+    public String getBookmarkTypeStr() {
+        return bookmarkType == BookmarkType.DIRECTORY.getValue() ? "directory" : "bookmark";
     }
 
     public Integer getId() {
@@ -44,12 +54,12 @@ public class Bookmark {
         this.url = url;
     }
 
-    public String getTitle() {
-        return title;
+    public String getName() {
+        return name;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getIcon() {
@@ -60,11 +70,19 @@ public class Bookmark {
         this.icon = icon;
     }
 
-    public List<Tag> getTags() {
-        return tags;
+    public Integer getParentId() {
+        return parentId;
     }
 
-    public void setTags(List<Tag> tags) {
-        this.tags = tags;
+    public void setParentId(Integer parentId) {
+        this.parentId = parentId;
+    }
+
+    public Integer getBookmarkType() {
+        return bookmarkType;
+    }
+
+    public void setBookmarkType(Integer bookmarkType) {
+        this.bookmarkType = bookmarkType;
     }
 }

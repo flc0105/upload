@@ -1,29 +1,23 @@
 package flc.upload.service;
 
-import flc.upload.model.Result;
+import flc.upload.model.Bookmark;
+import flc.upload.model.BookmarkVO;
 
 import java.util.List;
+import java.util.Map;
 
 public interface BookmarkService {
 
-    Result add(String url) throws Exception;
+    void addBookmark(Bookmark bookmark);
 
-    Result delete(Integer id) throws Exception;
+    void deleteBookmarkById(Integer id);
 
-    Result update(Integer id) throws Exception;
+    void updateBookmark(Bookmark bookmark);
 
-    Result findAll() throws Exception;
+    List<Bookmark> getBookmarksByParentId(Integer parentId);
 
-    Result bulkAdd(String data) throws Exception;
+    List<Bookmark> getAllBookmarks();
 
-    Result updateAll() throws Exception;
-
-    Result modify(Integer id, String title, String url) throws Exception;
-
-    Result addTags(Integer bookmarkId, List<Integer> tagIds) throws Exception;
-
-    Result findAllTags() throws Exception;
-
-    Result findByTags(List<Integer> tagIds) throws Exception;
-
+//    List<Map<String, Object>> getStructuredBookmarks();
+    List<BookmarkVO> getStructuredBookmarks();
 }

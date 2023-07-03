@@ -31,7 +31,12 @@ const routes = [
     component: () => import("../components/File.vue"),
   },
   {
-    path: "/bookmarks",
+    path: "/bookmark",
+    meta: { title: "书签列表" },
+    component: () => import("../components/Bookmarks.vue"),
+  },
+  {
+    path: "/bookmark/:path*", // 定义动态路由参数:path
     meta: { title: "书签列表" },
     component: () => import("../components/Bookmarks.vue"),
   },

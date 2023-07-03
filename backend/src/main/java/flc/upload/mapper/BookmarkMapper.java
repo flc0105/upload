@@ -1,39 +1,32 @@
 package flc.upload.mapper;
 
 import flc.upload.model.Bookmark;
-import flc.upload.model.Tag;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
 @Mapper
 public interface BookmarkMapper {
-    @Insert("insert into bookmark values(null, #{url}, #{title}, #{icon})")
-    @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
-    Integer add(Bookmark bookmark) throws Exception;
 
-    @Delete("delete from bookmark where id=#{id}")
-    Integer delete(Integer id) throws Exception;
+    @Insert("INSERT INTO bookmark (name, url, icon, parentId, bookmarkType) VALUES (#{name}, #{url}, #{icon}, #{parentId}, #{bookmarkType})")
+    @Options(useGeneratedKeys = true, keyProperty = "id")
+    void addBookmark(Bookmark bookmark);
 
-    @Update("update bookmark set title=#{title}, url=#{url}, icon=#{icon} where id=#{id}")
-    Integer update(Bookmark bookmark) throws Exception;
+    @Delete("DELETE FROM bookmark WHERE id = #{id}")
+    void deleteBookmarkById(Integer id);
 
-    @Select("select * from bookmark")
-    List<Bookmark> findAll() throws Exception;
+    @Update("UPDATE bookmark SET name = #{name}, url = #{url}, icon = #{icon}, parentId = #{parentId}, bookmarkType = #{bookmarkType} WHERE id = #{id}")
+    void updateBookmark(Bookmark bookmark);
 
-    @Select("select * from bookmark where id=#{id}")
-    Bookmark findById(Integer id) throws Exception;
+    @Select("SELECT * FROM bookmark WHERE parentId = #{parentId}")
+    List<Bookmark> getBookmarksByParentId(Integer parentId);
 
-    @Insert("insert into bookmark_tag (bookmark_id, tag_id) values(#{bookmarkId}, #{tagId})")
-    void addTag(Integer bookmarkId, Integer tagId) throws Exception;
+    @Select("SELECT * FROM bookmark")
+    @Results(id = "bookmarkMap", value = {
+            @Result(property = "parentId", column = "parentId"),
+            @Result(property = "bookmarkType", column = "bookmarkType")
+    })
+    List<Bookmark> getAllBookmarks();
 
-    @Select("select * from tag")
-    List<Tag> findAllTags() throws Exception;
-
-    @Select("SELECT * FROM tag t JOIN bookmark_tag bt ON t.id = bt.tag_id WHERE bt.bookmark_id = #{bookmarkId}")
-    List<Tag> findTagsByBookmarkId(int bookmarkId);
-
-    @Select("SELECT b.* FROM bookmark b INNER JOIN bookmark_tag bt ON b.id = bt.bookmark_id WHERE bt.tag_id IN (${idString}) GROUP BY b.id HAVING COUNT(DISTINCT bt.tag_id) = ${tagIds.size()};")
-    List<Bookmark> findByTags(List<Integer> tagIds, String idString) throws Exception;
 
 }

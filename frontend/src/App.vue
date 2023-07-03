@@ -24,7 +24,7 @@
         </li>
         <li class="nav-item">
           <router-link
-            to="/bookmarks"
+            to="/bookmark"
             :class="[
               'nav-link',
               { active: $router.currentRoute.value.meta.title == '书签列表' },
