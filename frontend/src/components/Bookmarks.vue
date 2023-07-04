@@ -74,6 +74,7 @@
               <ul class="dropdown-menu">
                 <li>
                   <a
+                    v-if="bookmark.type == 'bookmark'"
                     class="dropdown-item"
                     :href="bookmark.url"
                     target="_blank"
@@ -82,6 +83,7 @@
                 </li>
                 <li>
                   <a
+                    v-if="bookmark.type == 'bookmark'"
                     class="dropdown-item"
                     id="btnCopy"
                     :data-clipboard-text="bookmark.url"
@@ -326,7 +328,7 @@ export default {
         }
       }
 
-      return null; // 目录不存在
+      return 0; // 目录不存在
     },
 
     /**

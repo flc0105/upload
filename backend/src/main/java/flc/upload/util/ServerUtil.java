@@ -15,7 +15,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
+import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.CodeSource;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -93,10 +97,34 @@ public class ServerUtil {
 
             map.put("number.of.pastes", String.valueOf(sqlMapper.executeQueryCount("paste")));
             map.put("number.of.bookmarks", String.valueOf(sqlMapper.executeQueryCount("bookmark")));
+            map.put("executable.path", getExecutablePath());
+            map.put("working.directory", normalizePath(System.getProperty("user.dir")));
         } catch (Exception e) {
             logger.error("获取服务器信息失败：" + e.getLocalizedMessage());
         }
         return InternationalizationUtil.translateMapKeys(map);
+    }
+
+    public static String getExecutablePath() {
+        CodeSource codeSource = ServerUtil.class.getProtectionDomain().getCodeSource();
+        URL location = codeSource.getLocation();
+
+        try {
+            String path = location.toURI().getPath();
+            File file = new File(path);
+
+            // 如果路径是一个 JAR 文件，则获取 JAR 文件的父目录
+            if (file.isFile()) {
+//                return file.getParent();
+                return file.getAbsolutePath();
+            }
+
+            return path;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     /**
@@ -108,6 +136,10 @@ public class ServerUtil {
      * @throws InterruptedException 如果当前线程被中断
      */
     public static String executeCommand(String command) throws IOException, InterruptedException {
+        if (command.startsWith("cd ")) {
+            String path = command.substring(3).trim(); // 获取路径，去除 "cd " 前缀并去除首尾空格
+            return changeDirectory(path);
+        }
         StringBuilder output = new StringBuilder();
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.redirectErrorStream(true);
@@ -116,6 +148,11 @@ public class ServerUtil {
         } else {
             processBuilder.command("sh", "-c", command);
         }
+
+        // 指定启动时的工作目录
+        File workingDirectory = new File(System.getProperty("user.dir"));
+        processBuilder.directory(workingDirectory);
+
         Process process = processBuilder.start();
         Charset charset = isWindows() ? Charset.forName("GBK") : Charset.defaultCharset();
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), charset));
@@ -125,6 +162,25 @@ public class ServerUtil {
         }
         logger.info("命令 {} 执行结果：{}", command, process.waitFor() == 0);
         return output.toString();
+    }
+
+    public static String normalizePath(String inputPath) {
+        Path path = Paths.get(inputPath);
+        Path normalizedPath = path.normalize();
+        String resolvedPath = normalizedPath.toAbsolutePath().toString();
+        return resolvedPath;
+    }
+
+    public static String changeDirectory(String path) {
+        File directory = new File(path);
+        if (directory.isDirectory()) {
+            // 切换当前工作目录
+            System.setProperty("user.dir", directory.getAbsolutePath());
+
+            return normalizePath(System.getProperty("user.dir"));
+        } else {
+            return InternationalizationUtil.translate("path.does.not.exist");
+        }
     }
 
     /**

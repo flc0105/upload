@@ -4,7 +4,6 @@ import flc.upload.model.Bookmark;
 import flc.upload.model.BookmarkVO;
 
 import java.util.List;
-import java.util.Map;
 
 public interface BookmarkService {
 
@@ -14,12 +13,7 @@ public interface BookmarkService {
 
     void updateBookmark(Bookmark bookmark);
 
-    List<Bookmark> getBookmarksByParentId(Integer parentId);
-
-    List<Bookmark> getAllBookmarks();
-
-//    List<Map<String, Object>> getStructuredBookmarks();
     List<BookmarkVO> getStructuredBookmarks();
 
-    void fetchBookmark(Integer id);
+    void fetchBookmarkTitle(Integer id);
 }

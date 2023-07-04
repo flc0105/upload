@@ -268,6 +268,7 @@ public class FileServiceImpl implements FileService {
         } else if (file.isFile()) {
             map.put("length", FileUtil.formatSize(file.length()));
             map.put("file.type", FileUtil.detectFileType(file));
+            map.put("file.hash", FileUtil.calculateMD5(file.getAbsolutePath()));
             if (FileUtil.isImage(file)) {
                 map.putAll(FileUtil.getImageInfo(file));
             } else if (FileUtil.isAudio(file)) {

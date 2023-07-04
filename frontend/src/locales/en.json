@@ -89,5 +89,6 @@
   "enter_url": "Enter url",
   "enter_name": "Enter name",
   "folder_is_empty": "Folder is empty.",
-  "open": "Open"
+  "open": "Open",
+  "change_language": "Switch language"
 }

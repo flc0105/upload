@@ -23,16 +23,13 @@ public class BookmarkController {
 
     @PostMapping
     public Result<Integer> addBookmark(@RequestBody Bookmark bookmark) {
-        if (bookmark.isBookmark()) {
-            bookmark.setUrl(bookmark.getUrl().contains("://") ? bookmark.getUrl() : "http://" + bookmark.getUrl());
-        }
         bookmarkService.addBookmark(bookmark);
         return ResponseUtil.buildSuccessResult("add.success", bookmark.getId());
     }
 
     @PostMapping("/{id}")
-    public Result<?> fetchBookmark(@PathVariable("id") Integer id) {
-        bookmarkService.fetchBookmark(id);
+    public Result<?> fetchBookmarkTitle(@PathVariable("id") Integer id) {
+        bookmarkService.fetchBookmarkTitle(id);
         return ResponseUtil.buildSuccessResult("query.success");
     }
 

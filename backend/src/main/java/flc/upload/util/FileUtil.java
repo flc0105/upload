@@ -36,6 +36,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -489,6 +491,32 @@ public class FileUtil {
             logger.error("获取音频信息失败：" + e.getLocalizedMessage());
         }
         return map;
+    }
+
+    public static String calculateMD5(String filePath) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+
+            try (FileInputStream fis = new FileInputStream(filePath)) {
+                while ((bytesRead = fis.read(buffer)) != -1) {
+                    md.update(buffer, 0, bytesRead);
+                }
+            }
+
+            byte[] mdBytes = md.digest();
+
+            StringBuilder sb = new StringBuilder();
+            for (byte mdByte : mdBytes) {
+                sb.append(Integer.toString((mdByte & 0xff) + 0x100, 16).substring(1));
+            }
+
+            return sb.toString();
+        } catch (Exception e) {
+            logger.error("获取文件哈希出错：{}", e.getLocalizedMessage());
+            return Strings.EMPTY;
+        }
     }
 
 }

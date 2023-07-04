@@ -88,5 +88,6 @@
   "enter_url": "输入书签 URL",
   "enter_name": "输入目录名称",
   "folder_is_empty": "文件夹为空",
-  "open": "打开"
+  "open": "打开",
+  "change_language": "切换语言"
 }

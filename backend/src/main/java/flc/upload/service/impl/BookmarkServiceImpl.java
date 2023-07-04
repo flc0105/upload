@@ -1,19 +1,15 @@
 package flc.upload.service.impl;
 
-import flc.upload.enums.BookmarkType;
+import flc.upload.exception.BusinessException;
 import flc.upload.mapper.BookmarkMapper;
 import flc.upload.model.Bookmark;
 import flc.upload.model.BookmarkVO;
-import flc.upload.model.Result;
 import flc.upload.service.BookmarkService;
-import flc.upload.util.ImageGenerator;
 import flc.upload.util.JsoupUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,6 +24,14 @@ public class BookmarkServiceImpl implements BookmarkService {
 
     @Override
     public void addBookmark(Bookmark bookmark) {
+        if (bookmark.isDirectory()) {
+            if (bookmark.getName().contains("/") || bookmark.getName().contains("\\")) {
+                throw new BusinessException("directory.name.illegal");
+            }
+        }
+        if (bookmark.isBookmark()) {
+            bookmark.setUrl(bookmark.getUrl().contains("://") ? bookmark.getUrl() : "http://" + bookmark.getUrl());
+        }
         bookmarkMapper.addBookmark(bookmark);
     }
 
@@ -47,23 +51,13 @@ public class BookmarkServiceImpl implements BookmarkService {
     }
 
     @Override
-    public List<Bookmark> getBookmarksByParentId(Integer parentId) {
-        return bookmarkMapper.getBookmarksByParentId(parentId);
-    }
-
-    @Override
-    public List<Bookmark> getAllBookmarks() {
-        return bookmarkMapper.getAllBookmarks();
-    }
-
-    @Override
     public List<BookmarkVO> getStructuredBookmarks() {
         List<Bookmark> bookmarks = bookmarkMapper.getAllBookmarks();
         return buildBookmarkVOs(bookmarks, 0);
     }
 
     @Override
-    public void fetchBookmark(Integer id) {
+    public void fetchBookmarkTitle(Integer id) {
         Bookmark bookmark = bookmarkMapper.findById(id);
         bookmark.setName(JsoupUtil.getTitle(bookmark.getUrl()));
         bookmarkMapper.updateBookmark(bookmark);
@@ -73,15 +67,16 @@ public class BookmarkServiceImpl implements BookmarkService {
         List<BookmarkVO> bookmarkVOs = new ArrayList<>();
         List<BookmarkVO> directoryVOs = new ArrayList<>();
         List<BookmarkVO> bookmarkItemVOs = new ArrayList<>();
-
         for (Bookmark bookmark : bookmarks) {
+            if (bookmark.getParentId() == null) {
+                continue;
+            }
             if (bookmark.getParentId() == parentId) {
                 BookmarkVO bookmarkVO = new BookmarkVO();
                 bookmarkVO.setType(bookmark.getBookmarkTypeStr());
                 bookmarkVO.setName(bookmark.getName());
                 bookmarkVO.setId(bookmark.getId());
                 if (bookmark.isDirectory()) {
-
                     bookmarkVO.setChildren(buildBookmarkVOs(bookmarks, bookmark.getId()));
                     directoryVOs.add(bookmarkVO);
                 } else {
@@ -91,12 +86,10 @@ public class BookmarkServiceImpl implements BookmarkService {
                 }
             }
         }
-
         bookmarkVOs.addAll(directoryVOs);
         bookmarkVOs.addAll(bookmarkItemVOs);
         return bookmarkVOs;
     }
-
 
 }
 

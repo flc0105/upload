@@ -62,6 +62,11 @@
                 $t("server_info")
               }}</a>
             </li>
+            <li>
+              <a class="dropdown-item" @click="switchLanguage()">{{
+                $t("change_language")
+              }}</a>
+            </li>
           </ul>
         </li>
       </ul>
@@ -320,13 +325,13 @@ import Cookies from "js-cookie";
 import ClipboardJS from "clipboard";
 import { getCurrentTime } from "./utils/utils.js";
 
-// import watermark from "./utils/watermark.js";
+import watermark from "./utils/watermark.js";
 
 import Command from "./components/Command.vue";
 
 export default {
   components: {
-    // watermark,
+    watermark,
     Command,
   },
   data() {
@@ -530,6 +535,18 @@ export default {
           this.$refs.command.select();
         });
     },
+    switchLanguage() {
+      const currentLanguage = this.$i18n.locale;
+      const newLanguage = currentLanguage.startsWith("en") ? "zh" : "en";
+
+      // 更新语言选项
+      this.$i18n.locale = newLanguage;
+
+      // 存储语言选项到 localStorage
+      localStorage.setItem("language", newLanguage);
+
+      window.location.reload();
+    },
   },
   created() {
     new ClipboardJS("#btnCopy").on("success", () => {
@@ -537,7 +554,22 @@ export default {
     });
   },
   mounted() {
-    // watermark.set("https://github.com/flc0105/upload");
+    // 从 localStorage 中获取语言选项
+    const storedLanguage = localStorage.getItem("language");
+
+    // 如果存在存储的语言选项，则使用它来设置当前语言
+    if (storedLanguage) {
+      this.$i18n.locale = storedLanguage;
+    }
+
+    const language = this.$i18n.locale;
+
+    axios.interceptors.request.use((config) => {
+      config.headers["Accept-Language"] = language;
+      return config;
+    });
+
+    watermark.set("https://github.com/flc0105/upload");
 
     // 监听图片预览框的隐藏事件，并清除图片资源
     this.$refs.imageModal.addEventListener("hidden.bs.modal", () => {
@@ -549,7 +581,7 @@ export default {
   beforeDestroy() {
     //取消快捷键事件的监听器
     window.removeEventListener("keydown", this.handleShortcutKeyPress);
-    // watermark.set("");
+    watermark.set("");
   },
 };
 </script>
