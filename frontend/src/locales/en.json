@@ -82,5 +82,12 @@
   "copy": "Copy",
   "download": "Download",
   "submit_changes": "Submit",
-  "delete": "Delete"
+  "delete": "Delete",
+  "name_or_url_cannot_be_empty": "Name or URL cannot be empty.",
+  "new_bookmark": "New bookmark",
+  "new_directory": "New directory",
+  "enter_url": "Enter url",
+  "enter_name": "Enter name",
+  "folder_is_empty": "Folder is empty.",
+  "open": "Open"
 }

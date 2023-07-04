@@ -20,4 +20,6 @@ public interface BookmarkService {
 
 //    List<Map<String, Object>> getStructuredBookmarks();
     List<BookmarkVO> getStructuredBookmarks();
+
+    void fetchBookmark(Integer id);
 }

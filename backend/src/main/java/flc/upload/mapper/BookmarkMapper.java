@@ -12,14 +12,21 @@ public interface BookmarkMapper {
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void addBookmark(Bookmark bookmark);
 
+//    @Delete("DELETE FROM bookmark WHERE id = #{id}")
     @Delete("DELETE FROM bookmark WHERE id = #{id}")
-    void deleteBookmarkById(Integer id);
+    void deleteBookmarkById(@Param("id") Integer id);
+
+    @Delete("DELETE FROM bookmark WHERE parentId = #{parentId}")
+    void deleteBookmarkByParentId(@Param("parentId") Integer parentId);
 
     @Update("UPDATE bookmark SET name = #{name}, url = #{url}, icon = #{icon}, parentId = #{parentId}, bookmarkType = #{bookmarkType} WHERE id = #{id}")
     void updateBookmark(Bookmark bookmark);
 
     @Select("SELECT * FROM bookmark WHERE parentId = #{parentId}")
     List<Bookmark> getBookmarksByParentId(Integer parentId);
+
+    @Select("SELECT * FROM bookmark WHERE id = #{id}")
+    Bookmark findById(Integer id);
 
     @Select("SELECT * FROM bookmark")
     @Results(id = "bookmarkMap", value = {

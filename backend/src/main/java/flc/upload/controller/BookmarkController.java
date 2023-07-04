@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/bookmarks")
@@ -23,13 +22,25 @@ public class BookmarkController {
     }
 
     @PostMapping
-    public void addBookmark(@RequestBody Bookmark bookmark) {
+    public Result<Integer> addBookmark(@RequestBody Bookmark bookmark) {
+        if (bookmark.isBookmark()) {
+            bookmark.setUrl(bookmark.getUrl().contains("://") ? bookmark.getUrl() : "http://" + bookmark.getUrl());
+        }
         bookmarkService.addBookmark(bookmark);
+        return ResponseUtil.buildSuccessResult("add.success", bookmark.getId());
     }
 
+    @PostMapping("/{id}")
+    public Result<?> fetchBookmark(@PathVariable("id") Integer id) {
+        bookmarkService.fetchBookmark(id);
+        return ResponseUtil.buildSuccessResult("query.success");
+    }
+
+
     @DeleteMapping("/{id}")
-    public void deleteBookmark(@PathVariable("id") Integer id) {
+    public Result<?> deleteBookmark(@PathVariable("id") Integer id) {
         bookmarkService.deleteBookmarkById(id);
+        return ResponseUtil.buildSuccessResult("delete.success");
     }
 
     @PutMapping("/{id}")
@@ -37,11 +48,6 @@ public class BookmarkController {
         bookmark.setId(id);
         bookmarkService.updateBookmark(bookmark);
     }
-
-//    @GetMapping
-//    public List<Bookmark> getBookmarksByParentId(@RequestParam("parentId") Integer parentId) {
-//        return bookmarkService.getBookmarksByParentId(parentId);
-//    }
 
     @GetMapping
     public Result<List<BookmarkVO>> getAllBookmarks() {

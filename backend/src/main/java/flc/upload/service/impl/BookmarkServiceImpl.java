@@ -4,7 +4,10 @@ import flc.upload.enums.BookmarkType;
 import flc.upload.mapper.BookmarkMapper;
 import flc.upload.model.Bookmark;
 import flc.upload.model.BookmarkVO;
+import flc.upload.model.Result;
 import flc.upload.service.BookmarkService;
+import flc.upload.util.ImageGenerator;
+import flc.upload.util.JsoupUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -30,7 +33,12 @@ public class BookmarkServiceImpl implements BookmarkService {
 
     @Override
     public void deleteBookmarkById(Integer id) {
+        Bookmark bookmark = bookmarkMapper.findById(id);
+        if (bookmark.isDirectory()) {
+            bookmarkMapper.deleteBookmarkByParentId(id);
+        }
         bookmarkMapper.deleteBookmarkById(id);
+
     }
 
     @Override
@@ -54,31 +62,12 @@ public class BookmarkServiceImpl implements BookmarkService {
         return buildBookmarkVOs(bookmarks, 0);
     }
 
-//    private List<BookmarkVO> buildBookmarkVOs(List<Bookmark> bookmarks, int parentId) {
-//
-//        List<BookmarkVO> bookmarkVOs = new ArrayList<>();
-//
-//        for (Bookmark bookmark : bookmarks) {
-//
-//            if (bookmark.getParentId() == parentId) {
-//
-//                BookmarkVO bookmarkVO = new BookmarkVO();
-//
-//                bookmarkVO.setType(bookmark.getBookmarkTypeStr());
-//                bookmarkVO.setName(bookmark.getName());
-//
-//
-//                if (bookmark.isDirectory()) {
-//                    bookmarkVO.setChildren(buildBookmarkVOs(bookmarks, bookmark.getId()));
-//                } else {
-//                    bookmarkVO.setUrl(bookmark.getUrl());
-//                    bookmarkVO.setIcon(bookmarkVO.getIcon());
-//                }
-//                bookmarkVOs.add(bookmarkVO);
-//            }
-//        }
-//        return bookmarkVOs;
-//    }
+    @Override
+    public void fetchBookmark(Integer id) {
+        Bookmark bookmark = bookmarkMapper.findById(id);
+        bookmark.setName(JsoupUtil.getTitle(bookmark.getUrl()));
+        bookmarkMapper.updateBookmark(bookmark);
+    }
 
     private List<BookmarkVO> buildBookmarkVOs(List<Bookmark> bookmarks, int parentId) {
         List<BookmarkVO> bookmarkVOs = new ArrayList<>();
@@ -90,9 +79,9 @@ public class BookmarkServiceImpl implements BookmarkService {
                 BookmarkVO bookmarkVO = new BookmarkVO();
                 bookmarkVO.setType(bookmark.getBookmarkTypeStr());
                 bookmarkVO.setName(bookmark.getName());
-
+                bookmarkVO.setId(bookmark.getId());
                 if (bookmark.isDirectory()) {
-                    bookmarkVO.setId(bookmark.getId());
+
                     bookmarkVO.setChildren(buildBookmarkVOs(bookmarks, bookmark.getId()));
                     directoryVOs.add(bookmarkVO);
                 } else {

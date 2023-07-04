@@ -1,98 +1,111 @@
 <template>
-  <div>
-    <ul>
-      <bookmark-item
-        v-for="bookmark in bookmarks"
-        :bookmark="bookmark"
-        :key="bookmark.name"
-      />
-    </ul>
-  </div>
+  <v-contextmenu ref="contextmenu">
+    <v-contextmenu-item @click="refresh()">{{
+      $t("refresh")
+    }}</v-contextmenu-item>
+    <v-contextmenu-item
+      @click="
+        $root.showInput($t('new_bookmark'), $t('enter_url'), function () {
+          add('bookmark');
+        })
+      "
+      >{{ $t("new_bookmark") }}</v-contextmenu-item
+    >
+    <v-contextmenu-item
+      @click="
+        $root.showInput($t('new_directory'), $t('enter_name'), function () {
+          add('directory');
+        })
+      "
+      >{{ $t("new_directory") }}</v-contextmenu-item
+    >
+  </v-contextmenu>
 
-  <!-- <div class="input-group mb-2">
-    <input
-      class="form-control"
-      v-model="url"
-      @keyup.enter="add()"
-      :disabled="$root.loading"
-    />
-    <button
-      class="btn btn-outline-primary"
-      @click="add()"
-      :disabled="$root.loading"
-    >
-      添加
-    </button>
-    <button
-      class="btn btn-outline-primary"
-      data-bs-toggle="dropdown"
-      :disabled="$root.loading"
-    >
-      <i class="bi bi-three-dots-vertical"></i>
-      <ul class="dropdown-menu">
-        <li>
-          <a class="dropdown-item">...</a>
+  <div v-contextmenu:contextmenu>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item" v-for="(value, key) in mapping" :key="key">
+          <a v-if="isActive(key)">{{ key }}</a>
+          <router-link v-else :to="`/bookmark${value}`" class="link-primary">{{
+            key
+          }}</router-link>
         </li>
-      </ul>
-    </button>
-  </div> -->
+      </ol>
+    </nav>
 
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item" v-for="(value, key) in mapping" :key="key">
-        <a v-if="isActive(key)">{{ key }}</a>
-        <router-link v-else :to="`/bookmark${value}`" class="link-primary">{{
-          key
-        }}</router-link>
-      </li>
-    </ol>
-  </nav>
-
-  <table class="table table-hover table-borderless border shadow-sm">
-    <tbody>
-      <tr v-for="bookmark in page" :key="bookmark">
-        <td class="text-truncate" style="max-width: 200px">
-          <i
-            v-if="bookmark.type == 'bookmark'"
-            class="bi bi-file-earmark me-2"
-          ></i>
-          <i v-else class="bi bi-folder2 me-2"></i>
-          <span v-if="bookmark.name"
-            ><!--class="align-middle"-->
-            <router-link
-              :to="appendPath(bookmark.name)"
-              v-if="bookmark.type == 'directory'"
-              class="link-primary"
-              >{{ bookmark.name }}</router-link
-            >
-
-            <a v-else>{{ bookmark.name }}</a>
-          </span>
-          <span v-else class="align-middle text-muted"
-            ><i>{{ extractDomain(bookmark.url) }}</i></span
-          >
-        </td>
-        <td class="text-truncate url" style="max-width: 200px">
-          <i class="text-muted">{{ bookmark.url }}</i>
-        </td>
-        <td class="text-end" style="width: 10%">
-          <div class="dropdown d-inline">
+    <table class="table table-hover table-borderless border shadow-sm">
+      <tbody>
+        <tr v-if="page.length == 0" class="text-muted text-center">
+          {{
+            $t("folder_is_empty")
+          }}
+        </tr>
+        <tr v-for="bookmark in page" :key="bookmark">
+          <td class="text-truncate" style="max-width: 200px">
             <i
-              class="bi bi-three-dots-vertical link-primary"
-              data-bs-toggle="dropdown"
+              v-if="bookmark.type == 'bookmark'"
+              class="bi bi-globe-asia-australia me-2"
             ></i>
-            <ul class="dropdown-menu">
-              <li>
-                <a class="dropdown-item" :href="bookmark.url" target="_blank"
-                  >打开</a
-                >
-              </li>
-            </ul>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+            <i v-else class="bi bi-folder2 me-2"></i>
+            <span v-if="bookmark.name"
+              ><!--class="align-middle"-->
+              <router-link
+                :to="appendPath(bookmark.name)"
+                v-if="bookmark.type == 'directory'"
+                class="link-primary"
+                >{{ bookmark.name }}</router-link
+              >
+
+              <a v-else>{{ bookmark.name }}</a>
+            </span>
+            <span v-else class="align-middle text-muted"
+              ><i>{{ extractDomain(bookmark.url) }}</i></span
+            >
+          </td>
+          <td class="text-truncate url" style="max-width: 200px">
+            <i class="text-muted">{{ bookmark.url }}</i>
+          </td>
+          <td class="text-end" style="width: 10%">
+            <div class="dropdown d-inline">
+              <i
+                class="bi bi-three-dots-vertical link-primary"
+                data-bs-toggle="dropdown"
+              ></i>
+              <ul class="dropdown-menu">
+                <li>
+                  <a
+                    class="dropdown-item"
+                    :href="bookmark.url"
+                    target="_blank"
+                    >{{ $t("open") }}</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    id="btnCopy"
+                    :data-clipboard-text="bookmark.url"
+                    >{{ $t("copy") }}</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    @click="
+                      $root.showConfirm(function () {
+                        deleteBookmark(bookmark.id);
+                      })
+                    "
+                    >{{ $t("delete") }}</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <style scoped>
@@ -112,11 +125,22 @@
 
 <script>
 import axios from "axios";
-import Qs from "qs";
 import "bootstrap/dist/js/bootstrap.bundle";
 import "file-saver";
 
+import { sendRequest } from "../utils/utils.js";
+
+import { directive, Contextmenu, ContextmenuItem } from "v-contextmenu";
+import "v-contextmenu/dist/themes/default.css";
+
 export default {
+  directives: {
+    contextmenu: directive,
+  },
+  components: {
+    [Contextmenu.name]: Contextmenu,
+    [ContextmenuItem.name]: ContextmenuItem,
+  },
   name: "BookmarkList",
   data() {
     return {
@@ -128,6 +152,83 @@ export default {
     };
   },
   methods: {
+    // 添加
+    add(bookmarkType) {
+      if (this.$root.$refs.input.value.trim().length === 0) {
+        this.$root.showModal(
+          this.$t("alert"),
+          this.$t("name_or_url_cannot_be_empty")
+        );
+        return;
+      }
+      var data;
+      if (bookmarkType == "directory") {
+        data = {
+          bookmarkType: 0,
+          parentId: this.currentId,
+          name: this.$root.$refs.input.value,
+        };
+      } else {
+        data = {
+          bookmarkType: 1,
+          parentId: this.currentId,
+          url: this.$root.$refs.input.value,
+        };
+      }
+
+      sendRequest.call(
+        this,
+        "post",
+        "/bookmarks",
+        data,
+        (res) => {
+          this.list().then(() => {
+            var paths = this.$route.params.path;
+            this.processPathArray(paths);
+            this.$root.showModal(this.$t("success"), res.msg);
+            if (data.bookmarkType == 1 && res.detail != null) {
+              sendRequest.call(
+                this,
+                "post",
+                "/bookmarks/" + res.detail,
+                data,
+                (res) => {
+                  this.list().then(() => {
+                    var paths = this.$route.params.path;
+                    this.processPathArray(paths);
+                  });
+                },
+                (err) => {
+                  console.log(err);
+                }
+              );
+            }
+          });
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+        }
+      );
+    },
+    deleteBookmark(id) {
+      console.log(id);
+      sendRequest.call(
+        this,
+        "delete",
+        "/bookmarks/" + id,
+        null,
+        (res) => {
+          this.list().then(() => {
+            var paths = this.$route.params.path;
+            this.processPathArray(paths);
+            this.$root.showModal(this.$t("success"), res.msg);
+          });
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+        }
+      );
+    },
     /**
      * breadcrumb显示的链接是否应该处于激活状态
      * 检查给定的键是否与当前路径匹配
@@ -237,6 +338,13 @@ export default {
       this.page = this.findBookmarksByPath(this.bookmarks, pathArray);
       console.log(this.page);
     },
+    refresh() {
+      this.list().then(() => {
+        var paths = this.$route.params.path;
+        this.processPathArray(paths);
+        this.currentId = this.getIdByPath(this.bookmarks, paths);
+      });
+    },
 
     // 判断是不是json数据
     isJSON(str) {
@@ -264,11 +372,11 @@ export default {
           if (res.success) {
             this.bookmarks = res.detail;
           } else {
-            this.$root.showModal("失败", res.msg);
+            this.$root.showModal(this.$t("success"), res.msg);
           }
         })
         .catch((err) => {
-          this.$root.showModal("错误", err.message);
+          this.$root.showModal(this.$t("error"), err.message);
         })
         .finally(() => {
           this.$root.loading = false;

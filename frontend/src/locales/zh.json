@@ -81,5 +81,12 @@
   "copy": "复制",
   "download": "下载",
   "submit_changes": "提交修改",
-  "delete": "删除"
+  "delete": "删除",
+  "name_or_url_cannot_be_empty": "名称或 URL 不能为空",
+  "new_bookmark": "新建书签",
+  "new_directory": "新建目录",
+  "enter_url": "输入书签 URL",
+  "enter_name": "输入目录名称",
+  "folder_is_empty": "文件夹为空",
+  "open": "打开"
 }
