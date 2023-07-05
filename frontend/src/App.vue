@@ -71,11 +71,6 @@
         </li>
       </ul>
     </div>
-
-    <!-- <div v-if="this.$route.path == '/log'" style="overflow-x: scroll">
-      <router-view></router-view>
-    </div>
-    <router-view v-else></router-view> -->
     <router-view></router-view>
   </div>
 
@@ -325,13 +320,13 @@ import Cookies from "js-cookie";
 import ClipboardJS from "clipboard";
 import { getCurrentTime } from "./utils/utils.js";
 
-import watermark from "./utils/watermark.js";
+// import watermark from "./utils/watermark.js";
 
 import Command from "./components/Command.vue";
 
 export default {
   components: {
-    watermark,
+    // watermark,
     Command,
   },
   data() {
@@ -569,7 +564,7 @@ export default {
       return config;
     });
 
-    watermark.set("https://github.com/flc0105/upload");
+    // watermark.set("https://github.com/flc0105/upload");
 
     // 监听图片预览框的隐藏事件，并清除图片资源
     this.$refs.imageModal.addEventListener("hidden.bs.modal", () => {
@@ -581,7 +576,7 @@ export default {
   beforeDestroy() {
     //取消快捷键事件的监听器
     window.removeEventListener("keydown", this.handleShortcutKeyPress);
-    watermark.set("");
+    // watermark.set("");
   },
 };
 </script>

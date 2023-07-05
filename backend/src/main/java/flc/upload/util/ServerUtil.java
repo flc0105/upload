@@ -106,25 +106,14 @@ public class ServerUtil {
     }
 
     public static String getExecutablePath() {
-        CodeSource codeSource = ServerUtil.class.getProtectionDomain().getCodeSource();
-        URL location = codeSource.getLocation();
-
         try {
-            String path = location.toURI().getPath();
-            File file = new File(path);
-
-            // 如果路径是一个 JAR 文件，则获取 JAR 文件的父目录
-            if (file.isFile()) {
-//                return file.getParent();
-                return file.getAbsolutePath();
-            }
-
-            return path;
+            CodeSource codeSource = ServerUtil.class.getProtectionDomain().getCodeSource();
+            URL location = codeSource.getLocation();
+            return location.toURI().getPath();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("获取应用程序路径失败：" + e.getLocalizedMessage());
+            return null;
         }
-
-        return null;
     }
 
     /**
@@ -137,7 +126,7 @@ public class ServerUtil {
      */
     public static String executeCommand(String command) throws IOException, InterruptedException {
         if (command.startsWith("cd ")) {
-            String path = command.substring(3).trim(); // 获取路径，去除 "cd " 前缀并去除首尾空格
+            String path = command.substring(3).trim();
             return changeDirectory(path);
         }
         StringBuilder output = new StringBuilder();

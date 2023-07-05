@@ -18,6 +18,7 @@ CREATE UNIQUE INDEX
 CREATE TABLE
     IF
     NOT EXISTS permission ( id INTEGER NOT NULL PRIMARY KEY autoincrement UNIQUE, path text NOT NULL, isAdmin INTEGER NOT NULL, DESC text );
+
 /*
 insert into permission values (null, "/paste/add", 0, "Paste_添加");
 insert into permission values (null, "/paste/delete", 1, "Paste_删除");
@@ -50,13 +51,18 @@ insert into permission values (null, "/info", 1, "查询服务器信息");
 insert into permission values (null, "/logs/delete", 1, "日志_删除");
 insert into permission values (null, "/logs/list", 1, "日志_查询");
 */
+
 CREATE TABLE
     IF
     NOT EXISTS bookmark (
                             id INTEGER NOT NULL CONSTRAINT bookmark_pk PRIMARY KEY autoincrement,
-                            name text NOT NULL,
-                            url text NOT NULL,
-                            icon text NOT NULL,
+                            name text,
+                            url text,
+                            icon text,
                             parentId INTEGER NOT NULL,
                             bookmarkType INTEGER NOT NULL
 );
+
+/*
+insert into bookmark values (0, "root", null, null, -1, 0);
+*/
