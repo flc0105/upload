@@ -668,7 +668,7 @@ export default {
             this.files = res.detail;
             this.sortFilesByCriteria(this.sort);
           } else {
-            if (res.msg === "没有权限") {
+            if (res.msg === "没有权限" || res.msg === "No permission.") {
               if (!this.$root.hasToken(() => this.list())) {
                 return;
               }

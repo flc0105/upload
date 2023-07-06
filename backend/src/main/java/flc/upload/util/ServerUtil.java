@@ -95,25 +95,14 @@ public class ServerUtil {
                 map.put("database.size", FileUtil.formatSize(db.length()));
             }
 
+            map.put("working.directory", normalizePath(System.getProperty("user.dir")));
+
             map.put("number.of.pastes", String.valueOf(sqlMapper.executeQueryCount("paste")));
             map.put("number.of.bookmarks", String.valueOf(sqlMapper.executeQueryCount("bookmark")));
-            map.put("executable.path", getExecutablePath());
-            map.put("working.directory", normalizePath(System.getProperty("user.dir")));
         } catch (Exception e) {
             logger.error("获取服务器信息失败：" + e.getLocalizedMessage());
         }
         return InternationalizationUtil.translateMapKeys(map);
-    }
-
-    public static String getExecutablePath() {
-        try {
-            CodeSource codeSource = ServerUtil.class.getProtectionDomain().getCodeSource();
-            URL location = codeSource.getLocation();
-            return location.toURI().getPath();
-        } catch (Exception e) {
-            logger.error("获取应用程序路径失败：" + e.getLocalizedMessage());
-            return null;
-        }
     }
 
     /**

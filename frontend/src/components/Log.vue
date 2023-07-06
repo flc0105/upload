@@ -13,7 +13,7 @@
     </button>
   </div> -->
 
-  <div style="overflow-x: scroll; height: 460px">
+  <div style="overflow-x: scroll; height: 470px">
     <table class="table table-hover" style="white-space: nowrap">
       <thead>
         <tr>
@@ -48,6 +48,30 @@
       </tbody>
     </table>
   </div>
+
+  <nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center mt-4">
+      <li :class="['page-item', { disabled: currentPage == 1 }]">
+        <a class="page-link" @click="goToPage(currentPage - 1)">Previous</a>
+      </li>
+      <template v-for="page in totalPages" :key="page">
+        <li class="page-item">
+          <a
+            class="page-link"
+            href="#"
+            @click="goToPage(page)"
+            :class="['page-link', { active: page == currentPage }]"
+            >{{ page }}</a
+          >
+        </li>
+      </template>
+      <li :class="['page-item', { disabled: currentPage == totalPages }]">
+        <a class="page-link" href="#" @click="goToPage(currentPage + 1)"
+          >Next</a
+        >
+      </li>
+    </ul>
+  </nav>
 </template>
 
 <style scoped>
@@ -73,6 +97,8 @@ export default {
   data() {
     return {
       logs: {},
+      totalPages: 0, // 总页数
+      currentPage: 1, // 当前页数
     };
   },
   methods: {
@@ -83,6 +109,32 @@ export default {
         .then((res) => {
           if (res.success) {
             this.logs = res.detail;
+          } else {
+            this.$root.showModal(this.$t("error"), res.msg);
+          }
+        })
+        .catch((err) => {
+          this.$root.showModal(this.$t("error"), err.message);
+        })
+        .finally(() => {
+          this.$root.loading = false;
+        });
+    },
+    goToPage(page) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.page(page);
+      }
+    },
+    page(page) {
+      this.$root.loading = true;
+      axios
+        .get("/logs/list?page=" + page)
+        .then((res) => {
+          if (res.success) {
+            var result = res.detail;
+            this.totalPages = result.totalPages;
+            this.currentPage = result.currentPage;
+            this.logs = result.data;
           } else {
             this.$root.showModal(this.$t("error"), res.msg);
           }
@@ -145,7 +197,8 @@ export default {
       return;
     }
 
-    this.list();
+    // this.list();
+    this.page(1);
   },
 };
 </script>
