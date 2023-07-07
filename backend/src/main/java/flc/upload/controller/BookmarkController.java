@@ -41,9 +41,10 @@ public class BookmarkController {
     }
 
     @PutMapping("/{id}")
-    public void updateBookmark(@PathVariable("id") Integer id, @RequestBody Bookmark bookmark) {
+    public Result<?> updateBookmark(@PathVariable("id") Integer id, @RequestBody Bookmark bookmark) {
         bookmark.setId(id);
         bookmarkService.updateBookmark(bookmark);
+        return ResponseUtil.buildSuccessResult("update.success");
     }
 
     @GetMapping

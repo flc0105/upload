@@ -28,6 +28,9 @@ public interface BookmarkMapper {
     @Select("SELECT * FROM bookmark WHERE id = #{id}")
     Bookmark findById(Integer id);
 
+    @Select("SELECT * FROM bookmark WHERE name = #{name} and parentId = #{parentId} and bookmarkType = 0")
+    List<Bookmark> findByName(String name, Integer parentId);
+
     @Select("SELECT * FROM bookmark")
     @Results(id = "bookmarkMap", value = {
             @Result(property = "parentId", column = "parentId"),

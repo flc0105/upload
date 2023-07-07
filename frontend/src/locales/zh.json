@@ -90,5 +90,7 @@
   "folder_is_empty": "文件夹为空",
   "open": "打开",
   "change_language": "切换语言",
-  "access_denied": "拒绝访问"
+  "access_denied": "拒绝访问",
+  "edit_name": "编辑名称",
+  "name_cannot_be_empty": "名称不能为空"
 }

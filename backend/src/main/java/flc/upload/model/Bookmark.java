@@ -38,6 +38,26 @@ public class Bookmark {
         return bookmarkType == BookmarkType.DIRECTORY.getValue() ? "directory" : "bookmark";
     }
 
+    public void copyFrom(Bookmark bookmark) {
+        if (bookmark.getName() != null) {
+            setName(bookmark.getName());
+        }
+        if (bookmark.getUrl() != null) {
+            setUrl(bookmark.getUrl());
+        }
+        if (bookmark.getIcon() != null) {
+            setIcon(bookmark.getIcon());
+        }
+    }
+
+    public boolean isValidName() {
+        if (getName() == null || getName().trim().length() == 0 || name.equals("Home")) {
+            return false;
+        }
+
+        return !(name.contains("/") || name.contains("\\") || name.contains("?") || name.contains("#") || name.contains("."));
+    }
+
     public Integer getId() {
         return id;
     }

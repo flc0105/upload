@@ -91,5 +91,7 @@
   "folder_is_empty": "Folder is empty.",
   "open": "Open",
   "change_language": "Switch language",
-  "access_denied": "Access denied."
+  "access_denied": "Access denied.",
+  "edit_name": "Edit name",
+  "name_cannot_be_empty": "Name cannot be empty."
 }

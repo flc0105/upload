@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class BookmarkServiceImpl implements BookmarkService {
@@ -25,13 +26,18 @@ public class BookmarkServiceImpl implements BookmarkService {
     @Override
     public void addBookmark(Bookmark bookmark) {
         if (bookmark.isDirectory()) {
-            if (bookmark.getName().contains("/") || bookmark.getName().contains("\\")) {
+            String newName = bookmark.getName();
+            if (!bookmark.isValidName()) {
                 throw new BusinessException("directory.name.illegal");
+            }
+            if (!bookmarkMapper.findByName(newName, bookmark.getParentId()).isEmpty()) {
+                throw new BusinessException("directory.already.exists");
             }
         }
         if (bookmark.isBookmark()) {
             bookmark.setUrl(bookmark.getUrl().contains("://") ? bookmark.getUrl() : "http://" + bookmark.getUrl());
         }
+        bookmark.setName(bookmark.getName() != null ? bookmark.getName().trim() : null);
         bookmarkMapper.addBookmark(bookmark);
     }
 
@@ -47,7 +53,19 @@ public class BookmarkServiceImpl implements BookmarkService {
 
     @Override
     public void updateBookmark(Bookmark bookmark) {
-        bookmarkMapper.updateBookmark(bookmark);
+        Bookmark existingBookmark = bookmarkMapper.findById(bookmark.getId());
+        if (existingBookmark.isDirectory()) {
+            String newName = bookmark.getName();
+            if (!bookmark.isValidName()) {
+                throw new BusinessException("directory.name.illegal");
+            }
+            if (!bookmarkMapper.findByName(newName, existingBookmark.getParentId()).isEmpty() && !Objects.equals(existingBookmark.getName(), newName)) {
+                throw new BusinessException("directory.already.exists");
+            }
+        }
+        existingBookmark.copyFrom(bookmark);
+        existingBookmark.setName(existingBookmark.getName().trim());
+        bookmarkMapper.updateBookmark(existingBookmark);
     }
 
     @Override

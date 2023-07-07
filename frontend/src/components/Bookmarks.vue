@@ -5,17 +5,19 @@
     }}</v-contextmenu-item>
     <v-contextmenu-item
       @click="
+        $root.inputValue = '';
         $root.showInput($t('new_bookmark'), $t('enter_url'), function () {
           add('bookmark');
-        })
+        });
       "
       >{{ $t("new_bookmark") }}</v-contextmenu-item
     >
     <v-contextmenu-item
       @click="
+        $root.inputValue = '';
         $root.showInput($t('new_directory'), $t('enter_name'), function () {
           add('directory');
-        })
+        });
       "
       >{{ $t("new_directory") }}</v-contextmenu-item
     >
@@ -25,10 +27,13 @@
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
         <li class="breadcrumb-item" v-for="(value, key) in mapping" :key="key">
-          <a v-if="isActive(key)">{{ key }}</a>
-          <router-link v-else :to="`/bookmark${value}`" class="link-primary">{{
-            key
-          }}</router-link>
+          <a v-if="isActive(value[0])">{{ value[0] }}</a>
+          <router-link
+            v-else
+            :to="`/bookmark${value[1]}`"
+            class="link-primary"
+            >{{ value[0] }}</router-link
+          >
         </li>
       </ol>
     </nav>
@@ -94,6 +99,22 @@
                   <a
                     class="dropdown-item"
                     @click="
+                      $root.inputValue = bookmark.name;
+                      $root.showInput(
+                        $t('edit_name'),
+                        $t('enter_name'),
+                        function () {
+                          update(bookmark.id);
+                        }
+                      );
+                    "
+                    >{{ $t("edit_name") }}</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    @click="
                       $root.showConfirm(function () {
                         deleteBookmark(bookmark.id);
                       })
@@ -147,7 +168,7 @@ export default {
   data() {
     return {
       page: [],
-      mapping: {},
+      mapping: null,
       bookmarks: "",
       currentId: 0,
       url: "", // 输入的url
@@ -168,13 +189,13 @@ export default {
         data = {
           bookmarkType: 0,
           parentId: this.currentId,
-          name: this.$root.$refs.input.value,
+          name: this.$root.$refs.input.value.trim(),
         };
       } else {
         data = {
           bookmarkType: 1,
           parentId: this.currentId,
-          url: this.$root.$refs.input.value,
+          url: this.$root.$refs.input.value.trim(),
         };
       }
 
@@ -212,8 +233,33 @@ export default {
         }
       );
     },
+    // 修改名称
+    update(bookmarkId) {
+      if (this.$root.$refs.input.value.trim().length === 0) {
+        this.$root.showModal(this.$t("alert"), this.$t("name_cannot_be_empty"));
+        return;
+      }
+      sendRequest.call(
+        this,
+        "put",
+        "/bookmarks/" + bookmarkId,
+        {
+          // bookmarId: bookmarkId,
+          name: this.$root.$refs.input.value.trim(),
+        },
+        (res) => {
+          this.list().then(() => {
+            var paths = this.$route.params.path;
+            this.processPathArray(paths);
+            this.$root.showModal(this.$t("success"), res.msg);
+          });
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+        }
+      );
+    },
     deleteBookmark(id) {
-      console.log(id);
       sendRequest.call(
         this,
         "delete",
@@ -262,22 +308,20 @@ export default {
       return newPath;
     },
     /**
-     * 创建路径映射字典
+     * 创建路径映射Map
      * @param {string[]} pathArray - 路径数组
-     * @returns {Object} - 路径映射字典对象
+     * @returns {Map} - 路径映射Map
      */
     createPathMapping(pathArray) {
-      const pathMapping = {};
+      const pathMapping = new Map();
+      pathMapping.set("Home", "/");
 
       let path = "";
       for (const element of pathArray) {
         path += `/${element}`;
-        pathMapping[element] = path;
+        pathMapping.set(element, path);
       }
-
-      //return pathMapping;
-      const baseMapping = { Home: "/" };
-      return { ...baseMapping, ...pathMapping };
+      return pathMapping;
     },
     /**
      * 根据路径查找对应的书签
@@ -337,8 +381,8 @@ export default {
      */
     processPathArray(pathArray) {
       this.mapping = this.createPathMapping(pathArray);
+      console.log(this.mapping);
       this.page = this.findBookmarksByPath(this.bookmarks, pathArray);
-      console.log(this.page);
     },
     refresh() {
       this.list().then(() => {
