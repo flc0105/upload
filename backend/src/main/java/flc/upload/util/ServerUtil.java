@@ -15,11 +15,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.CodeSource;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -96,7 +94,6 @@ public class ServerUtil {
             }
 
             map.put("working.directory", normalizePath(System.getProperty("user.dir")));
-
             map.put("number.of.pastes", String.valueOf(sqlMapper.executeQueryCount("paste")));
             map.put("number.of.bookmarks", String.valueOf(sqlMapper.executeQueryCount("bookmark")));
         } catch (Exception e) {

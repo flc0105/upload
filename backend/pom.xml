@@ -10,7 +10,7 @@
     </parent>
     <groupId>flc</groupId>
     <artifactId>upload</artifactId>
-    <version>0.2.3-SNAPSHOT</version>
+    <version>0.2.4-SNAPSHOT</version>
     <name>upload</name>
     <description>Demo project for Spring Boot</description>
 

@@ -108,7 +108,6 @@ public class ConfigController {
     @PostMapping("/logs/delete")
     public Result<?> deleteLogs() {
         LogAspect.logs.clear();
-//        LogAspect.cachedApis.clear();
         return ResponseUtil.buildSuccessResult("delete.success");
     }
 

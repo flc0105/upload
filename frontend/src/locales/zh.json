@@ -89,5 +89,6 @@
   "enter_name": "输入目录名称",
   "folder_is_empty": "文件夹为空",
   "open": "打开",
-  "change_language": "切换语言"
+  "change_language": "切换语言",
+  "access_denied": "拒绝访问"
 }

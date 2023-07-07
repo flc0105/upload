@@ -1,110 +1,142 @@
 # upload
 
-## 部署
+A file listing program developed using `Vue.js` and `Spring Boot`.
 
-### 下载
+## Features
+
+### File
+
+- Supports basic file operations: uploading, downloading, deleting, renaming, moving, creating folders, etc.
+- Supports bulk operations on files: batch downloading, batch deleting, batch moving.
+- Supports upload and download progress bars and real-time speed display.
+- Supports downloading files/folders as a compressed package.
+- Supports fuzzy search for quick file and directory lookup.
+- Supports viewing detailed information of files and folders.
+- Supports previewing image and text files (with code highlighting).
+- Allows setting private directories, accessible only by administrator.
+- Supports drag and drop file uploads (allowing guest uploads).
+- Supports generating file sharing links and image direct links.
+- Supports WebDAV.
+
+### Paste
+
+- Supports posting, deleting, modifying and viewing pastes.
+- Supports sharing Paste as individual links.
+- Allows setting pastes as private, which will not be displayed in the listing.
+- Supports setting expiration time for pastes, which will be automatically deleted after expiration.
+- Supports setting pastes to be self-destructing after viewing.
+- Supports code highlighting for viewing pastes.
+
+### Bookmark
+
+- Supports adding, deleting, modifying and viewing bookmarks.
+- Supports directory structure.
+- Supports automatically retrieving website titles and icons.
+- Supports importing and exporting bookmarks in JSON format.
+
+### Other
+
+- Supports internationalization.
+- Supports logging of operation history, detailed request logs for each API.
+- Supports simple authentication: administrator and guest.
+- Allows assigning permissions for each API and operation.
+- Supports viewing server status and information.
+- Supports modifying and viewing configuration settings.
+
+## Deployment
+
+### Download
 
 ```shell
-# 创建目录
+# Create directory
 mkdir /root/upload/
 
-# 切换目录
+# Change directory
 cd /root/upload/
 
-# 下载
-wget https://github.com/flc0105/upload/releases/download/v0.1.4/upload-0.1.4-SNAPSHOT.jar
+# Download
+wget https://github.com/flc0105/upload/releases/download/v0.x.x/upload-0.x.x-SNAPSHOT.jar
 ```
 
-### 启动
+### Start
 
 ```java
-java -jar upload-0.1.4-SNAPSHOT.jar
+java -jar upload-0.x.x-SNAPSHOT.jar
 ```
 
-参数：
+Parameters:
 
-`--spring.config.location=application.properties` 外部配置文件
+- `--spring.config.location=application.properties` External configuration file
+- `--server.port=8080` Port to start the server
+- `--upload.path`File storage path
+- `--password` Administrator password
+- `--webdav.username`/`--webdav.password` WebDAV username/password
 
-`--server.port=8080` 启动端口
-
-`--upload.path` 文件存储路径
-
-`--password` 密码
-
-`--webdav.username`/`--webdav.password` webdav用户名/密码
-
-`--private.directories` 私密目录
-
-### supervisor
+### Supervisor
 
 #### CentOS
 
 ```shell
-# 安装supervisor
+# Install supervisor
 yum install -y supervisor
 
-# 安装openjdk
+# Install openjdk
 yum install -y java-1.8.0-openjdk
 
-# 添加配置
+# Add configuration
 vim /etc/supervisord.d/upload.ini
 
 [program:upload]
-command=/usr/bin/java -jar /root/upload/upload-0.1.4-SNAPSHOT.jar
+command=/usr/bin/java -jar /root/upload/upload-0.x.x-SNAPSHOT.jar
 redirect_stderr=true
 stdout_logfile=/root/upload/upload.stdout.log
 
-# 启动supervisor服务
+# Start supervisor service
 systemctl start supervisord.service
 systemctl enable supervisord.service
 
-# 启动
+# Start
 supervisorctl start upload
 ```
 
 #### Ubuntu
 
 ```shell
-# 安装openjdk
+# Install openjdk
 apt-get update
 apt install openjdk-8-jdk
 
-# 安装supervisor
+# Install supervisor
 apt install supervisor
 
-# 添加配置
+# Add configuration
 vim /etc/supervisor/conf.d/upload.conf
 
 [program:upload]
-command=/usr/bin/java -jar /root/upload/upload-0.1.4-SNAPSHOT.jar
+command=/usr/bin/java -jar /root/upload/upload-0.x.x-SNAPSHOT.jar
 redirect_stderr=true
 stdout_logfile=/root/upload/upload.stdout.log
 
-# 使配置生效
+# Apply the configuration
 supervisorctl reread && supervisorctl update
 ```
 
-### docker
-
-```shell
-# 创建Dockerfile
-vim Dockerfile
-```
+### Docker
 
 ```dockerfile
+# Create Dockerfile
+vim Dockerfile
+
 FROM openjdk:8-jdk-alpine
 WORKDIR /root/upload
 COPY *.jar app.jar
 ENV PORT 80
 ENV PASSWORD flc
 ENTRYPOINT java -jar app.jar --server.port=$PORT --password=$PASSWORD
-```
 
-```shell
-# 构建镜像
+# Build the image
 docker build -t flc/upload .
 
-# 启动容器
-docker run --restart=always -p <本地端口>:80 -v <本地目录>:/root/upload/files --env PASSWORD=<密码> --env PORT=80 -d flc/upload
+# Run the container
+docker run --restart=always -p <local_port>:80 -v <local_directory>:/root/upload/files --env PASSWORD=<password> --env PORT=80 -d flc/upload
 ```
-

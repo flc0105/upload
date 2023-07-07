@@ -111,24 +111,6 @@ export default {
     };
   },
   methods: {
-    // list() {
-    //   this.$root.loading = true;
-    //   axios
-    //     .post("/logs/list")
-    //     .then((res) => {
-    //       if (res.success) {
-    //         this.logs = res.detail;
-    //       } else {
-    //         this.$root.showModal(this.$t("error"), res.msg);
-    //       }
-    //     })
-    //     .catch((err) => {
-    //       this.$root.showModal(this.$t("error"), err.message);
-    //     })
-    //     .finally(() => {
-    //       this.$root.loading = false;
-    //     });
-    // },
     goToPage(page) {
       if (page == this.currentPage) {
         return;
@@ -198,19 +180,16 @@ export default {
       !this.$root.hasToken(() => {
         document.getElementById("alert").innerHTML = "";
         this.page(1);
-        // this.list();
       })
     ) {
       document.getElementById("alert").innerHTML = [
         `<div class="alert alert-danger alert-dismissible" role="alert">`,
-        `   <div>拒绝访问</div>`,
+        `   <div>` + this.$t("access_denied") + `</div>`,
         '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
         "</div>",
       ].join("");
       return;
     }
-
-    // this.list();
     this.page(1);
   },
 };
