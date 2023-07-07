@@ -66,24 +66,19 @@ public class ConfigController {
 //        return ResponseUtil.buildSuccessResult("query.success", result);
 //    }
 
-    @ApiOperation("日志_分页查询")
+    @ApiOperation("日志_分页查询") //TODO：日志记录过于频繁
     @Log
     @Permission
     @GetMapping("/logs/list")
     public Result<?> listLogs(@RequestParam int page) {
-//        List<Map<String, String>> result = LogAspect.logs.stream()
-//                .map(InternationalizationUtil::translateMapKeys)
-//                .collect(Collectors.toList());
-//        return ResponseUtil.buildSuccessResult("query.success", result);
-
         int pageSize = 10; // 每页显示的记录数
-        List<Map<String, String>> allLogs = LogAspect.logs.stream()
-                .map(InternationalizationUtil::translateMapKeys)
-                .collect(Collectors.toList());
+        List<Map<String, String>> allLogs = LogAspect.logs;
 
-        Collections.reverse(allLogs);
+        // 创建逆转后的日志列表
+        List<Map<String, String>> reversedLogs = new ArrayList<>(allLogs);
+        Collections.reverse(reversedLogs);
 
-        int totalLogs = allLogs.size(); // 总记录数
+        int totalLogs = reversedLogs.size(); // 总记录数
         int totalPages = (int) Math.ceil((double) totalLogs / pageSize); // 总页数
 
         // 计算起始索引和结束索引
@@ -91,7 +86,12 @@ public class ConfigController {
         int endIndex = Math.min(startIndex + pageSize, totalLogs);
 
         // 获取指定页码的记录
-        List<Map<String, String>> pageLogs = allLogs.subList(startIndex, endIndex);
+        List<Map<String, String>> pageLogs = reversedLogs.subList(startIndex, endIndex);
+
+        // 对记录进行国际化处理
+        pageLogs = pageLogs.stream()
+                .map(InternationalizationUtil::translateMapKeys)
+                .collect(Collectors.toList());
 
         // 构建分页结果对象
         Map<String, Object> pageResult = new HashMap<>();
@@ -100,8 +100,6 @@ public class ConfigController {
         pageResult.put("data", pageLogs);
 
         return ResponseUtil.buildSuccessResult("query.success", pageResult);
-
-
     }
 
     @ApiOperation("日志_删除")
@@ -110,6 +108,7 @@ public class ConfigController {
     @PostMapping("/logs/delete")
     public Result<?> deleteLogs() {
         LogAspect.logs.clear();
+//        LogAspect.cachedApis.clear();
         return ResponseUtil.buildSuccessResult("delete.success");
     }
 

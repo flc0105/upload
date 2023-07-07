@@ -1,5 +1,19 @@
 <template>
-  <div class="card border-bottom-0">
+  <v-contextmenu ref="contextmenu">
+    <v-contextmenu-item @click="list()">{{ $t("refresh") }}</v-contextmenu-item>
+    <v-contextmenu-item
+      @click="
+        $root.inputValue = '';
+        $root.showInput(
+          $t('new_folder'),
+          $t('enter_a_new_folder_name'),
+          createDirectory
+        );
+      "
+      >{{ $t("new_folder") }}</v-contextmenu-item
+    >
+  </v-contextmenu>
+  <div class="card border-bottom-0" v-contextmenu:contextmenu>
     <div class="card-header">
       <ol class="breadcrumb float-start" style="margin: 0.5rem 0">
         <li
@@ -570,6 +584,8 @@ import Qs from "qs";
 import "file-saver";
 import "bootstrap/dist/js/bootstrap.bundle";
 import { BlobWriter, HttpReader, TextReader, ZipWriter } from "@zip.js/zip.js";
+import { directive, Contextmenu, ContextmenuItem } from "v-contextmenu";
+import "v-contextmenu/dist/themes/default.css";
 
 import {
   sendRequest,
@@ -581,6 +597,13 @@ let cancel;
 const CancelToken = axios.CancelToken;
 
 export default {
+  directives: {
+    contextmenu: directive,
+  },
+  components: {
+    [Contextmenu.name]: Contextmenu,
+    [ContextmenuItem.name]: ContextmenuItem,
+  },
   data() {
     return {
       /**

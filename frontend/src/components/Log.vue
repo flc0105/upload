@@ -1,19 +1,18 @@
-<template id="share-list">
+<template>
   <div id="alert"></div>
+  <v-contextmenu ref="contextmenu">
+    <v-contextmenu-item @click="page(currentPage)">{{
+      $t("refresh")
+    }}</v-contextmenu-item>
+    <v-contextmenu-item @click="clearLogs()">{{
+      $t("clear")
+    }}</v-contextmenu-item>
+    <v-contextmenu-item @click="exportLogs()">{{
+      $t("export")
+    }}</v-contextmenu-item>
+  </v-contextmenu>
 
-  <!-- <div class="btn-group mb-3">
-    <button class="btn btn-outline-primary" @click="list()">
-      {{ $t("refresh") }}
-    </button>
-    <button class="btn btn-outline-primary" @click="exportLogs()">
-      {{ $t("export") }}
-    </button>
-    <button class="btn btn-outline-primary" @click="clearLogs()">
-      {{ $t("clear") }}
-    </button>
-  </div> -->
-
-  <div style="overflow-x: scroll; height: 470px">
+  <div style="overflow-x: scroll; height: 470px" v-contextmenu:contextmenu>
     <table class="table table-hover" style="white-space: nowrap">
       <thead>
         <tr>
@@ -93,7 +92,17 @@ import axios from "axios";
 
 import "bootstrap/dist/js/bootstrap.bundle";
 import "file-saver";
+import { directive, Contextmenu, ContextmenuItem } from "v-contextmenu";
+import "v-contextmenu/dist/themes/default.css";
+
 export default {
+  directives: {
+    contextmenu: directive,
+  },
+  components: {
+    [Contextmenu.name]: Contextmenu,
+    [ContextmenuItem.name]: ContextmenuItem,
+  },
   data() {
     return {
       logs: {},
@@ -102,25 +111,28 @@ export default {
     };
   },
   methods: {
-    list() {
-      this.$root.loading = true;
-      axios
-        .post("/logs/list")
-        .then((res) => {
-          if (res.success) {
-            this.logs = res.detail;
-          } else {
-            this.$root.showModal(this.$t("error"), res.msg);
-          }
-        })
-        .catch((err) => {
-          this.$root.showModal(this.$t("error"), err.message);
-        })
-        .finally(() => {
-          this.$root.loading = false;
-        });
-    },
+    // list() {
+    //   this.$root.loading = true;
+    //   axios
+    //     .post("/logs/list")
+    //     .then((res) => {
+    //       if (res.success) {
+    //         this.logs = res.detail;
+    //       } else {
+    //         this.$root.showModal(this.$t("error"), res.msg);
+    //       }
+    //     })
+    //     .catch((err) => {
+    //       this.$root.showModal(this.$t("error"), err.message);
+    //     })
+    //     .finally(() => {
+    //       this.$root.loading = false;
+    //     });
+    // },
     goToPage(page) {
+      if (page == this.currentPage) {
+        return;
+      }
       if (page >= 1 && page <= this.totalPages) {
         this.page(page);
       }
@@ -159,7 +171,7 @@ export default {
         .post("logs/delete")
         .then((res) => {
           if (res.success) {
-            this.list();
+            this.page(1);
             this.$root.showModal(this.$t("success"), res.msg);
           } else {
             this.$root.showModal(this.$t("error"), res.msg);
@@ -185,7 +197,8 @@ export default {
     if (
       !this.$root.hasToken(() => {
         document.getElementById("alert").innerHTML = "";
-        this.list();
+        this.page(1);
+        // this.list();
       })
     ) {
       document.getElementById("alert").innerHTML = [
