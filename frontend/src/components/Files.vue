@@ -326,7 +326,7 @@
             class="filename text-truncate"
             @click="changeDirectory(folder.relativePath)"
           >
-            <i class="bi bi-folder2"></i>&nbsp;
+            <i class="bi bi-folder2 me-2"></i>
             <a class="link-primary">{{ folder.name }}</a>
           </td>
           <td class="size" v-if="columns.includes('size')">-</td>
@@ -417,8 +417,8 @@
             />
           </td>
           <td class="filename text-truncate">
-            <i class="bi" :class="getIcon(file.name, file.fileType)"></i>&nbsp;
-            {{ file.name }}
+            <i class="bi me-2" :class="getIcon(file.name, file.fileType)"></i
+            >{{ file.name }}
           </td>
           <td class="size" v-if="columns.includes('size')">
             {{ $root.formatBytes(file.length) }}
@@ -817,7 +817,7 @@ export default {
      * @param {String|Array<string>} relativePath
      * @param {String} api
      */
-    download(relativePath, api) {
+    download(api, data) {
       this.$root.message.title = this.$t("download_progress");
       const modal = new Modal(this.$root.$refs.progressModal);
       modal.show();
@@ -827,9 +827,10 @@ export default {
       axios({
         method: "post",
         url: axios.defaults.baseURL + api,
-        data: Qs.stringify({
-          relativePath: relativePath,
-        }),
+        data: data,
+        // data: Qs.stringify({
+        //   relativePath: relativePath,
+        // }),
         responseType: "blob",
         onDownloadProgress: (e) => {
           const current = e.loaded;
@@ -877,7 +878,12 @@ export default {
      * @param {String} relativePath
      */
     downloadFile(relativePath) {
-      this.download(relativePath, "file/download");
+      this.download(
+        "file/download",
+        Qs.stringify({
+          relativePath: relativePath,
+        })
+      );
     },
 
     /**
@@ -885,7 +891,10 @@ export default {
      * @param {Array<string>} relativePath
      */
     zipAndDownload(relativePath) {
-      this.download(relativePath, "file/zipAndDownload");
+      // this.download(relativePath, "file/zipAndDownload");
+      this.download("file/zipAndDownload", {
+        relativePath: relativePath,
+      });
     },
 
     /**

@@ -34,7 +34,7 @@ public class UploadApplication {
                             "➜ Local: \t\thttp://localhost{}\n\t" +
                             "➜ External: \thttp://{}{}\n\t" +
 //                            "Doc: \t\thttp://localhost{}/swagger-ui/index.html\n" +
-                            "➜ Doc: \t\thttp://localhost{}/doc.html\n" +
+                            "➜ Doc: \t\t\thttp://localhost{}/doc.html\n" +
                             "----------------------------------------------------------",
                     env.getProperty("spring.application.name"),
                     port,
