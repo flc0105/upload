@@ -7,7 +7,6 @@ import flc.upload.service.ShareCodeService;
 import flc.upload.util.CommonUtil;
 import flc.upload.util.FileUtil;
 import flc.upload.util.ResponseUtil;
-import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +30,7 @@ public class ShareCodeServiceImpl implements ShareCodeService {
             return ResponseUtil.buildSuccessResult("query.success", shareCode.getCode());
         }
         shareCode = new ShareCode();
-        shareCode.setCode(RandomStringUtils.randomAlphanumeric(4).toLowerCase());
+        shareCode.setCode(CommonUtil.generateRandomAlphanumeric(4));
         shareCode.setPath(path);
         if (shareCodeMapper.add(shareCode) != 0) {
             return ResponseUtil.buildSuccessResult("add.success", shareCode.getCode());

@@ -11,6 +11,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 /**
  * 通用工具类，提供常用的通用方法和工具函数。
@@ -120,6 +122,16 @@ public class CommonUtil {
         PrintWriter pw = new PrintWriter(sw);
         throwable.printStackTrace(pw);
         return sw.toString();
+    }
+
+    public static String generateRandomAlphanumeric(int length) {
+        String characters = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+        return ThreadLocalRandom.current()
+                .ints(length, 0, characters.length())
+                .mapToObj(characters::charAt)
+                .map(Object::toString)
+                .collect(Collectors.joining());
     }
 
 }

@@ -92,5 +92,8 @@
   "change_language": "切换语言",
   "access_denied": "拒绝访问",
   "edit_name": "编辑名称",
-  "name_cannot_be_empty": "名称不能为空"
+  "name_cannot_be_empty": "名称不能为空",
+  "import": "导入",
+  "export_excel": "导出为 Excel 文件",
+  "not_valid_json_data": "不是合法的 JSON 数据"
 }

@@ -2,6 +2,7 @@ package flc.upload.config;
 
 
 import com.fasterxml.classmate.TypeResolver;
+import flc.upload.model.AppConfig;
 import flc.upload.model.File;
 import flc.upload.model.Folder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,8 @@ public class SwaggerConfig {
                 .build()
                 .apiInfo(apiInfo())
                 .additionalModels(typeResolver.resolve(File.class))
-                .additionalModels(typeResolver.resolve(Folder.class));
+                .additionalModels(typeResolver.resolve(Folder.class))
+                .additionalModels(typeResolver.resolve(AppConfig.class));
     }
 
     /**

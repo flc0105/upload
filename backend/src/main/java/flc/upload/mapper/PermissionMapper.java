@@ -17,9 +17,6 @@ public interface PermissionMapper {
     @Select("select * from permission where path=#{path}")
     Permission get(@Param("path") String path) throws Exception;
 
-    @Select("select path from permission where isAdmin=1")
-    List<String> findProtected() throws Exception;
-
     @Select("select * from permission")
     List<Permission> findAll() throws Exception;
 

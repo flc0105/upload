@@ -1395,36 +1395,6 @@ export default {
       } finally {
         this.$root.loading = false;
       }
-
-      // this.$root.loading = true;
-      // try {
-      //   const heic2anyModule = await loadHeic2Any();
-      //   fetch(
-      //     axios.defaults.baseURL + "/file/download?relativePath=" + relativePath
-      //   )
-      //     .then((res) => res.blob())
-      //     .then((blob) =>
-      //       heic2anyModule({
-      //         blob,
-      //         toType: "image/jpeg",
-      //       })
-      //     )
-      //     .then((result) => {
-      //       const blob = new Blob([result], { type: "image/jpeg" });
-      //       const blobURL = URL.createObjectURL(blob);
-      //       this.$root.src = "";
-      //       this.$root.src = blobURL;
-      //       new Modal(this.$root.$refs.imageModal).show();
-      //     })
-      //     .catch((e) => {
-      //       this.$root.showModal("错误", e.message);
-      //     })
-      //     .finally(() => {
-      //       this.$root.loading = false;
-      //     });
-      // } catch (error) {
-      //   this.$root.showModal("错误", error.message);
-      // }
     },
   },
   mounted() {

@@ -30,11 +30,19 @@
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+@media screen and (max-width: 768px) {
+  td:nth-child(2),
+  th:nth-child(2),
+  td:nth-child(3),
+  th:nth-child(3) {
+    display: none;
+  }
+}
+</style>
 
 <script>
 import axios from "axios";
-import Qs from "qs";
 
 import "bootstrap/dist/js/bootstrap.bundle";
 export default {

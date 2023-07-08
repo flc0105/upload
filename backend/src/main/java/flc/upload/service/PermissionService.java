@@ -9,6 +9,4 @@ public interface PermissionService {
     Result<?> get(String path) throws Exception;
 
     Result<?> findAll() throws Exception;
-
-    Result<?> findProtected() throws Exception;
 }

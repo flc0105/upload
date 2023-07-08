@@ -7,7 +7,7 @@
             to="/files"
             :class="[
               'nav-link',
-              { active: $router.currentRoute.value.meta.title == '文件列表' },
+              { active: $router.currentRoute.value.meta.title == 'files' },
             ]"
             >{{ $t("files") }}</router-link
           >
@@ -17,7 +17,7 @@
             to="/pastes"
             :class="[
               'nav-link',
-              { active: $router.currentRoute.value.meta.title == '文本共享' },
+              { active: $router.currentRoute.value.meta.title == 'pastes' },
             ]"
             >{{ $t("pastes") }}</router-link
           >
@@ -27,11 +27,24 @@
             to="/bookmark"
             :class="[
               'nav-link',
-              { active: $router.currentRoute.value.meta.title == '书签列表' },
+              { active: $router.currentRoute.value.meta.title == 'bookmarks' },
             ]"
             >{{ $t("bookmarks") }}</router-link
           >
         </li>
+
+        <li class="nav-item">
+          <a
+            v-if="
+              ['operation_logs', 'server_info', 'permission_control'].includes(
+                $router.currentRoute.value.meta.title
+              )
+            "
+            class="nav-link active"
+            >{{ $t($router.currentRoute.value.meta.title) }}</a
+          >
+        </li>
+
         <li class="nav-item ms-auto dropdown">
           <a
             class="nav-link dropdown-toggle"

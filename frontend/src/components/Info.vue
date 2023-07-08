@@ -1,64 +1,82 @@
 <template>
   <div id="alert"></div>
-  <h2 class="pt-2 pb-2 border-bottom">{{ $t("server_info") }}</h2>
 
-  <div class="row g-4 py-5 row-cols-1 row-cols-lg-4">
-    <div class="col" v-for="(value, key) in info" :key="key">
-      <div class="card rounded-3 shadow-sm" style="min-height: 10rem">
-        <div class="card-body">
-          <h5 class="card-title text-primary">{{ key }}</h5>
-          <p class="card-text">
-            {{ value }}
-          </p>
+  <div v-show="show">
+    <h2 class="pt-2 pb-2 border-bottom">{{ $t("server_info") }}</h2>
+
+    <div class="row g-4 py-5 row-cols-1 row-cols-lg-4" v-if="$root.loading">
+      <div class="col" v-for="index in 23" :key="index">
+        <div class="card rounded-3 shadow-sm" style="min-height: 10rem">
+          <div class="card-body">
+            <h5 class="card-title placeholder-glow">
+              <span class="placeholder col-6"></span>
+            </h5>
+            <p class="card-text placeholder-glow">
+              <span class="placeholder col-8"></span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <h2 class="pt-2 pb-2 border-bottom">{{ $t("configuration") }}</h2>
+    <div class="row g-4 py-5 row-cols-1 row-cols-lg-4" v-else>
+      <div class="col" v-for="(value, key) in info" :key="key">
+        <div class="card rounded-3 shadow-sm" style="min-height: 10rem">
+          <div class="card-body">
+            <h5 class="card-title text-primary">{{ key }}</h5>
+            <p class="card-text">
+              {{ value }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <div class="row g-4 py-5 row-cols-1 row-cols-lg-4">
-    <div class="col" v-for="(value, key) in config" :key="key">
-      <div class="card rounded-3 shadow-sm" style="min-height: 10rem">
-        <div class="card-body">
-          <h5 class="card-title text-primary">{{ key }}</h5>
-          <p
-            class="card-text"
-            style="
-              min-height: 3rem;
-              max-height: 3rem;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            "
-          >
-            {{ value }}
-          </p>
-          <div class="d-flex justify-content-between align-items-center">
-            <div class="btn-group">
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-primary"
-                @click="showDetails(value)"
-              >
-                View
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-primary"
-                @click="
-                  $root.inputValue = value;
-                  $root.showInput(
-                    $t('update_configuration'),
-                    $t('enter_configuration_value', { item: key }),
-                    function () {
-                      update(key, parseValue($root.$refs.input.value));
-                    }
-                  );
-                "
-              >
-                Edit
-              </button>
+    <h2 class="pt-2 pb-2 border-bottom">{{ $t("configuration") }}</h2>
+
+    <div class="row g-4 py-5 row-cols-1 row-cols-lg-4">
+      <div class="col" v-for="(value, key) in config" :key="key">
+        <div class="card rounded-3 shadow-sm" style="min-height: 10rem">
+          <div class="card-body">
+            <h5 class="card-title text-primary">{{ key }}</h5>
+            <p
+              class="card-text"
+              style="
+                min-height: 3rem;
+                max-height: 3rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+              "
+            >
+              {{ value }}
+            </p>
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="btn-group">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-primary"
+                  @click="showDetails(value)"
+                >
+                  View
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-primary"
+                  @click="
+                    $root.inputValue = value;
+                    $root.showInput(
+                      $t('update_configuration'),
+                      $t('enter_configuration_value', { item: key }),
+                      function () {
+                        update(key, parseValue($root.$refs.input.value));
+                      }
+                    );
+                  "
+                >
+                  Edit
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -78,6 +96,7 @@ export default {
     return {
       info: {},
       config: {},
+      show: false,
     };
   },
   methods: {
@@ -101,7 +120,7 @@ export default {
     },
 
     listConfig() {
-      this.$root.loading = true;
+      // this.$root.loading = true;
       axios
         .post("/config/list")
         .then((res) => {
@@ -115,7 +134,7 @@ export default {
           this.$root.showModal(this.$t("error"), err.message);
         })
         .finally(() => {
-          this.$root.loading = false;
+          // this.$root.loading = false;
         });
     },
     update(key, value) {
@@ -180,6 +199,7 @@ export default {
         document.getElementById("alert").innerHTML = "";
         this.list();
         this.listConfig();
+        this.show = true;
       })
     ) {
       document.getElementById("alert").innerHTML = [
@@ -188,11 +208,12 @@ export default {
         '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
         "</div>",
       ].join("");
+      this.show = false;
       return;
     }
-
     this.list();
     this.listConfig();
+    this.show = true;
   },
 };
 </script>

@@ -1,5 +1,7 @@
 package flc.upload.model;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -7,35 +9,71 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@ApiModel(description = "应用程序配置")
 @Component
 @Configuration
 @PropertySource("classpath:app-config.properties")
 public class AppConfig {
 
-    @Value("${preview.max-file-size}")
-    private int previewMaxFileSize;
-
-    @Value("${download.buffer-size}")
-    private int downloadBufferSize;
-
-    @Value("#{'${private.directories}'.split(',')}")
-    private List<String> privateDirectories;
-
-    @Value("${preview.compress-image}")
-    private boolean previewCompressImage;
+    @Value("${cors.allowed-origins}")
+    @ApiModelProperty(value = "允许的跨域来源列表")
+    private List<String> corsAllowedOrigins;
 
     @Value("${deactivated.tokens}")
+    @ApiModelProperty(value = "已停用的Token列表")
     private List<String> deactivatedTokens;
-    @Value("${request.timeout}")
-    private int requestTimeout;
+
+    @Value("${download.buffer-size}")
+    @ApiModelProperty(value = "下载缓冲区大小")
+    private int downloadBufferSize;
 
     @Value("${jwt.secret-key}")
+    @ApiModelProperty(value = "JWT密钥")
     private String jwtSecretKey;
+
     @Value("${jwt.expiration-time}")
+    @ApiModelProperty(value = "JWT过期时间（秒）")
     private int jwtExpirationTime;
 
     @Value("${log.max-size}")
+    @ApiModelProperty(value = "日志最大数量")
     private int logMaxSize;
+
+    @Value("${preview.max-file-size}")
+    @ApiModelProperty(value = "预览最大文件大小")
+    private int previewMaxFileSize;
+
+    @Value("${preview.compress-image}")
+    @ApiModelProperty(value = "预览时是否压缩图像")
+    private boolean previewCompressImage;
+
+    @Value("#{'${private.directories}'.split(',')}")
+    @ApiModelProperty(value = "私有目录列表")
+    private List<String> privateDirectories;
+
+    public List<String> getCorsAllowedOrigins() {
+        return corsAllowedOrigins;
+    }
+
+    public void setCorsAllowedOrigins(List<String> corsAllowedOrigins) {
+        this.corsAllowedOrigins = corsAllowedOrigins;
+    }
+
+    public List<String> getDeactivatedTokens() {
+        return deactivatedTokens;
+    }
+
+    public void setDeactivatedTokens(List<String> deactivatedTokens) {
+        this.deactivatedTokens = deactivatedTokens;
+    }
+
+    public int getDownloadBufferSize() {
+        return downloadBufferSize;
+    }
+
+    public void setDownloadBufferSize(int downloadBufferSize) {
+        this.downloadBufferSize = downloadBufferSize;
+    }
 
     public String getJwtSecretKey() {
         return jwtSecretKey;
@@ -53,12 +91,12 @@ public class AppConfig {
         this.jwtExpirationTime = jwtExpirationTime;
     }
 
-    public List<String> getDeactivatedTokens() {
-        return deactivatedTokens;
+    public int getLogMaxSize() {
+        return logMaxSize;
     }
 
-    public void setDeactivatedTokens(List<String> deactivatedTokens) {
-        this.deactivatedTokens = deactivatedTokens;
+    public void setLogMaxSize(int logMaxSize) {
+        this.logMaxSize = logMaxSize;
     }
 
     public int getPreviewMaxFileSize() {
@@ -69,22 +107,6 @@ public class AppConfig {
         this.previewMaxFileSize = previewMaxFileSize;
     }
 
-    public int getDownloadBufferSize() {
-        return downloadBufferSize;
-    }
-
-    public void setDownloadBufferSize(int downloadBufferSize) {
-        this.downloadBufferSize = downloadBufferSize;
-    }
-
-    public List<String> getPrivateDirectories() {
-        return privateDirectories;
-    }
-
-    public void setPrivateDirectories(List<String> privateDirectories) {
-        this.privateDirectories = privateDirectories;
-    }
-
     public boolean isPreviewCompressImage() {
         return previewCompressImage;
     }
@@ -93,19 +115,11 @@ public class AppConfig {
         this.previewCompressImage = previewCompressImage;
     }
 
-    public int getRequestTimeout() {
-        return requestTimeout;
+    public List<String> getPrivateDirectories() {
+        return privateDirectories;
     }
 
-    public void setRequestTimeout(int requestTimeout) {
-        this.requestTimeout = requestTimeout;
-    }
-
-    public int getLogMaxSize() {
-        return logMaxSize;
-    }
-
-    public void setLogMaxSize(int logMaxSize) {
-        this.logMaxSize = logMaxSize;
+    public void setPrivateDirectories(List<String> privateDirectories) {
+        this.privateDirectories = privateDirectories;
     }
 }

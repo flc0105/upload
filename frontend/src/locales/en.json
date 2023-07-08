@@ -93,5 +93,8 @@
   "change_language": "Switch language",
   "access_denied": "Access denied.",
   "edit_name": "Edit name",
-  "name_cannot_be_empty": "Name cannot be empty."
+  "name_cannot_be_empty": "Name cannot be empty.",
+  "import": "Import",
+  "export_excel": "Export as Excel file",
+  "not_valid_json_data": "Not valid JSON data."
 }

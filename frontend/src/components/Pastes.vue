@@ -103,7 +103,6 @@
 import Qs from "qs";
 
 import {
-  greet,
   calculateFromNow,
   calculateExpiresAt,
   sendRequest,
@@ -115,7 +114,6 @@ export default {
       pastes: [], //获取到的paste列表
       title: "", //标题输入框
       text: "", //正文输入框
-      // endpoints: [],
     };
   },
   methods: {
@@ -172,12 +170,12 @@ export default {
         }
       );
     },
+
     // 删除
     remove(id) {
       if (!this.$root.hasToken(() => this.remove(id))) {
         return;
       }
-
       const data = Qs.stringify({ id: id });
       sendRequest.call(
         this,
@@ -193,119 +191,9 @@ export default {
         }
       );
     },
-
-    /*
-    fetchTokenProtectedEndpoints() {
-      axios
-        .get("/permission/protected")
-        .then((response) => {
-          this.endpoints = response.detail;
-        })
-        .catch((error) => {
-          console.error("获取接口列表失败", error);
-        });
-    },
-
-    // 验证
-    handleVerify() {
-      return new Promise((resolve, reject) => {
-        // 弹出密码框
-        this.$root.$refs.password.value = "";
-        const modal = new Modal(this.$root.$refs.passwordModal);
-        modal.show();
-        this.$root.$refs.password.focus();
-
-        // 存储验证token的方法
-        this.$root.func = () => {
-          this.$root.confirmed = true;
-          modal.hide();
-          this.getToken()
-            .then(() => {
-              console.log("token验证成功，继续发送请求");
-              resolve();
-            })
-            .catch((error) => {
-              console.log("token验证失败，中止请求");
-              reject({ message: error });
-            });
-        };
-
-        // 关闭密码框的事件
-        var hideEvent = () => {
-          if (!this.$root.confirmed) {
-            reject("cancel");
-          }
-          this.$root.confirmed = false;
-          this.$root.$refs.passwordModal.removeEventListener(
-            "hidden.bs.modal",
-            hideEvent
-          );
-        };
-        this.$root.$refs.passwordModal.addEventListener(
-          "hidden.bs.modal",
-          hideEvent
-        );
-      });
-    },
-    // 验证token
-    getToken() {
-      return new Promise((resolve, reject) => {
-        axios
-          .post(
-            "/token/get",
-            Qs.stringify({ password: this.$root.$refs.password.value })
-          )
-          .then((res) => {
-            if (res.success) {
-              if (this.$root.isTokenMissing()) {
-                this.fetchTokenProtectedEndpoints();
-              } else {
-                this.endpoints = [];
-              }
-              resolve();
-            } else {
-              reject(res.msg);
-            }
-          })
-          .catch((err) => {
-            reject(err.message);
-          });
-      });
-    },*/
   },
   created() {
     this.list();
-    greet();
-    /*
-    if (this.$root.isTokenMissing()) {
-      this.fetchTokenProtectedEndpoints();
-    }
-
-    axios.interceptors.request.use(
-      async (config) => {
-        const isTokenProtected = this.endpoints.includes(config.url);
-        console.log(
-          "判断当前请求的 API 地址是否在权限接口列表中：" +
-            config.url +
-            " " +
-            isTokenProtected
-        );
-        if (isTokenProtected) {
-          await this.handleVerify();
-          console.log("验证通过后，继续发送请求：" + config.url);
-          return config;
-        }
-
-        console.log("不需要验证的接口直接发送请求：" + config.url);
-        return config;
-      },
-      (error) => {
-        console.log(error);
-        // 处理请求错误
-        return Promise.reject(error);
-      }
-    );
-    */
   },
 };
 </script>

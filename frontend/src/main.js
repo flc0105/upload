@@ -80,20 +80,22 @@ console.log(
   "background: #fadfa3; padding: 1px; border-radius: 0 3px 3px 0; color: #fff"
 );
 
-import { createI18n } from "vue-i18n";
+// import { createI18n } from "vue-i18n";
 
-const browserLocale = navigator.language; // 获取浏览器默认语言设置
-import zh from "./locales/zh";
-import en from "./locales/en";
+// const browserLocale = navigator.language; // 获取浏览器默认语言设置
+// import zh from "./locales/zh";
+// import en from "./locales/en";
 
-const i18n = createI18n({
-  // locale: 'zh', // 默认语言设置为中文
-  locale: browserLocale,
-  fallbackLocale: "en",
-  messages: {
-    zh,
-    en,
-  },
-});
+// const i18n = createI18n({
+//   // locale: 'zh', // 默认语言设置为中文
+//   locale: browserLocale,
+//   fallbackLocale: "en",
+//   messages: {
+//     zh,
+//     en,
+//   },
+// });
+
+import i18n from "./i18n/i18n";
 
 createApp(App).use(router).use(hljsVuePlugin).use(i18n).mount("#app");

@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import i18n from "../i18n/i18n";
 
 const routes = [
   {
@@ -7,57 +8,57 @@ const routes = [
   },
   {
     path: "/files",
-    meta: { title: "文件列表" },
+    meta: { title: "files" },
     component: () => import("../components/Files.vue"),
   },
   {
     path: "/pastes",
-    meta: { title: "文本共享" },
+    meta: { title: "pastes" },
     component: () => import("../components/Pastes.vue"),
   },
   {
     path: "/pastes/:id(\\d+)",
-    meta: { title: "文本共享" },
+    meta: { title: "pastes" },
     component: () => import("../components/Paste.vue"),
   },
   {
     path: "/share",
-    meta: { title: "文件列表" },
+    meta: { title: "files" },
     component: () => import("../components/Share.vue"),
   },
   {
     path: "/files/:code",
-    meta: { title: "文件列表" },
+    meta: { title: "files" },
     component: () => import("../components/File.vue"),
   },
   {
     path: "/bookmark",
-    meta: { title: "书签列表" },
+    meta: { title: "bookmarks" },
     component: () => import("../components/Bookmarks.vue"),
   },
   {
     path: "/bookmark/:path*", // 定义动态路由参数:path
-    meta: { title: "书签列表" },
+    meta: { title: "bookmarks" },
     component: () => import("../components/Bookmarks.vue"),
   },
   {
     path: "/upload",
-    meta: { title: "文件列表" },
+    meta: { title: "files" },
     component: () => import("../components/Upload.vue"),
   },
   {
     path: "/log",
-    meta: { title: "操作日志" },
+    meta: { title: "operation_logs" },
     component: () => import("../components/Log.vue"),
   },
   {
     path: "/server",
-    meta: { title: "服务器信息" },
+    meta: { title: "server_info" },
     component: () => import("../components/Info.vue"),
   },
   {
     path: "/permissions",
-    meta: { title: "权限控制" },
+    meta: { title: "permission_control" },
     component: () => import("../components/Permission.vue"),
   },
 ];
@@ -67,7 +68,14 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  document.title = to.meta.title || "404";
+  // document.title = to.meta.title || "404";
+
+  if (to.meta.title) {
+    document.title = i18n.global.t(to.meta.title);
+  } else {
+    document.title = "404";
+  }
+
   next();
 });
 

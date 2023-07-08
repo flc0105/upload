@@ -12,7 +12,11 @@
     }}</v-contextmenu-item>
   </v-contextmenu>
 
-  <div style="overflow-x: scroll; height: 470px" v-contextmenu:contextmenu>
+  <div
+    style="overflow-x: scroll; height: 470px"
+    v-contextmenu:contextmenu
+    v-show="show"
+  >
     <table class="table table-hover" style="white-space: nowrap">
       <thead>
         <tr>
@@ -48,7 +52,7 @@
     </table>
   </div>
 
-  <nav aria-label="Page navigation example">
+  <nav aria-label="Page navigation example" v-show="show">
     <ul class="pagination justify-content-center mt-4">
       <li :class="['page-item', { disabled: currentPage == 1 }]">
         <a class="page-link" @click="goToPage(currentPage - 1)">Previous</a>
@@ -108,6 +112,7 @@ export default {
       logs: {},
       totalPages: 0, // 总页数
       currentPage: 1, // 当前页数
+      show: false,
     };
   },
   methods: {
@@ -122,7 +127,7 @@ export default {
     page(page) {
       this.$root.loading = true;
       axios
-        .get("/logs/list?page=" + page)
+        .get("/logs/page?page=" + page)
         .then((res) => {
           if (res.success) {
             var result = res.detail;
@@ -150,7 +155,7 @@ export default {
       }
       this.$root.loading = true;
       axios
-        .post("logs/delete")
+        .post("/logs/delete")
         .then((res) => {
           if (res.success) {
             this.page(1);
@@ -178,6 +183,7 @@ export default {
   mounted() {
     if (
       !this.$root.hasToken(() => {
+        this.show = true;
         document.getElementById("alert").innerHTML = "";
         this.page(1);
       })
@@ -188,9 +194,11 @@ export default {
         '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
         "</div>",
       ].join("");
+      this.show = false;
       return;
     }
     this.page(1);
+    this.show = true;
   },
 };
 </script>

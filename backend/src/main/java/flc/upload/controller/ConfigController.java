@@ -54,23 +54,22 @@ public class ConfigController {
         return ResponseUtil.buildSuccessResult("update.success");
     }
 
-
-//    @ApiOperation("日志_查询")
-//    @Log
-//    @Permission
-//    @PostMapping("/logs/list")
-//    public Result<?> listLogs() {
-//        List<Map<String, String>> result = LogAspect.logs.stream()
-//                .map(InternationalizationUtil::translateMapKeys)
-//                .collect(Collectors.toList());
-//        return ResponseUtil.buildSuccessResult("query.success", result);
-//    }
-
-    @ApiOperation("日志_分页查询") //TODO：日志记录过于频繁
+    @ApiOperation("日志_查询所有")
     @Log
     @Permission
-    @GetMapping("/logs/list")
-    public Result<?> listLogs(@RequestParam int page) {
+    @PostMapping("/logs/list")
+    public Result<?> listLogs() {
+        List<Map<String, String>> result = LogAspect.logs.stream()
+                .map(InternationalizationUtil::translateMapKeys)
+                .collect(Collectors.toList());
+        return ResponseUtil.buildSuccessResult("query.success", result);
+    }
+
+    @ApiOperation("日志_分页查询")
+    @Log
+    @Permission
+    @GetMapping("/logs/page")
+    public Result<?> pageLogs(@RequestParam int page) {
         int pageSize = 10; // 每页显示的记录数
         List<Map<String, String>> allLogs = LogAspect.logs;
 

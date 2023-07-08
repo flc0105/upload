@@ -31,9 +31,6 @@
       "
       >{{ $t("new_directory") }}</v-contextmenu-item
     >
-    <v-contextmenu-item @click="exportBookmarks()">{{
-      $t("export")
-    }}</v-contextmenu-item>
 
     <v-contextmenu-item
       @click="
@@ -43,7 +40,13 @@
       >{{ $t("import") }}</v-contextmenu-item
     >
 
-    <v-contextmenu-item @click="excel">{{ $t("excel") }}</v-contextmenu-item>
+    <v-contextmenu-item @click="exportBookmarks()">{{
+      $t("export")
+    }}</v-contextmenu-item>
+
+    <v-contextmenu-item @click="excel">{{
+      $t("export_excel")
+    }}</v-contextmenu-item>
   </v-contextmenu>
 
   <div v-contextmenu:contextmenu>
@@ -208,27 +211,12 @@ export default {
   },
   methods: {
     exportBookmarks() {
-      // this.$root.loading = true;
-      // var bookmarks = [];
-      // for (const [key, value] of Object.entries(this.bookmarks)) {
-      //   var obj = new Object();
-      //   obj.title = value.title;
-      //   obj.url = value.url;
-      //   bookmarks.push(obj);
-      // }
-      // var json = JSON.stringify(bookmarks, null, 2);
-      // var blob = new Blob([json], { type: "text/plain;charset=utf-8" });
-      // saveAs(blob, "bookmarks.json");
-      // this.$root.loading = false;
-
       this.$root.loading = true;
-
       var json = JSON.stringify(this.bookmarks, null, 2);
       var blob = new Blob([json], { type: "text/plain;charset=utf-8" });
       saveAs(blob, "bookmarks.json");
       this.$root.loading = false;
     },
-
     excel() {
       axios
         .get("/bookmarks/excel", { responseType: "blob" })
@@ -244,7 +232,6 @@ export default {
           console.error(error);
         });
     },
-
     importBookmarks(event) {
       this.$root.loading = true;
       var reader = new FileReader();
@@ -252,7 +239,10 @@ export default {
       reader.onload = (e) => {
         var data = e.target.result;
         if (!this.isJSON(data)) {
-          this.$root.showModal("错误", "不是合法的json数据");
+          this.$root.showModal(
+            this.$t("error"),
+            this.$t("not_valid_json_data")
+          );
           this.$root.loading = false;
           return;
         }
@@ -264,13 +254,13 @@ export default {
                 var paths = this.$route.params.path;
                 this.processPathArray(paths);
               });
-              this.$root.showModal("成功", res.msg);
+              this.$root.showModal(this.$t("success"), res.msg);
             } else {
-              this.$root.showModal("失败", res.msg);
+              this.$root.showModal(this.$t("error"), res.msg);
             }
           })
           .catch((err) => {
-            this.$root.showModal("错误", err.message);
+            this.$root.showModal(this.$t("error"), err.message);
           })
           .finally(() => {
             this.$root.loading = false;
@@ -347,7 +337,6 @@ export default {
         "put",
         "/bookmarks/" + bookmarkId,
         {
-          // bookmarId: bookmarkId,
           name: this.$root.$refs.input.value.trim(),
         },
         (res) => {
@@ -438,10 +427,8 @@ export default {
         if (pathArr.length === 0) {
           return JSON.parse(JSON.stringify(bookmarks));
         }
-
         const currentDir = pathArr[0];
         const nextPathArr = pathArr.slice(1);
-
         for (const bookmark of bookmarks) {
           if (bookmark.type === "directory" && bookmark.name === currentDir) {
             return JSON.parse(
@@ -461,20 +448,16 @@ export default {
       if (pathArr.length === 0) {
         return 0;
       }
-
       const currentDir = pathArr[0];
       const nextPathArr = pathArr.slice(1);
-
       for (const bookmark of bookmarks) {
         if (bookmark.type === "directory" && bookmark.name === currentDir) {
           if (nextPathArr.length === 0) {
             return bookmark.id; // 如果已经匹配到最后一个路径，则返回当前节点的 id
           }
-
           return this.getIdByPath(bookmark.children, nextPathArr); // 递归查找下一级目录
         }
       }
-
       return 0; // 目录不存在
     },
 

@@ -187,7 +187,7 @@ public class FileUtil {
             Thumbnails.of(jpgName).scale(1f).outputQuality(0.5f).toOutputStream(out);
             logger.info("自动删除转换的 jpg 文件 {}：{}", jpgName, new File(jpgName).delete());
         } else {
-            throw new BusinessException(InternationalizationUtil.translate("unsupported.file.type"));
+            throw new BusinessException("unsupported.file.type");
         }
     }
 

@@ -10,7 +10,7 @@
     </parent>
     <groupId>flc</groupId>
     <artifactId>upload</artifactId>
-    <version>0.2.4-SNAPSHOT</version>
+    <version>0.2.5-SNAPSHOT</version>
     <name>upload</name>
     <description>Demo project for Spring Boot</description>
 
@@ -25,39 +25,19 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Spring Boot Starter Test: 提供测试相关的依赖 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <!-- 排除JUnit Vintage Engine，避免与JUnit 5冲突 -->
-                <exclusion>
-                    <groupId>org.junit.vintage</groupId>
-                    <artifactId>junit-vintage-engine</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <!-- JSON Lib: 用于操作和处理JSON数据 -->
-        <dependency>
-            <groupId>net.sf.json-lib</groupId>
-            <artifactId>json-lib</artifactId>
-            <version>2.4</version>
-        </dependency>
-
+        <!-- Apache POI 是一个用于处理 Microsoft Office 文件格式（如 Excel、Word 和 PowerPoint）的 Java 库。 -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
             <version>5.2.2</version>
         </dependency>
 
+        <!-- Apache POI OOXML 是 Apache POI 库的扩展，提供对 OOXML（Office Open XML）文件格式的支持，包括 XLSX、DOCX 和 PPTX 等文件。 -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>5.2.2</version>
         </dependency>
-
 
         <!-- CP Detector: 用于检测文本文件的字符编码 -->
         <dependency>
@@ -77,23 +57,17 @@
         <dependency>
             <groupId>antlr</groupId>
             <artifactId>antlr</artifactId>
-            <version>2.7.4</version>
+            <version>2.7.7</version>
         </dependency>
 
         <!-- Apache Tika Core: 用于提取文档的元数据和内容 -->
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-            <version>1.27</version>
+            <version>2.7.0</version>
         </dependency>
 
-        <!-- MyBatis Spring Boot Starter: 集成MyBatis和Spring Boot的依赖 -->
-<!--        <dependency>-->
-<!--            <groupId>org.mybatis.spring.boot</groupId>-->
-<!--            <artifactId>mybatis-spring-boot-starter</artifactId>-->
-<!--            <version>2.1.3</version>-->
-<!--        </dependency>-->
-
+        <!--MyBatis Plus 是基于 MyBatis 的增强工具库，简化了 MyBatis 的使用，并提供了许多便捷的功能和增强特性，如注解支持、代码生成器、分页插件等。它是一个强大的 ORM（对象关系映射）框架，用于与关系型数据库进行交互和数据持久化。 -->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
@@ -123,28 +97,21 @@
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
-            <version>4.0.0</version>
+            <version>4.3.0</version>
         </dependency>
 
         <!-- Jsoup: 用于解析和处理HTML文档 -->
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.15.3</version>
+            <version>1.15.4</version>
         </dependency>
 
         <!-- Thumbnailator: 用于生成和处理图像缩略图 -->
         <dependency>
             <groupId>net.coobird</groupId>
             <artifactId>thumbnailator</artifactId>
-            <version>0.4.8</version>
-        </dependency>
-
-        <!-- Spring Boot Configuration Processor: 用于处理@ConfigurationProperties注解的配置文件 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
+            <version>0.4.20</version>
         </dependency>
 
         <!-- Spring Boot Starter Validation: 提供验证框架的支持 -->
@@ -153,7 +120,7 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Commons Imaging: 用于处理各种图像格式的库 -->
+        <!-- Apache Commons Imaging: 获取图片元数据 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-imaging</artifactId>
@@ -167,18 +134,11 @@
             <version>2.0.3</version>
         </dependency>
 
-        <!-- Springfox Boot Starter: 用于生成和提供Swagger API文档 -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-
         <!-- Knife4j Spring Boot Starter: 基于Swagger的API文档工具 -->
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>knife4j-spring-boot-starter</artifactId>
-            <version>3.0.2</version>
+            <version>3.0.3</version>
         </dependency>
 
     </dependencies>
