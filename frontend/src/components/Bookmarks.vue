@@ -47,21 +47,30 @@
         </tr>
         <tr v-for="bookmark in page" :key="bookmark">
           <td class="text-truncate" style="max-width: 200px">
+            <img
+              class="align-middle me-2"
+              v-if="bookmark.type == 'bookmark' && bookmark.icon != null"
+              v-bind:src="bookmark.icon"
+              style="width: auto; height: 16px"
+            /><!--v-bind:src="'data:image/jpeg;base64,' + bookmark.icon"-->
             <i
-              v-if="bookmark.type == 'bookmark'"
-              class="bi bi-globe-asia-australia me-2"
+              v-if="bookmark.type == 'bookmark' && bookmark.icon == null"
+              class="bi align-middle bi-globe-asia-australia me-2"
             ></i>
-            <i v-else class="bi bi-folder2 me-2"></i>
+            <i
+              v-if="bookmark.type == 'directory'"
+              class="bi align-middle bi-folder2 me-2"
+            ></i>
             <span v-if="bookmark.name"
               ><!--class="align-middle"-->
               <router-link
                 :to="appendPath(bookmark.name)"
                 v-if="bookmark.type == 'directory'"
-                class="link-primary"
+                class="link-primary align-middle"
                 >{{ bookmark.name }}</router-link
               >
 
-              <a v-else>{{ bookmark.name }}</a>
+              <span class="align-middle" v-else>{{ bookmark.name }}</span>
             </span>
             <span v-else class="align-middle text-muted"
               ><i>{{ extractDomain(bookmark.url) }}</i></span

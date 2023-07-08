@@ -28,8 +28,8 @@ public class BookmarkController {
     }
 
     @PostMapping("/{id}")
-    public Result<?> fetchBookmarkTitle(@PathVariable("id") Integer id) {
-        bookmarkService.fetchBookmarkTitle(id);
+    public Result<?> updateBookmarkWithParsedData(@PathVariable("id") Integer id) {
+        bookmarkService.updateBookmarkWithParsedData(id);
         return ResponseUtil.buildSuccessResult("query.success");
     }
 

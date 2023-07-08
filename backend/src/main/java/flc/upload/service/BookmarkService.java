@@ -15,5 +15,5 @@ public interface BookmarkService {
 
     List<BookmarkVO> getStructuredBookmarks();
 
-    void fetchBookmarkTitle(Integer id);
+    void updateBookmarkWithParsedData(Integer id);
 }

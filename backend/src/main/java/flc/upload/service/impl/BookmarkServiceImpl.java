@@ -125,14 +125,11 @@ public class BookmarkServiceImpl implements BookmarkService {
     }
 
     @Override
-    public void fetchBookmarkTitle(Integer id) {
-        Bookmark bookmark = bookmarkMapper.findById(id);
+    public void updateBookmarkWithParsedData(Integer id) {
+        Bookmark bookmark = bookmarkMapper.selectById(id);
         bookmark.setName(JsoupUtil.getTitle(bookmark.getUrl()));
-
-//        System.out.println(JsoupUtil.convertIconToBase64(JsoupUtil.getIcon(bookmark.getUrl())));
-
-
-        bookmarkMapper.updateBookmark(bookmark);
+        bookmark.setIcon(JsoupUtil.getIcon(bookmark.getUrl()));
+        bookmarkMapper.updateById(bookmark);
     }
 
     private List<BookmarkVO> buildBookmarkVOs(List<Bookmark> bookmarks, int parentId) {
@@ -153,8 +150,9 @@ public class BookmarkServiceImpl implements BookmarkService {
                     directoryVOs.add(bookmarkVO);
                 } else {
                     bookmarkVO.setUrl(bookmark.getUrl());
-                    bookmarkVO.setIcon(bookmarkVO.getIcon());
+                    bookmarkVO.setIcon(bookmark.getIcon());
                     bookmarkItemVOs.add(bookmarkVO);
+
                 }
             }
         }
