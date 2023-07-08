@@ -1,6 +1,8 @@
 package flc.upload.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import flc.upload.enums.BookmarkType;
 import flc.upload.exception.BusinessException;
 import flc.upload.mapper.BookmarkMapper;
@@ -8,11 +10,20 @@ import flc.upload.model.Bookmark;
 import flc.upload.model.BookmarkVO;
 import flc.upload.service.BookmarkService;
 import flc.upload.util.JsoupUtil;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class BookmarkServiceImpl implements BookmarkService {
@@ -72,21 +83,21 @@ public class BookmarkServiceImpl implements BookmarkService {
     }
 
 
-    /**
-     * 根据ID删除书签及其子目录（如果是目录）
-     *
-     * @param id 书签ID
-     */
-    @Override
     public void deleteById(Integer id) {
-        Bookmark bookmark = bookmarkMapper.selectById(id);
-        if (bookmark != null) {
-            if (bookmark.isDirectory()) {
-                bookmarkMapper.delete(new LambdaQueryWrapper<Bookmark>().eq(Bookmark::getParentId, id));
-            }
-            bookmarkMapper.deleteById(id);
-        }
+        deleteRecursive(id);
     }
+
+    private void deleteRecursive(Integer id) {
+        List<Bookmark> childBookmarks = bookmarkMapper.selectList(new LambdaQueryWrapper<Bookmark>().eq(Bookmark::getParentId, id));
+        for (Bookmark childBookmark : childBookmarks) {
+            if (childBookmark.isDirectory()) {
+                deleteRecursive(childBookmark.getId());
+            }
+            bookmarkMapper.deleteById(childBookmark.getId());
+        }
+        bookmarkMapper.deleteById(id);
+    }
+
 
     /**
      * 更新书签或目录
@@ -132,6 +143,7 @@ public class BookmarkServiceImpl implements BookmarkService {
         bookmarkMapper.updateById(bookmark);
     }
 
+
     private List<BookmarkVO> buildBookmarkVOs(List<Bookmark> bookmarks, int parentId) {
         List<BookmarkVO> bookmarkVOs = new ArrayList<>();
         List<BookmarkVO> directoryVOs = new ArrayList<>();
@@ -160,6 +172,89 @@ public class BookmarkServiceImpl implements BookmarkService {
         bookmarkVOs.addAll(bookmarkItemVOs);
         return bookmarkVOs;
     }
+
+
+    @Override
+    public void importBookmarks(String json) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            List<BookmarkVO> bookmarkVOs = mapper.readValue(json, new TypeReference<List<BookmarkVO>>() {
+            });
+            for (BookmarkVO bookmarkVO : bookmarkVOs) {
+                saveBookmark(bookmarkVO, 0);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveBookmark(BookmarkVO bookmarkVO, Integer parentId) {
+        Bookmark bookmark = new Bookmark();
+        bookmark.setId(bookmarkVO.getId());
+        bookmark.setName(bookmarkVO.getName());
+        bookmark.setParentId(parentId);
+        bookmark.setUrl(bookmarkVO.getUrl());
+        bookmark.setIcon(bookmarkVO.getIcon());
+        bookmark.setBookmarkType(Objects.equals(bookmarkVO.getType(), "bookmark") ? BookmarkType.BOOKMARK.getValue() : BookmarkType.DIRECTORY.getValue());
+
+        bookmarkMapper.insert(bookmark);
+
+        List<BookmarkVO> children = bookmarkVO.getChildren();
+        if (children != null && !children.isEmpty()) {
+            for (BookmarkVO child : children) {
+                saveBookmark(child, bookmark.getId());
+            }
+        }
+    }
+
+    @Override
+    public void exportBookmarksToExcel(HttpServletResponse response) {
+        List<Bookmark> bookmarks = bookmarkMapper.selectList(new LambdaQueryWrapper<Bookmark>().eq(Bookmark::getBookmarkType, 1));
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Bookmarks");
+
+            // 创建表头
+            Row headerRow = sheet.createRow(0);
+            Cell headerCell1 = headerRow.createCell(0);
+            headerCell1.setCellValue("Name");
+            Cell headerCell2 = headerRow.createCell(1);
+            headerCell2.setCellValue("URL");
+
+            // 填充数据
+            int rowIndex = 1;
+            for (Bookmark bookmark : bookmarks) {
+                Row dataRow = sheet.createRow(rowIndex++);
+                Cell dataCell1 = dataRow.createCell(0);
+                dataCell1.setCellValue(bookmark.getName());
+                Cell dataCell2 = dataRow.createCell(1);
+                dataCell2.setCellValue(bookmark.getUrl());
+            }
+
+            // 调整列宽
+            for (int columnIndex = 0; columnIndex < 2; columnIndex++) {
+                sheet.autoSizeColumn(columnIndex);
+            }
+
+            // 保存Excel文件
+//            try (FileOutputStream fileOutputStream = new FileOutputStream("bookmarks.xlsx")) {
+//                workbook.write(fileOutputStream);
+//            }
+//            FileUtil.download(new File("bookmarks.xlsx"), response);
+
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"bookmarks.xlsx\"");
+            response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+            // 将Excel数据写入响应输出流
+            try (ServletOutputStream outputStream = response.getOutputStream()) {
+                workbook.write(outputStream);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }
 

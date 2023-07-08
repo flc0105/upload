@@ -8,6 +8,7 @@ import flc.upload.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
@@ -51,4 +52,17 @@ public class BookmarkController {
     public Result<List<BookmarkVO>> getAllBookmarks() {
         return ResponseUtil.buildSuccessResult("query.success", bookmarkService.getStructuredBookmarks());
     }
+
+
+    @PostMapping("/import")
+    public Result<?> importBookmarks(@RequestParam String data) {
+        bookmarkService.importBookmarks(data);
+        return ResponseUtil.buildSuccessResult("add.success");
+    }
+
+    @GetMapping("/excel")
+    public void exportBookmarksToExcel(HttpServletResponse response) {
+        bookmarkService.exportBookmarksToExcel(response);
+    }
+
 }

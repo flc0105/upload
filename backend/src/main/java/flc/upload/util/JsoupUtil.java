@@ -1,7 +1,6 @@
 package flc.upload.util;
 
 import flc.upload.model.AppConfig;
-import net.sf.image4j.codec.ico.ICODecoder;
 import org.apache.logging.log4j.util.Strings;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -11,15 +10,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.List;
 
 /**
  * Jsoup 工具类，提供对 Jsoup HTML 解析库的封装和常用操作。
@@ -119,38 +114,68 @@ public class JsoupUtil {
     }
 
     /**
-     * 将给定的图标URL转换为Base64编码字符串，并将其缩放为16x16像素。
+     * 将给定的图标URL转换为Base64编码字符串。
      *
      * @param iconUrl 图标URL
      * @return 缩放后的图标的Base64编码字符串，如果转换失败则返回null
      */
     public static String convertIconToBase64(String iconUrl) {
+
         try {
             URL url = new URL(iconUrl);
-            URLConnection connection = url.openConnection();
-            connection.setConnectTimeout(appConfig.getRequestTimeout());
-            InputStream in = connection.getInputStream();
-
-            // 读取图标图片并进行缩放
-            List<BufferedImage> images = ICODecoder.read(in);
-            BufferedImage originalImage = images.get(0);
-            int targetWidth = 16;
-            int targetHeight = 16;
-            BufferedImage scaledImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D graphics2D = scaledImage.createGraphics();
-            graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            graphics2D.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
-            graphics2D.dispose();
-
-            // 将缩放后的图标图片转换为Base64编码
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            ImageIO.write(scaledImage, "png", out);
-            out.flush();
-            return "data:image/png;base64," + Base64.getEncoder().encodeToString(out.toByteArray());
-        } catch (IOException e) {
-            logger.error("ico 转换 Base64 失败：{}, {}", iconUrl, e.getLocalizedMessage());
-            return null;
+            try (InputStream in = url.openStream()) {
+                byte[] bytes = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = in.read(bytes)) > 0) {
+                    out.write(bytes, 0, bytesRead);
+                }
+                return "data:image/png;base64," + Base64.getEncoder().encodeToString(out.toByteArray());
+            }
+        } catch (Exception e) {
+            logger.error("下载 ico 或转换 Base64 时出错：{}, {}", iconUrl, e.getLocalizedMessage());
         }
+        return null;
+
+
+//        try {
+//            URL url = new URL(iconUrl);
+//
+//            // 读取图标图片并进行缩放
+//            List<BufferedImage> images = ICODecoder.read(url.openStream());
+//
+//            BufferedImage originalImage = images.get(0);
+//            int targetWidth = 16;
+//            int targetHeight = 16;
+//            BufferedImage scaledImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
+//            Graphics2D graphics2D = scaledImage.createGraphics();
+//            graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+//            graphics2D.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
+//            graphics2D.dispose();
+//
+//            // 将缩放后的图标图片转换为Base64编码
+//            ByteArrayOutputStream out = new ByteArrayOutputStream();
+//            ImageIO.write(scaledImage, "png", out);
+//            out.flush();
+//            return "data:image/png;base64," + Base64.getEncoder().encodeToString(out.toByteArray());
+//        } catch (Exception e) {
+//            logger.error("ico 转换 png 并缩放图片时出错：{}, {}", iconUrl, e.getLocalizedMessage());
+//            try {
+//                URL url = new URL(iconUrl);
+//                ByteArrayOutputStream out = new ByteArrayOutputStream();
+//                try (InputStream in = url.openStream()) {
+//                    byte[] bytes = new byte[4096];
+//                    int bytesRead;
+//                    while ((bytesRead = in.read(bytes)) > 0) {
+//                        out.write(bytes, 0, bytesRead);
+//                    }
+//                    return "data:image/png;base64," + Base64.getEncoder().encodeToString(out.toByteArray());
+//                }
+//            } catch (Exception ex) {
+//                logger.error("下载 ico 并转换 Base64 时出错：{}, {}", iconUrl, e.getLocalizedMessage());
+//            }
+//            return null;
+//        }
     }
 
 }

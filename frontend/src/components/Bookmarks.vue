@@ -1,4 +1,14 @@
 <template>
+  <input
+    type="file"
+    name="file"
+    id="file"
+    ref="file"
+    class="d-none"
+    @change="(event) => importBookmarks(event)"
+    multiple
+  />
+
   <v-contextmenu ref="contextmenu">
     <v-contextmenu-item @click="refresh()">{{
       $t("refresh")
@@ -21,6 +31,19 @@
       "
       >{{ $t("new_directory") }}</v-contextmenu-item
     >
+    <v-contextmenu-item @click="exportBookmarks()">{{
+      $t("export")
+    }}</v-contextmenu-item>
+
+    <v-contextmenu-item
+      @click="
+        $refs.file.value = null;
+        $refs.file.click();
+      "
+      >{{ $t("import") }}</v-contextmenu-item
+    >
+
+    <v-contextmenu-item @click="excel">{{ $t("excel") }}</v-contextmenu-item>
   </v-contextmenu>
 
   <div v-contextmenu:contextmenu>
@@ -164,7 +187,7 @@ import { sendRequest } from "../utils/utils.js";
 
 import { directive, Contextmenu, ContextmenuItem } from "v-contextmenu";
 import "v-contextmenu/dist/themes/default.css";
-
+import Qs from "qs";
 export default {
   directives: {
     contextmenu: directive,
@@ -184,6 +207,77 @@ export default {
     };
   },
   methods: {
+    exportBookmarks() {
+      // this.$root.loading = true;
+      // var bookmarks = [];
+      // for (const [key, value] of Object.entries(this.bookmarks)) {
+      //   var obj = new Object();
+      //   obj.title = value.title;
+      //   obj.url = value.url;
+      //   bookmarks.push(obj);
+      // }
+      // var json = JSON.stringify(bookmarks, null, 2);
+      // var blob = new Blob([json], { type: "text/plain;charset=utf-8" });
+      // saveAs(blob, "bookmarks.json");
+      // this.$root.loading = false;
+
+      this.$root.loading = true;
+
+      var json = JSON.stringify(this.bookmarks, null, 2);
+      var blob = new Blob([json], { type: "text/plain;charset=utf-8" });
+      saveAs(blob, "bookmarks.json");
+      this.$root.loading = false;
+    },
+
+    excel() {
+      axios
+        .get("/bookmarks/excel", { responseType: "blob" })
+        .then((response) => {
+          const contentDisposition = response.headers["content-disposition"];
+          const fileName = contentDisposition.split("filename=")[1];
+          const blob = new Blob([response.data], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          saveAs(blob, fileName);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    },
+
+    importBookmarks(event) {
+      this.$root.loading = true;
+      var reader = new FileReader();
+      reader.readAsText(event.target.files[0]);
+      reader.onload = (e) => {
+        var data = e.target.result;
+        if (!this.isJSON(data)) {
+          this.$root.showModal("错误", "不是合法的json数据");
+          this.$root.loading = false;
+          return;
+        }
+        axios
+          .post("bookmarks/import", Qs.stringify({ data: data }))
+          .then((res) => {
+            if (res.success) {
+              this.list().then(() => {
+                var paths = this.$route.params.path;
+                this.processPathArray(paths);
+              });
+              this.$root.showModal("成功", res.msg);
+            } else {
+              this.$root.showModal("失败", res.msg);
+            }
+          })
+          .catch((err) => {
+            this.$root.showModal("错误", err.message);
+          })
+          .finally(() => {
+            this.$root.loading = false;
+          });
+      };
+    },
+
     // 添加
     add(bookmarkType) {
       if (this.$root.$refs.input.value.trim().length === 0) {

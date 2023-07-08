@@ -3,6 +3,7 @@ package flc.upload.service;
 import flc.upload.model.Bookmark;
 import flc.upload.model.BookmarkVO;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 public interface BookmarkService {
@@ -16,4 +17,8 @@ public interface BookmarkService {
     List<BookmarkVO> getStructuredBookmarks();
 
     void updateBookmarkWithParsedData(Integer id);
+
+    void importBookmarks(String json);
+
+    void exportBookmarksToExcel(HttpServletResponse response);
 }

@@ -37,7 +37,6 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -74,7 +73,6 @@ public class FileUtil {
         String path = new File(uploadPath).toURI().relativize(file.toURI()).getPath();
         return "/" + (path.endsWith("/") ? path.substring(0, path.length() - 1) : path);
     }
-
 
     /**
      * 检测文件类型。
@@ -124,7 +122,7 @@ public class FileUtil {
      * @param file     要下载的文件
      * @param response HTTP响应对象
      */
-    private static void setDownloadHeaders(File file, HttpServletResponse response) {
+    public static void setDownloadHeaders(File file, HttpServletResponse response) {
         // 获取文件的MIME类型并设置到响应头的"Content-type"字段
         response.setHeader("Content-type", new MimetypesFileTypeMap().getContentType(file.getName()));
         // 获取文件的长度并设置到响应头的"Content-Length"字段

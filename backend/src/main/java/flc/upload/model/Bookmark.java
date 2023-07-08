@@ -53,7 +53,6 @@ public class Bookmark {
         }
     }
 
-
     public boolean isDirectoryNameInvalid() {
         if (getName() == null || getName().trim().length() == 0 || name.equals("Home")) {
             return true;
@@ -75,7 +74,11 @@ public class Bookmark {
     }
 
     public void setUrl(String url) {
-        this.url = (url.contains("://") ? url : "http://" + url);
+        if (url != null) {
+            this.url = (url.contains("://") ? url : "http://" + url);
+        } else {
+            this.url = null;
+        }
     }
 
     public String getName() {

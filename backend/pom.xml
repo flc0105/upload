@@ -46,6 +46,19 @@
             <version>2.4</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>5.2.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.2</version>
+        </dependency>
+
+
         <!-- CP Detector: 用于检测文本文件的字符编码 -->
         <dependency>
             <groupId>net.sourceforge.cpdetector</groupId>
@@ -86,14 +99,6 @@
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>3.5.3.1</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/net.sf.image4j/image4j -->
-        <dependency>
-            <groupId>org.jclarion</groupId>
-            <artifactId>image4j</artifactId>
-            <version>0.7</version>
-        </dependency>
-
 
         <!-- Spring Boot Starter AOP: 提供AOP（面向切面编程）的支持 -->
         <dependency>
