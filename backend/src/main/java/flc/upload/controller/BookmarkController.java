@@ -23,7 +23,7 @@ public class BookmarkController {
 
     @PostMapping
     public Result<Integer> addBookmark(@RequestBody Bookmark bookmark) {
-        bookmarkService.addBookmark(bookmark);
+        bookmarkService.add(bookmark);
         return ResponseUtil.buildSuccessResult("add.success", bookmark.getId());
     }
 
@@ -36,7 +36,7 @@ public class BookmarkController {
 
     @DeleteMapping("/{id}")
     public Result<?> deleteBookmark(@PathVariable("id") Integer id) {
-        bookmarkService.deleteBookmarkById(id);
+        bookmarkService.deleteById(id);
         return ResponseUtil.buildSuccessResult("delete.success");
     }
 

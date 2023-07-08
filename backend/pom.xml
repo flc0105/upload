@@ -75,10 +75,16 @@
         </dependency>
 
         <!-- MyBatis Spring Boot Starter: 集成MyBatis和Spring Boot的依赖 -->
+<!--        <dependency>-->
+<!--            <groupId>org.mybatis.spring.boot</groupId>-->
+<!--            <artifactId>mybatis-spring-boot-starter</artifactId>-->
+<!--            <version>2.1.3</version>-->
+<!--        </dependency>-->
+
         <dependency>
-            <groupId>org.mybatis.spring.boot</groupId>
-            <artifactId>mybatis-spring-boot-starter</artifactId>
-            <version>2.1.3</version>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>3.5.3.1</version>
         </dependency>
 
         <!-- Spring Boot Starter AOP: 提供AOP（面向切面编程）的支持 -->

@@ -1,5 +1,7 @@
 package flc.upload.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import flc.upload.enums.BookmarkType;
 import flc.upload.exception.BusinessException;
 import flc.upload.mapper.BookmarkMapper;
 import flc.upload.model.Bookmark;
@@ -11,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class BookmarkServiceImpl implements BookmarkService {
@@ -23,54 +24,103 @@ public class BookmarkServiceImpl implements BookmarkService {
         this.bookmarkMapper = bookmarkMapper;
     }
 
+    /**
+     * 检查目录是否已存在
+     *
+     * @param bookmark 目录书签
+     * @return 如果目录已存在返回 true，否则返回 false
+     */
+    private boolean directoryAlreadyExists(Bookmark bookmark) {
+        return bookmarkMapper.selectCount(
+                new LambdaQueryWrapper<Bookmark>()
+                        .eq(Bookmark::getName, bookmark.getName())
+                        .eq(Bookmark::getParentId, bookmark.getParentId())
+                        .eq(Bookmark::getBookmarkType, BookmarkType.DIRECTORY.getValue())
+        ) > 0;
+    }
+
+    /**
+     * 添加书签或目录
+     *
+     * @param bookmark 书签或目录对象
+     * @throws BusinessException 如果目录名称非法或目录已存在，将抛出业务异常
+     */
     @Override
-    public void addBookmark(Bookmark bookmark) {
+    public void add(Bookmark bookmark) {
         if (bookmark.isDirectory()) {
-            String newName = bookmark.getName();
-            if (!bookmark.isValidName()) {
+            // 检查目录名称是否非法
+            if (bookmark.isDirectoryNameInvalid()) {
                 throw new BusinessException("directory.name.illegal");
             }
-            if (!bookmarkMapper.findByName(newName, bookmark.getParentId()).isEmpty()) {
+
+            // 检查目录是否已存在
+            if (directoryAlreadyExists(bookmark)) {
                 throw new BusinessException("directory.already.exists");
             }
         }
+
         if (bookmark.isBookmark()) {
-            bookmark.setUrl(bookmark.getUrl().contains("://") ? bookmark.getUrl() : "http://" + bookmark.getUrl());
+            // 设置书签的 URL
+            bookmark.setUrl(bookmark.getUrl());
         }
-        bookmark.setName(bookmark.getName() != null ? bookmark.getName().trim() : null);
-        bookmarkMapper.addBookmark(bookmark);
+
+        // 设置书签或目录的名称
+        bookmark.setName(bookmark.getName());
+
+        // 插入书签或目录到数据库
+        bookmarkMapper.insert(bookmark);
     }
 
+
+    /**
+     * 根据ID删除书签及其子目录（如果是目录）
+     *
+     * @param id 书签ID
+     */
     @Override
-    public void deleteBookmarkById(Integer id) {
-        Bookmark bookmark = bookmarkMapper.findById(id);
-        if (bookmark.isDirectory()) {
-            bookmarkMapper.deleteBookmarkByParentId(id);
+    public void deleteById(Integer id) {
+        Bookmark bookmark = bookmarkMapper.selectById(id);
+        if (bookmark != null) {
+            if (bookmark.isDirectory()) {
+                bookmarkMapper.delete(new LambdaQueryWrapper<Bookmark>().eq(Bookmark::getParentId, id));
+            }
+            bookmarkMapper.deleteById(id);
         }
-        bookmarkMapper.deleteBookmarkById(id);
-
     }
 
+    /**
+     * 更新书签或目录
+     *
+     * @param bookmark 待更新的书签或目录对象
+     * @throws BusinessException 如果目录名称非法或目录已存在，将抛出业务异常
+     */
     @Override
     public void updateBookmark(Bookmark bookmark) {
-        Bookmark existingBookmark = bookmarkMapper.findById(bookmark.getId());
-        if (existingBookmark.isDirectory()) {
-            String newName = bookmark.getName();
-            if (!bookmark.isValidName()) {
-                throw new BusinessException("directory.name.illegal");
+        Bookmark existingBookmark = bookmarkMapper.selectById(bookmark.getId());
+        if (existingBookmark != null) {
+            if (existingBookmark.isDirectory()) {
+                String newName = bookmark.getName();
+                if (bookmark.isDirectoryNameInvalid()) {
+                    throw new BusinessException("directory.name.illegal");
+                }
+                if (bookmarkMapper.selectList(new LambdaQueryWrapper<Bookmark>()
+                        .eq(Bookmark::getParentId, existingBookmark.getParentId())
+                        .eq(Bookmark::getName, newName)
+                        .eq(Bookmark::getBookmarkType, BookmarkType.DIRECTORY.getValue())
+                        .ne(Bookmark::getId, existingBookmark.getId())
+                ).size() > 0) {
+                    throw new BusinessException("directory.already.exists");
+                }
             }
-            if (!bookmarkMapper.findByName(newName, existingBookmark.getParentId()).isEmpty() && !Objects.equals(existingBookmark.getName(), newName)) {
-                throw new BusinessException("directory.already.exists");
-            }
+            existingBookmark.updatePropertiesFromBookmark(bookmark);
+            bookmarkMapper.updateById(existingBookmark);
         }
-        existingBookmark.copyFrom(bookmark);
-        existingBookmark.setName(existingBookmark.getName().trim());
-        bookmarkMapper.updateBookmark(existingBookmark);
     }
+
 
     @Override
     public List<BookmarkVO> getStructuredBookmarks() {
-        List<Bookmark> bookmarks = bookmarkMapper.getAllBookmarks();
+        List<Bookmark> bookmarks = bookmarkMapper.selectList(null);
         return buildBookmarkVOs(bookmarks, 0);
     }
 
@@ -78,6 +128,10 @@ public class BookmarkServiceImpl implements BookmarkService {
     public void fetchBookmarkTitle(Integer id) {
         Bookmark bookmark = bookmarkMapper.findById(id);
         bookmark.setName(JsoupUtil.getTitle(bookmark.getUrl()));
+
+//        System.out.println(JsoupUtil.convertIconToBase64(JsoupUtil.getIcon(bookmark.getUrl())));
+
+
         bookmarkMapper.updateBookmark(bookmark);
     }
 

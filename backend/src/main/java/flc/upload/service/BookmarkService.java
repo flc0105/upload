@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface BookmarkService {
 
-    void addBookmark(Bookmark bookmark);
+    void add(Bookmark bookmark);
 
-    void deleteBookmarkById(Integer id);
+    void deleteById(Integer id);
 
     void updateBookmark(Bookmark bookmark);
 

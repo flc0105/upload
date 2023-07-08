@@ -1,12 +1,13 @@
 package flc.upload.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import flc.upload.model.Bookmark;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
 @Mapper
-public interface BookmarkMapper {
+public interface BookmarkMapper extends BaseMapper<Bookmark> {
 
     @Insert("INSERT INTO bookmark (name, url, icon, parentId, bookmarkType) VALUES (#{name}, #{url}, #{icon}, #{parentId}, #{bookmarkType})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
@@ -28,8 +29,8 @@ public interface BookmarkMapper {
     @Select("SELECT * FROM bookmark WHERE id = #{id}")
     Bookmark findById(Integer id);
 
-    @Select("SELECT * FROM bookmark WHERE name = #{name} and parentId = #{parentId} and bookmarkType = 0")
-    List<Bookmark> findByName(String name, Integer parentId);
+//    @Select("SELECT * FROM bookmark WHERE name = #{name} and parentId = #{parentId} and bookmarkType = 0")
+//    List<Bookmark> findByName(String name, Integer parentId);
 
     @Select("SELECT * FROM bookmark")
     @Results(id = "bookmarkMap", value = {
