@@ -95,5 +95,8 @@
   "name_cannot_be_empty": "名称不能为空",
   "import": "导入",
   "export_excel": "导出为 Excel 文件",
-  "not_valid_json_data": "不是合法的 JSON 数据"
+  "not_valid_json_data": "不是合法的 JSON 数据",
+  "gallery": "画廊",
+  "open_in_gallery": "在画廊中打开",
+  "no_images": "当前路径不包含图片"
 }

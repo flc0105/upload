@@ -195,5 +195,23 @@ export default {
   created() {
     this.list();
   },
+  mounted() {
+    window.onbeforeunload = (e) => {
+      if (this.text.trim().length != 0) {
+        if (e) {
+          e.returnValue = "关闭提示";
+        }
+        return "关闭提示";
+      }
+    };
+  },
+  beforeRouteLeave(to, from, next) {
+    if (this.text.trim().length != 0) {
+      if (!window.confirm("Leave without saving?")) {
+        return;
+      }
+    }
+    next();
+  },
 };
 </script>

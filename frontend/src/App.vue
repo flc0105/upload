@@ -36,9 +36,12 @@
         <li class="nav-item">
           <a
             v-if="
-              ['operation_logs', 'server_info', 'permission_control'].includes(
-                $router.currentRoute.value.meta.title
-              )
+              [
+                'operation_logs',
+                'server_info',
+                'permission_control',
+                'gallery',
+              ].includes($router.currentRoute.value.meta.title)
             "
             class="nav-link active"
             >{{ $t($router.currentRoute.value.meta.title) }}</a

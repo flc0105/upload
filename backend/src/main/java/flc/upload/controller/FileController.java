@@ -16,10 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Api(tags = "文件")
@@ -151,5 +150,10 @@ public class FileController {
     @PostMapping("/link")
     public Result<?> link(@RequestParam("relativePath") String relativePath) throws IOException {
         return fileService.generateDirectLink(relativePath);
+    }
+
+    @GetMapping("/gallery")
+    public Result<?> getImages(@RequestParam("relativePath") String relativePath) {
+        return fileService.getImages(relativePath);
     }
 }

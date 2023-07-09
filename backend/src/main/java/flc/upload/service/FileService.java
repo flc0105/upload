@@ -36,4 +36,6 @@ public interface FileService {
     void zipAndDownload(List<String> files, HttpServletResponse response, String token) throws Exception;
 
     Result<?> generateDirectLink(String relativePath) throws IOException;
+
+    Result<?> getImages(String relativePath);
 }

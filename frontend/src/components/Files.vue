@@ -12,6 +12,9 @@
       "
       >{{ $t("new_folder") }}</v-contextmenu-item
     >
+    <v-contextmenu-item @click="openInGallery()">{{
+      $t("open_in_gallery")
+    }}</v-contextmenu-item>
   </v-contextmenu>
   <div class="card border-bottom-0" v-contextmenu:contextmenu>
     <div class="card-header">
@@ -1395,6 +1398,12 @@ export default {
       } finally {
         this.$root.loading = false;
       }
+    },
+    openInGallery() {
+      this.$router.push({
+        path: "/gallery",
+        query: { value: this.currentDirectory },
+      });
     },
   },
   mounted() {

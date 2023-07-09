@@ -96,5 +96,8 @@
   "name_cannot_be_empty": "Name cannot be empty.",
   "import": "Import",
   "export_excel": "Export as Excel file",
-  "not_valid_json_data": "Not valid JSON data."
+  "not_valid_json_data": "Not valid JSON data.",
+  "gallery": "Gallery",
+  "open_in_gallery": "Open in gallery",
+  "no_images": "No images in the current path."
 }

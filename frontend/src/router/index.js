@@ -61,6 +61,11 @@ const routes = [
     meta: { title: "permission_control" },
     component: () => import("../components/Permission.vue"),
   },
+  {
+    path: "/gallery",
+    meta: { title: "gallery" },
+    component: () => import("../components/Gallery.vue"),
+  },
 ];
 const router = createRouter({
   history: createWebHistory(),
