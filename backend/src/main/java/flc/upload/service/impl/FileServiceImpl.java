@@ -341,21 +341,12 @@ public class FileServiceImpl implements FileService {
     @Override
     public Result<?> getImages(String relativePath) {
         List<String> images = new ArrayList<>();
-
-        // 根据目录参数获取该目录中的所有图片文件
-
-        // 假设使用java.io.File类获取目录中的图片文件
         File dir = new File(uploadPath, relativePath);
         File[] files = dir.listFiles((dir1, name) -> name.endsWith(".jpg") || name.endsWith(".png"));
-
-        // 将图片文件的URL添加到列表中
         for (File file : Objects.requireNonNull(files)) {
             images.add(FileUtil.relativize(uploadPath, file));
         }
-
         return ResponseUtil.buildSuccessResult("query.success", images);
     }
-
-
 
 }

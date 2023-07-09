@@ -97,4 +97,12 @@ public class PasteController {
         pasteService.deleteExpired();
     }
 
+    @ApiOperation("Paste_导入")
+    @Log
+    @Permission
+    @PostMapping("/import")
+    public Result<?> importPastes(@RequestParam String json) throws Exception {
+        return pasteService.importPastes(json);
+    }
+
 }

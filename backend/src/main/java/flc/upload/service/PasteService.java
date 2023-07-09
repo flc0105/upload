@@ -1,5 +1,6 @@
 package flc.upload.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import flc.upload.model.Paste;
 import flc.upload.model.Result;
 
@@ -19,4 +20,6 @@ public interface PasteService {
     Result<?> findPrivate() throws Exception;
 
     void deleteExpired() throws Exception;
+
+    Result<?> importPastes(String json) throws JsonProcessingException;
 }

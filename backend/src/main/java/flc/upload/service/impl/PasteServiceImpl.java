@@ -1,6 +1,10 @@
 package flc.upload.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import flc.upload.mapper.PasteMapper;
+import flc.upload.model.BookmarkVO;
 import flc.upload.model.Paste;
 import flc.upload.model.Result;
 import flc.upload.service.PasteService;
@@ -11,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -72,5 +78,22 @@ public class PasteServiceImpl implements PasteService {
 
     public void deleteExpired() throws Exception {
         logger.info("删除 " + pasteMapper.deleteExpired(CommonUtil.getCurrentDate()) + " 条过期数据");
+    }
+
+    @Override
+    public Result<?> importPastes(String json) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        List<Paste> pastes = mapper.readValue(json, new TypeReference<List<Paste>>() {});
+        int successCount = 0;
+        for (Paste paste : pastes) {
+            paste.setPrivate(false);
+            paste.setExpiredDate(null);
+            try {
+                successCount += pasteMapper.add(paste);
+            } catch (Exception e) {
+                logger.error("导入书签时出错：{}, {}",paste.toString(), e.getLocalizedMessage());
+            }
+        }
+        return ResponseUtil.buildSuccessResult("add.success", successCount);
     }
 }
