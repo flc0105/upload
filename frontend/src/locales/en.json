@@ -99,5 +99,6 @@
   "not_valid_json_data": "Not valid JSON data.",
   "gallery": "Gallery",
   "open_in_gallery": "Open in gallery",
-  "no_images": "No images in the current path."
+  "no_images": "No images in the current path.",
+  "decrypt_failure": "Failed to decrypt"
 }

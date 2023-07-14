@@ -14,6 +14,8 @@
       >Quick paste</v-contextmenu-item
     >
 
+    <v-contextmenu-item @click="secretPaste()">Secret paste</v-contextmenu-item>
+
     <v-contextmenu-item
       @click="
         $refs.file.value = null;
@@ -146,6 +148,9 @@ import { directive, Contextmenu, ContextmenuItem } from "v-contextmenu";
 import "v-contextmenu/dist/themes/default.css";
 
 import axios from "axios";
+
+import { encrypt, decrypt } from "../utils/encrypt.js";
+
 export default {
   directives: {
     contextmenu: directive,
@@ -162,6 +167,44 @@ export default {
     };
   },
   methods: {
+    secretPaste() {
+      var encrypted = encrypt(this.text);
+      console.log(encrypted);
+
+      sendRequest.call(
+        this,
+        "post",
+        "/paste/add",
+        {
+          title: this.title + " (Encrypted)",
+          text: encrypted.data,
+          expiredDate: null,
+          private: false,
+        },
+        (res) => {
+          this.list();
+          this.text = "";
+          this.title = "";
+          this.$root.showModal(
+            this.$t("success"),
+            location.protocol +
+              "//" +
+              location.host +
+              "/pastes/" +
+              res.detail.id +
+              "?key=" +
+              encodeURIComponent(encrypted.key)
+          );
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+        }
+      );
+
+      // var decrypted = decrypt(encrypted.data, encrypted.key);
+      // console.log(decrypted);
+    },
+
     async getTextFromClipboard() {
       try {
         const text = await navigator.clipboard.readText();

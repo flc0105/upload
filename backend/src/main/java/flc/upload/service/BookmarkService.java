@@ -4,6 +4,7 @@ import flc.upload.model.Bookmark;
 import flc.upload.model.BookmarkVO;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 public interface BookmarkService {
@@ -20,5 +21,5 @@ public interface BookmarkService {
 
     void importBookmarks(String json);
 
-    void exportBookmarksToExcel(HttpServletResponse response);
+    void exportBookmarksToExcel(HttpServletResponse response) throws IOException;
 }

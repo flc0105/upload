@@ -113,6 +113,8 @@ import "file-saver";
 import moment from "moment";
 import hljsVuePlugin from "@highlightjs/vue-plugin";
 
+import { encrypt, decrypt } from "../utils/encrypt.js";
+
 export default {
   components: {
     highlightjs: hljsVuePlugin.component,
@@ -129,11 +131,11 @@ export default {
       return moment(date).fromNow();
     },
     //获取文本
-    get(id) {
+    async get(id) {
       this.title = "";
       this.text = "";
       this.$root.loading = true;
-      axios
+      await axios
         .get("/paste/get", {
           params: {
             id: id,
@@ -253,10 +255,29 @@ export default {
       event.preventDefault(); // 屏蔽回车键的默认行为
       this.updateTitle();
     },
+    async getAsync() {
+      await this.get(this.$route.params.id);
+    },
   },
+
   created() {
     if (this.$route.params.id) {
-      this.get(this.$route.params.id);
+      if (this.$route.query.key != null) {
+        this.getAsync()
+          .then(() => {
+            console.log(this.text);
+            this.text = decrypt(this.text, this.$route.query.key);
+          })
+          .catch((error) => {
+            this.$root.showModal(
+              this.$t("error"),
+              this.$t("decrypt_failure") + ": " + error.message
+            );
+          });
+      } else {
+        this.get(this.$route.params.id);
+      }
+
       if (this.$route.query.highlight == "true") {
         // 如果url带有highlight=true的参数默认开启代码高亮
         this.checked = true;

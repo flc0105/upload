@@ -19,7 +19,8 @@ public interface PasteService {
 
     Result<?> findPrivate() throws Exception;
 
+    Result<?> importPastes(String json) throws JsonProcessingException;
+
     void deleteExpired() throws Exception;
 
-    Result<?> importPastes(String json) throws JsonProcessingException;
 }

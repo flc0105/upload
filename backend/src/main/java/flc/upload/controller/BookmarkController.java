@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @Api(tags = "书签")
 @RestController
@@ -75,7 +76,7 @@ public class BookmarkController {
     @ApiOperation("书签_导出excel")
     @Log
     @GetMapping("/excel")
-    public void exportBookmarksToExcel(HttpServletResponse response) {
+    public void exportBookmarksToExcel(HttpServletResponse response) throws IOException {
         bookmarkService.exportBookmarksToExcel(response);
     }
 

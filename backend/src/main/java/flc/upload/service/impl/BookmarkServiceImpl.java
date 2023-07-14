@@ -208,7 +208,7 @@ public class BookmarkServiceImpl implements BookmarkService {
     }
 
     @Override
-    public void exportBookmarksToExcel(HttpServletResponse response) {
+    public void exportBookmarksToExcel(HttpServletResponse response) throws IOException {
         List<Bookmark> bookmarks = bookmarkMapper.selectList(new LambdaQueryWrapper<Bookmark>().eq(Bookmark::getBookmarkType, 1));
 
         try (Workbook workbook = new XSSFWorkbook()) {
@@ -236,12 +236,6 @@ public class BookmarkServiceImpl implements BookmarkService {
                 sheet.autoSizeColumn(columnIndex);
             }
 
-            // 保存Excel文件
-//            try (FileOutputStream fileOutputStream = new FileOutputStream("bookmarks.xlsx")) {
-//                workbook.write(fileOutputStream);
-//            }
-//            FileUtil.download(new File("bookmarks.xlsx"), response);
-
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setHeader("Content-Disposition", "attachment; filename=\"bookmarks.xlsx\"");
             response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
@@ -249,9 +243,6 @@ public class BookmarkServiceImpl implements BookmarkService {
             try (ServletOutputStream outputStream = response.getOutputStream()) {
                 workbook.write(outputStream);
             }
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

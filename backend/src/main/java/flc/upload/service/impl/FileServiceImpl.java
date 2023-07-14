@@ -342,7 +342,7 @@ public class FileServiceImpl implements FileService {
     public Result<?> getImages(String relativePath) {
         List<String> images = new ArrayList<>();
         File dir = new File(uploadPath, relativePath);
-        File[] files = dir.listFiles((dir1, name) -> name.endsWith(".jpg") || name.endsWith(".png"));
+        File[] files = dir.listFiles((dir1, name) -> name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png"));
         for (File file : Objects.requireNonNull(files)) {
             images.add(FileUtil.relativize(uploadPath, file));
         }

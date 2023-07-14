@@ -92,17 +92,17 @@ public class PasteController {
         return pasteService.findPrivate();
     }
 
-    @Scheduled(fixedRate = 60 * 60 * 1000) // 每小时执行一次
-    public void deleteExpired() throws Exception {
-        pasteService.deleteExpired();
-    }
-
     @ApiOperation("Paste_导入")
     @Log
     @Permission
     @PostMapping("/import")
     public Result<?> importPastes(@RequestParam String json) throws Exception {
         return pasteService.importPastes(json);
+    }
+
+    @Scheduled(fixedRate = 60 * 60 * 1000) // 每小时执行一次
+    public void deleteExpired() throws Exception {
+        pasteService.deleteExpired();
     }
 
 }

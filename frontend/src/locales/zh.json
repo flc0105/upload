@@ -98,5 +98,6 @@
   "not_valid_json_data": "不是合法的 JSON 数据",
   "gallery": "画廊",
   "open_in_gallery": "在画廊中打开",
-  "no_images": "当前路径不包含图片"
+  "no_images": "当前路径不包含图片",
+  "decrypt_failure": "解密失败"
 }

@@ -91,7 +91,7 @@ public class PasteServiceImpl implements PasteService {
             try {
                 successCount += pasteMapper.add(paste);
             } catch (Exception e) {
-                logger.error("导入书签时出错：{}, {}",paste.toString(), e.getLocalizedMessage());
+                logger.error("导入 Paste 时出错：{}, {}",paste, e.getLocalizedMessage());
             }
         }
         return ResponseUtil.buildSuccessResult("add.success", successCount);
