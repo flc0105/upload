@@ -97,5 +97,11 @@ console.log(
 // });
 
 import i18n from "./i18n/i18n";
+import VueLazyLoad from "vue-lazyload";
 
-createApp(App).use(router).use(hljsVuePlugin).use(i18n).mount("#app");
+createApp(App)
+  .use(router)
+  .use(hljsVuePlugin)
+  .use(i18n)
+  .use(VueLazyLoad)
+  .mount("#app");

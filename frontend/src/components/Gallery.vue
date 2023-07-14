@@ -2,7 +2,8 @@
   <h2 class="pt-2 pb-2 border-bottom">{{ $t("gallery") }}</h2>
   <div class="gallery pt-3">
     <div v-for="(image, index) in images" :key="index" class="gallery-item">
-      <img :src="getLink(image)" class="w-100 shadow-1-strong rounded" />
+      <img v-lazy="getLink(image)" class="w-100 shadow-1-strong rounded" />
+      <!-- <img :src="getLink(image)" class="w-100 shadow-1-strong rounded" /> -->
       <div class="overlay">
         <div class="caption">
           {{ image.split("/").pop() }}
@@ -84,6 +85,7 @@
 <script>
 import axios from "axios";
 import "bootstrap/dist/js/bootstrap.bundle";
+import VueLazyload from "vue-lazyload";
 
 export default {
   data() {
