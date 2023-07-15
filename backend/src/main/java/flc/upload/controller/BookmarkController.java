@@ -80,4 +80,28 @@ public class BookmarkController {
         bookmarkService.exportBookmarksToExcel(response);
     }
 
+    @ApiOperation("书签_死链检测")
+    @Log
+    @GetMapping("/dead")
+    public Result<?> getDeadLinks() {
+        return ResponseUtil.buildSuccessResult("query.success", bookmarkService.getDeadLinks());
+
+    }
+
+    @ApiOperation("书签_搜索")
+    @Log
+    @PostMapping("/search")
+    public Result<?> filterBookmarks(@RequestParam String keyword, @RequestParam Integer parentId) {
+        return ResponseUtil.buildSuccessResult("query.success", bookmarkService.filterBookmarks(keyword, parentId));
+
+    }
+
+    @ApiOperation("书签_按目录查询")
+    @Log
+    @PostMapping("/parent")
+    public Result<?> findByParentId(@RequestParam Integer parentId) {
+        return ResponseUtil.buildSuccessResult("query.success", bookmarkService.findByParentId(parentId));
+
+    }
+
 }

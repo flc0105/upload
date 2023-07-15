@@ -53,13 +53,13 @@ public class Bookmark {
         }
     }
 
-    public boolean isDirectoryNameInvalid() {
-        if (getName() == null || getName().trim().length() == 0 || name.equals("Home")) {
-            return true;
-        }
-
-        return name.contains("/") || name.contains("\\") || name.contains("?") || name.contains("#") || name.contains(".");
-    }
+//    public boolean isDirectoryNameInvalid() {
+//        if (getName() == null || getName().trim().length() == 0 || name.equals("Home")) {
+//            return true;
+//        }
+//
+//        return name.contains("/") || name.contains("\\") || name.contains("?") || name.contains("#") || name.contains(".");
+//    }
 
     public Integer getId() {
         return id;

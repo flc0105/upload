@@ -33,11 +33,17 @@ const routes = [
   },
   {
     path: "/bookmark",
-    meta: { title: "bookmarks" },
-    component: () => import("../components/Bookmarks.vue"),
+    // meta: { title: "bookmarks" },
+    // component: () => import("../components/Bookmarks.vue"),
+    redirect: "/bookmark/0",
   },
+  // {
+  //   path: "/bookmark/:path*", // 定义动态路由参数:path
+  //   meta: { title: "bookmarks" },
+  //   component: () => import("../components/Bookmarks.vue"),
+  // },
   {
-    path: "/bookmark/:path*", // 定义动态路由参数:path
+    path: "/bookmark/:id",
     meta: { title: "bookmarks" },
     component: () => import("../components/Bookmarks.vue"),
   },

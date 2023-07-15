@@ -95,3 +95,22 @@ export function getCurrentTime() {
     second: "numeric",
   });
 }
+
+// 判断是不是json数据
+export function isJSON(str) {
+  try {
+    return JSON.parse(str) && !!str;
+  } catch (e) {
+    return false;
+  }
+}
+
+// 从url中提取域名
+export function extractDomain(url) {
+  try {
+    const { hostname } = new URL(url);
+    return hostname;
+  } catch (e) {
+    return null;
+  }
+}

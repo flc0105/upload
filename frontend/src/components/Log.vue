@@ -173,10 +173,30 @@ export default {
     },
     // 导出日志
     exportLogs() {
-      var blob = new Blob([JSON.stringify(this.logs, null, 2)], {
-        type: "text/plain;charset=utf-8",
-      });
-      saveAs(blob, new Date().getTime() + ".txt");
+      this.$root.loading = true;
+      axios
+        .post("/logs/list")
+        .then((res) => {
+          if (res.success) {
+            var blob = new Blob([JSON.stringify(res.detail, null, 2)], {
+              type: "text/plain;charset=utf-8",
+            });
+            saveAs(blob, new Date().getTime() + ".txt");
+          } else {
+            this.$root.showModal(this.$t("error"), res.msg);
+          }
+        })
+        .catch((err) => {
+          this.$root.showModal(this.$t("error"), err.message);
+        })
+        .finally(() => {
+          this.$root.loading = false;
+        });
+
+      // var blob = new Blob([JSON.stringify(this.logs, null, 2)], {
+      //   type: "text/plain;charset=utf-8",
+      // });
+      // saveAs(blob, new Date().getTime() + ".txt");
     },
   },
   created() {},

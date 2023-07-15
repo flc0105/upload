@@ -21,9 +21,10 @@ import org.springframework.stereotype.Service;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BookmarkServiceImpl implements BookmarkService {
@@ -35,20 +36,20 @@ public class BookmarkServiceImpl implements BookmarkService {
         this.bookmarkMapper = bookmarkMapper;
     }
 
-    /**
-     * 检查目录是否已存在
-     *
-     * @param bookmark 目录书签
-     * @return 如果目录已存在返回 true，否则返回 false
-     */
-    private boolean directoryAlreadyExists(Bookmark bookmark) {
-        return bookmarkMapper.selectCount(
-                new LambdaQueryWrapper<Bookmark>()
-                        .eq(Bookmark::getName, bookmark.getName())
-                        .eq(Bookmark::getParentId, bookmark.getParentId())
-                        .eq(Bookmark::getBookmarkType, BookmarkType.DIRECTORY.getValue())
-        ) > 0;
-    }
+//    /**
+//     * 检查目录是否已存在
+//     *
+//     * @param bookmark 目录书签
+//     * @return 如果目录已存在返回 true，否则返回 false
+//     */
+//    private boolean directoryAlreadyExists(Bookmark bookmark) {
+//        return bookmarkMapper.selectCount(
+//                new LambdaQueryWrapper<Bookmark>()
+//                        .eq(Bookmark::getName, bookmark.getName())
+//                        .eq(Bookmark::getParentId, bookmark.getParentId())
+//                        .eq(Bookmark::getBookmarkType, BookmarkType.DIRECTORY.getValue())
+//        ) > 0;
+//    }
 
     /**
      * 添加书签或目录
@@ -58,17 +59,17 @@ public class BookmarkServiceImpl implements BookmarkService {
      */
     @Override
     public void add(Bookmark bookmark) {
-        if (bookmark.isDirectory()) {
-            // 检查目录名称是否非法
-            if (bookmark.isDirectoryNameInvalid()) {
-                throw new BusinessException("directory.name.illegal");
-            }
-
-            // 检查目录是否已存在
-            if (directoryAlreadyExists(bookmark)) {
-                throw new BusinessException("directory.already.exists");
-            }
-        }
+//        if (bookmark.isDirectory()) {
+//            // 检查目录名称是否非法
+//            if (bookmark.isDirectoryNameInvalid()) {
+//                throw new BusinessException("directory.name.illegal");
+//            }
+//
+//            // 检查目录是否已存在
+//            if (directoryAlreadyExists(bookmark)) {
+//                throw new BusinessException("directory.already.exists");
+//            }
+//        }
 
         if (bookmark.isBookmark()) {
             // 设置书签的 URL
@@ -109,30 +110,86 @@ public class BookmarkServiceImpl implements BookmarkService {
     public void updateBookmark(Bookmark bookmark) {
         Bookmark existingBookmark = bookmarkMapper.selectById(bookmark.getId());
         if (existingBookmark != null) {
-            if (existingBookmark.isDirectory()) {
-                String newName = bookmark.getName();
-                if (bookmark.isDirectoryNameInvalid()) {
-                    throw new BusinessException("directory.name.illegal");
-                }
-                if (bookmarkMapper.selectList(new LambdaQueryWrapper<Bookmark>()
-                        .eq(Bookmark::getParentId, existingBookmark.getParentId())
-                        .eq(Bookmark::getName, newName)
-                        .eq(Bookmark::getBookmarkType, BookmarkType.DIRECTORY.getValue())
-                        .ne(Bookmark::getId, existingBookmark.getId())
-                ).size() > 0) {
-                    throw new BusinessException("directory.already.exists");
-                }
-            }
+//            if (existingBookmark.isDirectory()) {
+//                String newName = bookmark.getName();
+//                if (bookmark.isDirectoryNameInvalid()) {
+//                    throw new BusinessException("directory.name.illegal");
+//                }
+//                if (bookmarkMapper.selectList(new LambdaQueryWrapper<Bookmark>()
+//                        .eq(Bookmark::getParentId, existingBookmark.getParentId())
+//                        .eq(Bookmark::getName, newName)
+//                        .eq(Bookmark::getBookmarkType, BookmarkType.DIRECTORY.getValue())
+//                        .ne(Bookmark::getId, existingBookmark.getId())
+//                ).size() > 0) {
+//                    throw new BusinessException("directory.already.exists");
+//                }
+//            }
             existingBookmark.updatePropertiesFromBookmark(bookmark);
             bookmarkMapper.updateById(existingBookmark);
         }
     }
 
-
     @Override
     public List<BookmarkVO> getStructuredBookmarks() {
         List<Bookmark> bookmarks = bookmarkMapper.selectList(null);
         return buildBookmarkVOs(bookmarks, 0);
+    }
+
+    @Override
+    public Map<String, Object> findByParentId(Integer parentId) {
+        List<Bookmark> bookmarks = bookmarkMapper.selectList(new LambdaQueryWrapper<Bookmark>().eq(Bookmark::getParentId, parentId));
+        List<Bookmark> directories = bookmarks.stream()
+                .filter(Bookmark::isDirectory)
+                .collect(Collectors.toList());
+
+        List<Bookmark> bookmarkList = bookmarks.stream()
+                .filter(bookmark -> !bookmark.isDirectory())
+                .collect(Collectors.toList());
+
+        directories.addAll(bookmarkList);
+
+        Map<String, Object> ret = new HashMap<>();
+        ret.put("data", directories);
+        ret.put("parent", getParentPathById(parentId));
+        return ret;
+    }
+
+
+
+    @Override
+    public List<Bookmark> getParentPathById(Integer id) {
+        List<Bookmark> parentPath = new ArrayList<>();
+        findParentPath(id, parentPath);
+        Collections.reverse(parentPath);
+        return parentPath;
+    }
+
+    private void findParentPath(Integer id, List<Bookmark> parentPath) {
+        Bookmark bookmark = bookmarkMapper.selectById(id);
+        if (bookmark != null) {
+            parentPath.add(bookmark);
+            if (bookmark.getParentId() != null) {
+                findParentPath(bookmark.getParentId(), parentPath);
+            }
+        }
+    }
+
+    @Override
+    public List<Bookmark> filterBookmarks(String keyword, Integer parentId) { //dir-id
+//        List<Bookmark> bookmarks = bookmarkMapper.selectList(
+//                new LambdaQueryWrapper<Bookmark>()
+//                        .like(Bookmark::getName, keyword)
+//                        .or()
+//                        .like(Bookmark::getUrl, keyword));
+
+
+        List<Bookmark> bookmarks =  bookmarkMapper.selectList(new LambdaQueryWrapper<Bookmark>()
+                .and(wrapper -> wrapper
+                        .like(Bookmark::getName, keyword)
+                        .or()
+                        .like(Bookmark::getUrl, keyword))
+                .ne(Bookmark::getId, 0)); // 添加条件排除 id 为 0 的书签;
+        return bookmarks;
     }
 
     @Override
@@ -243,6 +300,35 @@ public class BookmarkServiceImpl implements BookmarkService {
             try (ServletOutputStream outputStream = response.getOutputStream()) {
                 workbook.write(outputStream);
             }
+        }
+    }
+
+
+
+    @Override
+    public List<Bookmark> getDeadLinks()  {
+        List<Bookmark> bookmarks = bookmarkMapper.selectList(null);
+        List<Bookmark> deadLinks = new ArrayList<>();
+        for (Bookmark bookmark : bookmarks) {
+            if (bookmark.isBookmark() && isLinkDead(bookmark.getUrl())) {
+                deadLinks.add(bookmark);
+            }
+        }
+        return deadLinks;
+    }
+
+    private boolean isLinkDead(String url) {
+        try {
+            URL link = new URL(url);
+            HttpURLConnection connection = (HttpURLConnection) link.openConnection();
+            connection.setRequestMethod("HEAD");
+            int responseCode = connection.getResponseCode();
+            connection.disconnect();
+            System.out.println(url + ": " + responseCode);
+            return (responseCode >= 400);
+        } catch (IOException e) {
+            System.out.println(url + ":" +  e.getLocalizedMessage());
+            return true;
         }
     }
 
