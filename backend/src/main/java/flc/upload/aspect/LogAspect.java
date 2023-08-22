@@ -1,7 +1,7 @@
 package flc.upload.aspect;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import flc.upload.model.AppConfig;
+import flc.upload.manager.LogManager;
 import flc.upload.model.Result;
 import flc.upload.util.*;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -18,7 +18,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 切面类，用于记录日志
@@ -26,14 +28,6 @@ import java.util.*;
 @Aspect
 @Component
 public class LogAspect {
-
-    /**
-     * 存储日志信息的列表
-     */
-    public static final List<Map<String, String>> logs = new ArrayList<>();
-
-//    public static final Map<CacheKey, Long> cachedApis = new HashMap<>();
-
     /**
      * 定义切入点，标记使用了 @Log 注解的方法
      */
@@ -41,17 +35,14 @@ public class LogAspect {
     public void logPointCut() {
     }
 
-    private static AppConfig appConfig;
 
-    /**
-     * 注入 AppConfig
-     *
-     * @param appConfig AppConfig 实例
-     */
+    private final LogManager logManager;
+
     @Autowired
-    public void setAppConfig(AppConfig appConfig) {
-        LogAspect.appConfig = appConfig;
+    public LogAspect(LogManager logManager) {
+        this.logManager = logManager;
     }
+
 
     /**
      * 环绕通知，在被 @Log 注解标记的方法执行前后记录日志
@@ -135,10 +126,8 @@ public class LogAspect {
      * @throws JsonProcessingException JSON 解析异常
      */
     private void addLog(Map<String, String> map, Logger logger) throws JsonProcessingException {
-        if (logs.size() >= appConfig.getLogMaxSize()) { // 如果日志数量大于配置的数量，从最前面开始删除
-            logs.remove(0);
-        }
-        logs.add(map); // 添加日志
+        logManager.add(map);
         logger.info("\n" + CommonUtil.toJsonString(InternationalizationUtil.translateMapKeys(map)));
     }
+
 }

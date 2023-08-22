@@ -4,7 +4,7 @@ package flc.upload.controller;
 import flc.upload.annotation.Log;
 import flc.upload.annotation.Permission;
 import flc.upload.annotation.Token;
-import flc.upload.aspect.LogAspect;
+import flc.upload.manager.LogManager;
 import flc.upload.mapper.SqlMapper;
 import flc.upload.model.AppConfig;
 import flc.upload.model.Result;
@@ -18,18 +18,21 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Objects;
 
 @Api(tags = "配置")
 @RestController
 public class ConfigController {
     private final AppConfig appConfig;
 
+    private final LogManager logManager;
+
     private final SqlMapper sqlMapper;
 
-    public ConfigController(AppConfig appConfig, SqlMapper sqlMapper) {
+    public ConfigController(AppConfig appConfig, LogManager logManager, SqlMapper sqlMapper) {
         this.appConfig = appConfig;
+        this.logManager = logManager;
         this.sqlMapper = sqlMapper;
     }
 
@@ -59,10 +62,7 @@ public class ConfigController {
     @Permission
     @PostMapping("/logs/list")
     public Result<?> listLogs() {
-        List<Map<String, String>> result = LogAspect.logs.stream()
-                .map(InternationalizationUtil::translateMapKeys)
-                .collect(Collectors.toList());
-        return ResponseUtil.buildSuccessResult("query.success", result);
+        return ResponseUtil.buildSuccessResult("query.success", logManager.list());
     }
 
     @ApiOperation("日志_分页查询")
@@ -70,35 +70,7 @@ public class ConfigController {
     @Permission
     @GetMapping("/logs/page")
     public Result<?> pageLogs(@RequestParam int page) {
-        int pageSize = 10; // 每页显示的记录数
-        List<Map<String, String>> allLogs = LogAspect.logs;
-
-        // 创建逆转后的日志列表
-        List<Map<String, String>> reversedLogs = new ArrayList<>(allLogs);
-        Collections.reverse(reversedLogs);
-
-        int totalLogs = reversedLogs.size(); // 总记录数
-        int totalPages = (int) Math.ceil((double) totalLogs / pageSize); // 总页数
-
-        // 计算起始索引和结束索引
-        int startIndex = (page - 1) * pageSize;
-        int endIndex = Math.min(startIndex + pageSize, totalLogs);
-
-        // 获取指定页码的记录
-        List<Map<String, String>> pageLogs = reversedLogs.subList(startIndex, endIndex);
-
-        // 对记录进行国际化处理
-        pageLogs = pageLogs.stream()
-                .map(InternationalizationUtil::translateMapKeys)
-                .collect(Collectors.toList());
-
-        // 构建分页结果对象
-        Map<String, Object> pageResult = new HashMap<>();
-        pageResult.put("totalPages", totalPages);
-        pageResult.put("currentPage", page);
-        pageResult.put("data", pageLogs);
-
-        return ResponseUtil.buildSuccessResult("query.success", pageResult);
+        return ResponseUtil.buildSuccessResult("query.success", logManager.page(page));
     }
 
     @ApiOperation("日志_删除")
@@ -106,7 +78,7 @@ public class ConfigController {
     @Permission
     @PostMapping("/logs/delete")
     public Result<?> deleteLogs() {
-        LogAspect.logs.clear();
+        logManager.clear();
         return ResponseUtil.buildSuccessResult("delete.success");
     }
 
