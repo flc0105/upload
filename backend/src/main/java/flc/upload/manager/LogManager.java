@@ -1,9 +1,13 @@
 package flc.upload.manager;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public interface LogManager {
+
+    Map<String, Long> cachedApis = new HashMap<>();
+
 
     void add(Map<String, String> map);
 

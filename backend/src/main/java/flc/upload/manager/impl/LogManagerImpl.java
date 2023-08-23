@@ -5,17 +5,22 @@ import flc.upload.model.AppConfig;
 import flc.upload.util.InternationalizationUtil;
 import flc.upload.util.SerializationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
+@Service
 public class LogManagerImpl implements LogManager {
 
-    private static final String FILENAME = "log.ser";
+    public static final String FILENAME = "log.ser";
 
-    private static final List<Map<String, String>> LOGS = SerializationUtil.loadFromFile(FILENAME);
+    public static final List<Map<String, String>> LOGS = SerializationUtil.loadFromFile(FILENAME);
+
+
 
     private static AppConfig appConfig;
 
@@ -31,7 +36,7 @@ public class LogManagerImpl implements LogManager {
             LOGS.remove(0);
         }
         LOGS.add(map); // 添加日志
-        SerializationUtil.saveToFile(LOGS, FILENAME);
+//        SerializationUtil.saveToFile(LOGS, FILENAME);
     }
 
     @Override
@@ -76,4 +81,5 @@ public class LogManagerImpl implements LogManager {
         pageResult.put("data", pageLogs);
         return pageResult;
     }
+
 }

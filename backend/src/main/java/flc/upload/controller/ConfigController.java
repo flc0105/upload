@@ -66,7 +66,7 @@ public class ConfigController {
     }
 
     @ApiOperation("日志_分页查询")
-    @Log
+    @Log(cache = true)
     @Permission
     @GetMapping("/logs/page")
     public Result<?> pageLogs(@RequestParam int page) {
