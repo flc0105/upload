@@ -1,6 +1,7 @@
 package flc.upload.controller;
 
 
+import flc.upload.UploadApplication;
 import flc.upload.annotation.Log;
 import flc.upload.annotation.Permission;
 import flc.upload.annotation.Token;
@@ -14,6 +15,8 @@ import flc.upload.util.ResponseUtil;
 import flc.upload.util.ServerUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -30,10 +33,13 @@ public class ConfigController {
 
     private final SqlMapper sqlMapper;
 
-    public ConfigController(AppConfig appConfig, LogManager logManager, SqlMapper sqlMapper) {
+    private final ConfigurableApplicationContext context;
+
+    public ConfigController(AppConfig appConfig, LogManager logManager, SqlMapper sqlMapper, ConfigurableApplicationContext context) {
         this.appConfig = appConfig;
         this.logManager = logManager;
         this.sqlMapper = sqlMapper;
+        this.context = context;
     }
 
     @ApiOperation("配置_查询")
@@ -113,6 +119,32 @@ public class ConfigController {
     public Result<?> getServerInfo() {
         return ResponseUtil.buildSuccessResult("query.success", ServerUtil.getServerInfo());
     }
+
+    @ApiOperation("服务器_关闭")
+    @Log
+    @Permission
+    @RequestMapping("/server/shutdown")
+    public Result<?> shutdown() {
+//        System.exit(0);
+        new Thread(context::close).start();
+        return ResponseUtil.buildSuccessResult("execute.success");
+    }
+
+    @ApiOperation("服务器_重启")
+    @Log
+    @Permission
+    @RequestMapping("/server/restart")
+    public Result<?> restart() {
+
+        Thread thread = new Thread(() -> {
+            SpringApplication.exit(context, () -> 0);
+            SpringApplication.run(UploadApplication.class);
+        });
+        thread.setDaemon(false);
+        thread.start();
+        return ResponseUtil.buildSuccessResult("execute.success");
+    }
+
 
     @Log
     @ApiOperation("执行shell命令")
