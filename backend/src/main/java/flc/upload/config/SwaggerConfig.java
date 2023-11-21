@@ -8,6 +8,7 @@ import flc.upload.model.Folder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -19,7 +20,8 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 /**
  * Swagger配置类，用于配置Swagger API文档生成工具。
  */
-@Configuration
+//@Configuration
+@Component
 @EnableSwagger2
 public class SwaggerConfig {
     @Autowired

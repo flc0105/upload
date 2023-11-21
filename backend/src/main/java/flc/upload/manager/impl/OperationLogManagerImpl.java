@@ -1,11 +1,9 @@
 package flc.upload.manager.impl;
 
-import flc.upload.manager.LogManager;
+import flc.upload.manager.OperationLogManager;
 import flc.upload.model.AppConfig;
 import flc.upload.util.InternationalizationUtil;
-import flc.upload.util.SerializationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -14,40 +12,33 @@ import java.util.stream.Collectors;
 
 @Component
 @Service
-public class LogManagerImpl implements LogManager {
-
-    public static final String FILENAME = "log.ser";
-
-    public static final List<Map<String, String>> LOGS = SerializationUtil.loadFromFile(FILENAME);
-
-
+public class OperationLogManagerImpl implements OperationLogManager {
+    public static final List<Map<String, String>> operationLogs = new ArrayList<>();
 
     private static AppConfig appConfig;
 
     @Autowired
     public void setAppConfig(AppConfig appConfig) {
-        LogManagerImpl.appConfig = appConfig;
+        OperationLogManagerImpl.appConfig = appConfig;
     }
 
 
     @Override
     public void add(Map<String, String> map) {
-        if (LOGS.size() >= appConfig.getLogMaxSize()) { // 如果日志数量大于配置的数量，从最前面开始删除
-            LOGS.remove(0);
+        if (operationLogs.size() >= appConfig.getLogMaxSize()) { // 如果日志数量大于配置的数量，从最前面开始删除
+            operationLogs.remove(0);
         }
-        LOGS.add(map); // 添加日志
-//        SerializationUtil.saveToFile(LOGS, FILENAME);
+        operationLogs.add(map); // 添加日志
     }
 
     @Override
     public void clear() {
-        LOGS.clear();
-        SerializationUtil.saveToFile(LOGS, FILENAME);
+        operationLogs.clear();
     }
 
     @Override
     public List<Map<String, String>> list() {
-        return LOGS.stream()
+        return operationLogs.stream()
                 .map(InternationalizationUtil::translateMapKeys)
                 .collect(Collectors.toList());
     }
@@ -56,7 +47,7 @@ public class LogManagerImpl implements LogManager {
     public Map<String, Object> page(int page) {
         int pageSize = 10; // 每页显示的记录数
         // 创建逆转后的日志列表
-        List<Map<String, String>> reversedLogs = new ArrayList<>(LOGS);
+        List<Map<String, String>> reversedLogs = new ArrayList<>(operationLogs);
         Collections.reverse(reversedLogs);
 
         int totalLogs = reversedLogs.size(); // 总记录数

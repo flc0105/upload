@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import springfox.documentation.oas.annotations.EnableOpenApi;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.util.Objects;
 
@@ -22,8 +23,13 @@ import java.util.Objects;
 @EnableOpenApi
 @EnableKnife4j
 public class UploadApplication {
-
     public static void main(String[] args) {
+        // 默认在用户目录下创建一个upload目录
+        File file = new File(System.getProperty("user.home"), "upload");
+        if (!file.exists()) {
+            file.mkdir();
+        }
+
         ConfigurableApplicationContext applicationContext = SpringApplication.run(UploadApplication.class, args);
         Logger logger = LoggerFactory.getLogger(UploadApplication.class);
         Environment env = applicationContext.getEnvironment();
@@ -43,5 +49,6 @@ public class UploadApplication {
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
+
     }
 }

@@ -1,6 +1,6 @@
 package flc.upload.controller;
 
-import flc.upload.annotation.Log;
+import flc.upload.annotation.OperationLog;
 import flc.upload.model.Result;
 import flc.upload.service.ShareCodeService;
 import io.swagger.annotations.Api;
@@ -18,28 +18,28 @@ public class ShareCodeController {
         this.shareCodeService = shareCodeService;
     }
 
-    @Log
+    @OperationLog
     @ApiOperation("分享码_添加")
     @PostMapping("/add")
     public Result<?> add(@RequestParam("path") String path) throws Exception {
         return shareCodeService.add(path);
     }
 
-    @Log
+    @OperationLog
     @ApiOperation("分享码_删除")
     @PostMapping("/delete")
     public Result<?> delete(@RequestParam("code") String code) throws Exception {
         return shareCodeService.delete(code);
     }
 
-    @Log
+    @OperationLog
     @ApiOperation("分享码_查询所有")
     @PostMapping("/list")
     public Result<?> list() throws Exception {
         return shareCodeService.findAll();
     }
 
-    @Log
+    @OperationLog
     @ApiOperation("分享码_查询")
     @PostMapping("/get")
     public Result<?> get(@RequestParam("code") String code) throws Exception {

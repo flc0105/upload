@@ -5,7 +5,6 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import flc.upload.aspect.PermissionAspect;
 import flc.upload.model.AppConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +73,6 @@ public class JwtUtil {
             logger.error("获取token信息失败：" + e.getLocalizedMessage());
         }
         return hashMap;
-
     }
 
     /**

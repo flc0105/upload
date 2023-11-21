@@ -43,13 +43,12 @@ insert into permission values (null, "/shareCode/add", 1, "文件分享码_添�
 insert into permission values (null, "/shareCode/delete", 1, "文件分享码_删除");
 insert into permission values (null, "/shareCode/get", 0, "文件分享码_查询");
 insert into permission values (null, "/shareCode/list", 1, "文件分享码_查询所有");
-insert into permission values (null, "/permission/list", 1, "权限_查询");
-insert into permission values (null, "/permission/update", 1, "权限_修改");
 insert into permission values (null, "/config/list", 1, "配置_查询");
-insert into permission values (null, "/permission/update", 1, "配置_修改");
+insert into permission values (null, "/config/update", 1, "配置_修改");
 insert into permission values (null, "/info", 1, "查询服务器信息");
 insert into permission values (null, "/logs/delete", 1, "日志_删除");
-insert into permission values (null, "/logs/list", 1, "日志_查询");
+insert into permission values (null, "/logs/page", 1, "日志_分页查询");
+insert into permission values (null, "/logs/list", 1, "日志_查询所有");
 */
 
 CREATE TABLE

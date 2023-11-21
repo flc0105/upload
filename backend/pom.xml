@@ -10,7 +10,7 @@
     </parent>
     <groupId>flc</groupId>
     <artifactId>upload</artifactId>
-    <version>0.2.6-SNAPSHOT</version>
+    <version>0.3.0-SNAPSHOT</version>
     <name>upload</name>
     <description>Demo project for Spring Boot</description>
 
@@ -19,122 +19,105 @@
     </properties>
 
     <dependencies>
-        <!-- Spring Boot Web Starter: 提供构建Web应用程序的基本依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Apache POI 是一个用于处理 Microsoft Office 文件格式（如 Excel、Word 和 PowerPoint）的 Java 库。 -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
             <version>5.2.2</version>
         </dependency>
 
-        <!-- Apache POI OOXML 是 Apache POI 库的扩展，提供对 OOXML（Office Open XML）文件格式的支持，包括 XLSX、DOCX 和 PPTX 等文件。 -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>5.2.2</version>
         </dependency>
 
-        <!-- CP Detector: 用于检测文本文件的字符编码 -->
         <dependency>
             <groupId>net.sourceforge.cpdetector</groupId>
             <artifactId>cpdetector</artifactId>
             <version>1.0.10</version>
         </dependency>
 
-        <!-- Mozilla Char Det: 用于检测文本文件的字符编码 -->
         <dependency>
             <groupId>org.mozilla.intl</groupId>
             <artifactId>chardet</artifactId>
             <version>1.0</version>
         </dependency>
 
-        <!-- ANTLR: 用于构建词法和语法分析器 -->
         <dependency>
             <groupId>antlr</groupId>
             <artifactId>antlr</artifactId>
             <version>2.7.7</version>
         </dependency>
 
-        <!-- Apache Tika Core: 用于提取文档的元数据和内容 -->
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
             <version>2.7.0</version>
         </dependency>
 
-        <!--MyBatis Plus 是基于 MyBatis 的增强工具库，简化了 MyBatis 的使用，并提供了许多便捷的功能和增强特性，如注解支持、代码生成器、分页插件等。它是一个强大的 ORM（对象关系映射）框架，用于与关系型数据库进行交互和数据持久化。 -->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>3.5.3.1</version>
         </dependency>
 
-        <!-- Spring Boot Starter AOP: 提供AOP（面向切面编程）的支持 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
-        <!-- Spring Boot DevTools: 提供开发工具支持，如自动重启 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
         </dependency>
 
-        <!-- SQLite JDBC: 用于连接和操作SQLite数据库 -->
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
+            <version>3.44.0.0</version>
         </dependency>
 
-        <!-- Java JWT: 提供JWT（JSON Web Token）的生成和验证功能 -->
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>4.3.0</version>
         </dependency>
 
-        <!-- Jsoup: 用于解析和处理HTML文档 -->
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.15.4</version>
         </dependency>
 
-        <!-- Thumbnailator: 用于生成和处理图像缩略图 -->
         <dependency>
             <groupId>net.coobird</groupId>
             <artifactId>thumbnailator</artifactId>
             <version>0.4.20</version>
         </dependency>
 
-        <!-- Spring Boot Starter Validation: 提供验证框架的支持 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Apache Commons Imaging: 获取图片元数据 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-imaging</artifactId>
             <version>1.0-alpha3</version>
         </dependency>
 
-        <!-- JAudiotagger: 用于处理音频文件的元数据 -->
         <dependency>
             <groupId>org</groupId>
             <artifactId>jaudiotagger</artifactId>
             <version>2.0.3</version>
         </dependency>
 
-        <!-- Knife4j Spring Boot Starter: 基于Swagger的API文档工具 -->
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>knife4j-spring-boot-starter</artifactId>

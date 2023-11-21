@@ -1,6 +1,6 @@
 package flc.upload.controller;
 
-import flc.upload.annotation.Log;
+import flc.upload.annotation.OperationLog;
 import flc.upload.annotation.Permission;
 import flc.upload.model.Paste;
 import flc.upload.model.Result;
@@ -26,7 +26,7 @@ public class PasteController {
     }
 
     @ApiOperation("Paste_添加")
-    @Log
+    @OperationLog
     @Permission
     @PostMapping("/add")
     public Result<?> add(@RequestBody Paste paste) throws Exception {
@@ -34,7 +34,7 @@ public class PasteController {
     }
 
     @ApiOperation("Paste_删除")
-    @Log
+    @OperationLog
     @Permission
     @PostMapping("/delete")
     public Result<?> delete(Integer id) throws Exception {
@@ -42,7 +42,7 @@ public class PasteController {
     }
 
     @ApiOperation("Paste_修改")
-    @Log
+    @OperationLog
     @Permission
     @PostMapping("/update")
     public Result<?> update(@Valid @RequestBody Paste paste) throws Exception {
@@ -50,7 +50,7 @@ public class PasteController {
     }
 
     @ApiOperation("Paste_查询所有")
-    @Log
+    @OperationLog
     @Permission
     @GetMapping("/list")
     public Result<?> list() throws Exception {
@@ -59,7 +59,7 @@ public class PasteController {
     }
 
     @ApiOperation("Paste_根据id查询")
-    @Log
+    @OperationLog
     @Permission
     @GetMapping("/get")
     public Result<?> get(Integer id) throws Exception {
@@ -67,7 +67,7 @@ public class PasteController {
     }
 
     @ApiOperation("Paste_根据id查询")
-    @Log
+    @OperationLog
 //    @Permission
     @GetMapping("/get/{id}")
     public String getText(@PathVariable Integer id) throws Exception {
@@ -76,7 +76,7 @@ public class PasteController {
     }
 
     @ApiOperation("Paste_查询最后添加")
-    @Log
+    @OperationLog
     @Permission
     @GetMapping(value = "/last")
     public String last() throws Exception {
@@ -85,7 +85,7 @@ public class PasteController {
     }
 
     @ApiOperation("Paste_查询私密")
-    @Log
+    @OperationLog
     @Permission
     @GetMapping("/private")
     public Result<?> findPrivate() throws Exception {
@@ -93,7 +93,7 @@ public class PasteController {
     }
 
     @ApiOperation("Paste_导入")
-    @Log
+    @OperationLog
     @Permission
     @PostMapping("/import")
     public Result<?> importPastes(@RequestParam String json) throws Exception {

@@ -1,11 +1,10 @@
 package flc.upload.aspect;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import flc.upload.annotation.Log;
-import flc.upload.manager.LogManager;
+import flc.upload.annotation.OperationLog;
+import flc.upload.manager.OperationLogManager;
 import flc.upload.model.Result;
 import flc.upload.util.*;
-import org.apache.ibatis.cache.CacheKey;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -29,20 +28,20 @@ import java.util.Objects;
  */
 @Aspect
 @Component
-public class LogAspect {
+public class OperationLogAspect {
     /**
      * 定义切入点，标记使用了 @Log 注解的方法
      */
-    @Pointcut("@annotation(flc.upload.annotation.Log)")
+    @Pointcut("@annotation(flc.upload.annotation.OperationLog)")
     public void logPointCut() {
     }
 
 
-    private final LogManager logManager;
+    private final OperationLogManager operationLogManager;
 
     @Autowired
-    public LogAspect(LogManager logManager) {
-        this.logManager = logManager;
+    public OperationLogAspect(OperationLogManager operationLogManager) {
+        this.operationLogManager = operationLogManager;
     }
 
 
@@ -53,9 +52,8 @@ public class LogAspect {
      * @return 目标方法的执行结果
      * @throws Throwable 抛出的异常
      */
-//    @Around("logPointCut()")
-    @Around("@annotation(logAnnotation)")
-    public Object around(ProceedingJoinPoint joinPoint, Log logAnnotation) throws Throwable {
+    @Around("@annotation(operationLogAnnotation)")
+    public Object around(ProceedingJoinPoint joinPoint, OperationLog operationLogAnnotation) throws Throwable {
         // 获取方法的签名信息，包括方法名、参数类型等
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 
@@ -74,6 +72,8 @@ public class LogAspect {
         // 获取当前的 HttpServletRequest 对象
         HttpServletRequest request = attributes.getRequest();
 
+        String token = CookieUtil.getCookie("token", request);
+
         // 填充日志信息
         logMap.put("operation.time", CommonUtil.getCurrentDate());
         logMap.put("api.name", ReflectionUtil.getApiName(method));
@@ -85,11 +85,9 @@ public class LogAspect {
         logMap.put("class.name", signature.getDeclaringTypeName());
         logMap.put("method.name", method.getName());
         logMap.put("request.parameters", ReflectionUtil.getMethodArguments(joinPoint));
-        logMap.put("parameter.type", request.getContentType());
-        logMap.put("token", CommonUtil.toJsonString(JwtUtil.getTokenInfo(CookieUtil.getCookie("token", request))));
-        logMap.put("referer", request.getHeader("Referer"));
-
-        boolean isCacheEnabled = logAnnotation.cache();
+//        logMap.put("parameter.type", request.getContentType());
+        logMap.put("token", CommonUtil.toJsonString(JwtUtil.getTokenInfo(token)));
+//        logMap.put("referer", request.getHeader("Referer"));
 
         long startTime = System.nanoTime();
         try {
@@ -103,7 +101,7 @@ public class LogAspect {
             logMap.put("execution.time", ((endTime - startTime) / 1_000_000) + " ms");
 
             // 添加日志到列表
-            addLog(logMap, logger, isCacheEnabled);
+            addLog(logMap, logger);
 
             return result;
         } catch (Throwable throwable) {
@@ -114,22 +112,12 @@ public class LogAspect {
             logMap.put("specific.message", throwable.getLocalizedMessage());
             logMap.put("execution.time", ((endTime - startTime) / 1_000_000) + " ms");
 
-
-
             // 添加日志到列表
-            addLog(logMap, logger, isCacheEnabled);
+            addLog(logMap, logger);
 
             // 抛出异常
             throw throwable;
         }
-    }
-
-
-    public static boolean isElapsed(long startTime) {
-        long elapsedTime = System.nanoTime() - startTime;
-        long elapsedSeconds = elapsedTime / 1_000_000_000; // 将纳秒转换为秒
-
-        return elapsedSeconds > 10; // 如果经过的秒数超过10秒，则返回true
     }
 
     /**
@@ -139,23 +127,9 @@ public class LogAspect {
      * @param logger Logger 实例
      * @throws JsonProcessingException JSON 解析异常
      */
-    private void addLog(Map<String, String> map, Logger logger, boolean isCacheEnabled) throws JsonProcessingException {
-
+    private void addLog(Map<String, String> map, Logger logger) throws JsonProcessingException {
         logger.info("\n" + CommonUtil.toJsonString(InternationalizationUtil.translateMapKeys(map)));
-        if (!isCacheEnabled) {
-            logManager.add(map);
-            return;
-        }
-
-
-        String api = map.get("request.url"); // 获取接口地址
-        Long lastVisited = LogManager.cachedApis.get(api);// 上次访问时间
-        if (lastVisited != null && !isElapsed(lastVisited)) { //如果不是首次访问且距离上次访问不超过10s，不记录日志
-            return;
-        }
-        logManager.add(map);
-        LogManager.cachedApis.put(api, System.nanoTime()); // 添加完成后缓存该接口
-
+        operationLogManager.add(map);
     }
 
 }

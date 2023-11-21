@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public interface LogManager {
+public interface OperationLogManager {
 
     Map<String, Long> cachedApis = new HashMap<>();
 
