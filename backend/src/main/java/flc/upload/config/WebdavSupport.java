@@ -90,4 +90,10 @@ public class WebdavSupport extends WebdavServlet {
         }
     }
 
+//    @Override
+//    protected void doPropfind(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+//        super.doPropfind(req, resp);
+//        System.out.println("doPropfind");
+//    }
+
 }

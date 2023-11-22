@@ -49,6 +49,5 @@ public class UploadApplication {
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
-
     }
 }
