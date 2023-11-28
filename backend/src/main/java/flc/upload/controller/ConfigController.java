@@ -1,13 +1,15 @@
 package flc.upload.controller;
 
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import flc.upload.UploadApplication;
-import flc.upload.annotation.OperationLog;
+import flc.upload.annotation.Log;
 import flc.upload.annotation.Permission;
 import flc.upload.annotation.Token;
 import flc.upload.manager.OperationLogManager;
 import flc.upload.mapper.SqlMapper;
 import flc.upload.model.AppConfig;
+import flc.upload.model.OperationLog;
 import flc.upload.model.Result;
 import flc.upload.util.InternationalizationUtil;
 import flc.upload.util.ReflectionUtil;
@@ -43,7 +45,7 @@ public class ConfigController {
     }
 
     @ApiOperation("配置_查询")
-    @OperationLog
+    @Log
     @Permission
     @PostMapping("/config/list")
     public Result<?> listConfig() {
@@ -51,7 +53,7 @@ public class ConfigController {
     }
 
     @ApiOperation("配置_修改")
-    @OperationLog
+    @Log
     @Permission
     @PostMapping("/config/update")
     public Result<?> updateConfig(@RequestBody Map<String, Object> params) throws IllegalAccessException {
@@ -64,7 +66,6 @@ public class ConfigController {
     }
 
     @ApiOperation("日志_查询所有")
-    @OperationLog
     @Permission
     @GetMapping("/logs/list")
     public Result<?> listLogs() {
@@ -72,24 +73,32 @@ public class ConfigController {
     }
 
     @ApiOperation("日志_分页查询")
-    @OperationLog()
     @Permission
     @GetMapping("/logs/page")
-    public Result<?> pageLogs(@RequestParam int page) {
-        return ResponseUtil.buildSuccessResult("query.success", operationLogManager.page(page));
+    public Result<IPage<OperationLog>> pageLogs(
+            @RequestParam(defaultValue = "1") int current,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseUtil.buildSuccessResult("query.success", operationLogManager.page(current, size));
     }
 
     @ApiOperation("日志_删除")
-    @OperationLog
     @Permission
     @PostMapping("/logs/delete")
-    public Result<?> deleteLogs() {
-        operationLogManager.clear();
+    public Result<?> deleteLog(Integer id) {
+        operationLogManager.deleteById(id);
+        return ResponseUtil.buildSuccessResult("delete.success");
+    }
+
+    @ApiOperation("日志_清空")
+    @Permission
+    @PostMapping("/logs/deleteAll")
+    public Result<?> deleteAllLogs() {
+        operationLogManager.deleteAll();
         return ResponseUtil.buildSuccessResult("delete.success");
     }
 
     @ApiOperation("SQL_查询")
-    @OperationLog
+    @Log
     @PostMapping("/sql/select")
     @Token
     public Result<?> select(@RequestParam String sql) {
@@ -97,7 +106,7 @@ public class ConfigController {
     }
 
     @ApiOperation("SQL_查询数量")
-    @OperationLog
+    @Log
     @PostMapping("/sql/count")
     @Token
     public Result<?> count(@RequestParam String sql) {
@@ -105,7 +114,7 @@ public class ConfigController {
     }
 
     @ApiOperation("SQL_更新")
-    @OperationLog
+    @Log
     @PostMapping("/sql/execute")
     @Token
     public Result<?> execute(@RequestParam String sql) {
@@ -113,7 +122,7 @@ public class ConfigController {
     }
 
     @ApiOperation("查询服务器信息")
-    @OperationLog
+    @Log
     @Permission
     @PostMapping("/info")
     public Result<?> getServerInfo() {
@@ -121,7 +130,7 @@ public class ConfigController {
     }
 
     @ApiOperation("服务器_关闭")
-    @OperationLog
+    @Log
     @Token
     @PostMapping("/server/shutdown")
     public Result<?> shutdown() {
@@ -130,7 +139,7 @@ public class ConfigController {
     }
 
     @ApiOperation("服务器_重启")
-    @OperationLog
+    @Log
     @Token
     @PostMapping("/server/restart")
     public Result<?> restart() {
@@ -143,7 +152,7 @@ public class ConfigController {
         return ResponseUtil.buildSuccessResult("execute.success");
     }
 
-    @OperationLog
+    @Log
     @ApiOperation("执行shell命令")
     @PostMapping("/shell")
     @Token

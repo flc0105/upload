@@ -20,32 +20,47 @@
     <table class="table table-hover" style="white-space: nowrap">
       <thead>
         <tr>
-          <th v-for="(value, key) in logs[0]" :key="key">{{ key }}</th>
+          <th>操作时间</th>
+          <th>接口名称</th>
+          <th>请求地址</th>
+          <th>请求方式</th>
+          <th>IP地址</th>
+          <th>浏览器</th>
+          <th>操作系统</th>
+          <th>请求参数</th>
+          <th>是否成功</th>
+          <th>具体消息</th>
+          <th>执行时间</th>
+          <th>操作</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item, index) in logs" :key="index">
-          <td v-for="(value, key) in item" :key="key" :title="item[key]">
-            <template
-              v-if="
-                [
-                  'Token',
-                  'Referer',
-                  'Parameter type',
-                  '访问来源',
-                  '参数类型',
-                ].includes(key)
+        <tr v-for="log in logs" :key="value">
+          <td>{{ log.operationTime }}</td>
+          <td>{{ log.apiName }}</td>
+          <td>{{ log.requestUrl }}</td>
+          <td>{{ log.requestMethod }}</td>
+          <td>{{ log.ipAddress }}</td>
+          <td>{{ log.browser }}</td>
+          <td>{{ log.operatingSystem }}</td>
+          <td>{{ log.requestParameter }}</td>
+          <td>{{ log.success }}</td>
+          <td>{{ log.message }}</td>
+          <td>{{ log.executionTime }}</td>
+          <td>
+            <a class="link-primary me-1" @click="showDetail(log)">
+              <i class="bi bi-info-circle"></i>
+            </a>
+            <a
+              class="link-danger"
+              @click="
+                $root.showConfirm(function () {
+                  deleteLog(log.id);
+                })
               "
             >
-              <a
-                href="#"
-                class="link-primary"
-                @click="showDetails(item[key])"
-                v-if="item[key] != null && item[key] != '{ }'"
-                >{{ $t("view") }}</a
-              ><span v-else>null</span>
-            </template>
-            <template v-else>{{ value }}</template>
+              <i class="bi bi-trash"></i>
+            </a>
           </td>
         </tr>
       </tbody>
@@ -87,12 +102,13 @@ td {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-style: italic;
+  /* font-style: italic; */
 }
 </style>
 
 <script>
 import axios from "axios";
+import Qs from "qs";
 
 import "bootstrap/dist/js/bootstrap.bundle";
 import "file-saver";
@@ -133,7 +149,8 @@ export default {
             var result = res.detail;
             this.totalPages = result.totalPages;
             this.currentPage = result.currentPage;
-            this.logs = result.data;
+            this.logs = result.records;
+            console.log(this.logs);
           } else {
             this.$root.showModal(this.$t("error"), res.msg);
           }
@@ -145,8 +162,31 @@ export default {
           this.$root.loading = false;
         });
     },
-    showDetails(value) {
+    showDetail(value) {
       this.$root.showModal(this.$t("view"), value);
+    },
+    // 清空日志
+    deleteLog(id) {
+      if (!this.$root.hasToken(() => this.deleteLog(id))) {
+        return;
+      }
+      this.$root.loading = true;
+      axios
+        .post("/logs/delete",  Qs.stringify({ id: id }))
+        .then((res) => {
+          if (res.success) {
+            this.page(1);
+            this.$root.showModal(this.$t("success"), res.msg);
+          } else {
+            this.$root.showModal(this.$t("error"), res.msg);
+          }
+        })
+        .catch((err) => {
+          this.$root.showModal(this.$t("error"), err.message);
+        })
+        .finally(() => {
+          this.$root.loading = false;
+        });
     },
     // 清空日志
     clearLogs() {
@@ -155,7 +195,7 @@ export default {
       }
       this.$root.loading = true;
       axios
-        .post("/logs/delete")
+        .post("/logs/deleteAll")
         .then((res) => {
           if (res.success) {
             this.page(1);

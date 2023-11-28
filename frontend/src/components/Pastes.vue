@@ -10,11 +10,12 @@
   />
 
   <v-contextmenu ref="contextmenu">
-    <v-contextmenu-item @click="getTextFromClipboard()"
+    <!-- <v-contextmenu-item @click="getTextFromClipboard()"
       >Quick paste</v-contextmenu-item
-    >
+    > -->
 
-    <v-contextmenu-item @click="secretPaste()">Secret paste</v-contextmenu-item>
+    <v-contextmenu-item @click="list()">刷新</v-contextmenu-item>
+    <v-contextmenu-item @click="secretPaste()">加密发布</v-contextmenu-item>
 
     <v-contextmenu-item
       @click="
@@ -205,40 +206,40 @@ export default {
       // console.log(decrypted);
     },
 
-    async getTextFromClipboard() {
-      try {
-        const text = await navigator.clipboard.readText();
-        // 在这里使用获取到的剪贴板文字进行进一步操作
-        console.log("剪贴板的文字:", text);
-        sendRequest.call(
-          this,
-          "post",
-          "/paste/add",
-          {
-            title: "From clipboard",
-            text: text,
-            expiredDate: null,
-            private: false,
-          },
-          (res) => {
-            this.list();
-            this.$root.showModal(
-              this.$t("success"),
-              location.protocol +
-                "//" +
-                location.host +
-                "/pastes/" +
-                res.detail.id
-            );
-          },
-          (err) => {
-            this.$root.showModal(this.$t("error"), err);
-          }
-        );
-      } catch (error) {
-        this.$root.showModal(this.$t("error"), error.message);
-      }
-    },
+    // async getTextFromClipboard() {
+    //   try {
+    //     const text = await navigator.clipboard.readText();
+    //     // 在这里使用获取到的剪贴板文字进行进一步操作
+    //     console.log("剪贴板的文字:", text);
+    //     sendRequest.call(
+    //       this,
+    //       "post",
+    //       "/paste/add",
+    //       {
+    //         title: "From clipboard",
+    //         text: text,
+    //         expiredDate: null,
+    //         private: false,
+    //       },
+    //       (res) => {
+    //         this.list();
+    //         this.$root.showModal(
+    //           this.$t("success"),
+    //           location.protocol +
+    //             "//" +
+    //             location.host +
+    //             "/pastes/" +
+    //             res.detail.id
+    //         );
+    //       },
+    //       (err) => {
+    //         this.$root.showModal(this.$t("error"), err);
+    //       }
+    //     );
+    //   } catch (error) {
+    //     this.$root.showModal(this.$t("error"), error.message);
+    //   }
+    // },
 
     exportPastes() {
       // this.$root.loading = true;

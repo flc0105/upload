@@ -1,19 +1,21 @@
 package flc.upload.manager;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import flc.upload.model.OperationLog;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public interface OperationLogManager {
 
-    Map<String, Long> cachedApis = new HashMap<>();
+    void add(OperationLog operationLog);
 
+    void deleteById(int id);
 
-    void add(Map<String, String> map);
+    void deleteAll();
 
-    void clear();
+    List<OperationLog> list();
 
-    List<Map<String, String>> list();
-
-    Map<String, Object> page(int page);
+    IPage<OperationLog> page(int page, int size);
 }

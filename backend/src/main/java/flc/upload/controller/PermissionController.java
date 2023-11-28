@@ -1,6 +1,6 @@
 package flc.upload.controller;
 
-import flc.upload.annotation.OperationLog;
+import flc.upload.annotation.Log;
 import flc.upload.annotation.Token;
 import flc.upload.model.Permission;
 import flc.upload.model.Result;
@@ -24,7 +24,7 @@ public class PermissionController {
 
 
     @ApiOperation("权限_修改")
-    @OperationLog
+    @Log
     @Token
     @PostMapping("/permission/update")
     public Result<?> update(@RequestBody Permission permission) throws Exception {
@@ -32,7 +32,7 @@ public class PermissionController {
     }
 
     @ApiOperation("权限_查询")
-    @OperationLog
+    @Log
     @Token
     @GetMapping("/permission/list")
     public Result<?> list() throws Exception {

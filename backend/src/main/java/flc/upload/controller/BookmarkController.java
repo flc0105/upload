@@ -1,6 +1,6 @@
 package flc.upload.controller;
 
-import flc.upload.annotation.OperationLog;
+import flc.upload.annotation.Log;
 import flc.upload.model.Bookmark;
 import flc.upload.model.Result;
 import flc.upload.service.BookmarkService;
@@ -26,7 +26,7 @@ public class BookmarkController {
     }
 
     @ApiOperation("书签_添加")
-    @OperationLog
+    @Log
     @PostMapping
     public Result<?> addBookmark(@RequestBody Bookmark bookmark) {
         bookmarkService.add(bookmark);
@@ -34,7 +34,7 @@ public class BookmarkController {
     }
 
     @ApiOperation("书签_获取站点标题和图标")
-    @OperationLog
+    @Log
     @PostMapping("/{id}")
     public Result<?> updateBookmarkWithParsedData(@PathVariable("id") Integer id) {
         bookmarkService.updateBookmarkWithParsedData(id);
@@ -42,7 +42,7 @@ public class BookmarkController {
     }
 
     @ApiOperation("书签_删除")
-    @OperationLog
+    @Log
     @DeleteMapping("/{id}")
     public Result<?> deleteBookmark(@PathVariable("id") Integer id) {
         bookmarkService.deleteById(id);
@@ -50,7 +50,7 @@ public class BookmarkController {
     }
 
     @ApiOperation("书签_修改")
-    @OperationLog
+    @Log
     @PutMapping("/{id}")
     public Result<?> updateBookmark(@PathVariable("id") Integer id, @RequestBody Bookmark bookmark) {
         bookmark.setId(id);
@@ -59,14 +59,14 @@ public class BookmarkController {
     }
 
     @ApiOperation("书签_查询所有")
-    @OperationLog
+    @Log
     @GetMapping
     public Result<?> getAllBookmarks() {
         return ResponseUtil.buildSuccessResult("query.success", bookmarkService.getStructuredBookmarks());
     }
 
     @ApiOperation("书签_导入")
-    @OperationLog
+    @Log
     @PostMapping("/import")
     public Result<?> importBookmarks(@RequestParam String data) {
         bookmarkService.importBookmarks(data);
@@ -74,14 +74,14 @@ public class BookmarkController {
     }
 
     @ApiOperation("书签_导出excel")
-    @OperationLog
+    @Log
     @GetMapping("/excel")
     public void exportBookmarksToExcel(HttpServletResponse response) throws IOException {
         bookmarkService.exportBookmarksToExcel(response);
     }
 
     @ApiOperation("书签_死链检测")
-    @OperationLog
+    @Log
     @GetMapping("/dead")
     public Result<?> getDeadLinks() {
         return ResponseUtil.buildSuccessResult("query.success", bookmarkService.getDeadLinks());
@@ -89,7 +89,7 @@ public class BookmarkController {
     }
 
     @ApiOperation("书签_搜索")
-    @OperationLog
+    @Log
     @PostMapping("/search")
     public Result<?> filterBookmarks(@RequestParam String keyword, @RequestParam Integer parentId) {
         return ResponseUtil.buildSuccessResult("query.success", bookmarkService.filterBookmarks(keyword, parentId));
@@ -97,7 +97,7 @@ public class BookmarkController {
     }
 
     @ApiOperation("书签_按目录查询")
-    @OperationLog
+//    @Log
     @PostMapping("/parent")
     public Result<?> findByParentId(@RequestParam Integer parentId) {
         return ResponseUtil.buildSuccessResult("query.success", bookmarkService.findByParentId(parentId));

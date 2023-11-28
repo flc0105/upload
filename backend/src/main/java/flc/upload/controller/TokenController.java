@@ -1,6 +1,6 @@
 package flc.upload.controller;
 
-import flc.upload.annotation.OperationLog;
+import flc.upload.annotation.Log;
 import flc.upload.annotation.Permission;
 import flc.upload.model.AppConfig;
 import flc.upload.model.Result;
@@ -32,7 +32,7 @@ public class TokenController {
     }
 
     @ApiOperation("Token_获取")
-    @OperationLog
+    @Log
     @PostMapping("/get")
     public Result<?> get(@RequestParam("password") String password, @RequestParam("remark") Optional<String> remark, HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (this.password.equals(password)) {
@@ -46,7 +46,7 @@ public class TokenController {
     }
 
     @ApiOperation("Token_停用")
-    @OperationLog
+    @Log
     @Permission
     @PostMapping("/deactivate")
     public Result<?> deactivate(@RequestParam String token) throws IllegalAccessException {
