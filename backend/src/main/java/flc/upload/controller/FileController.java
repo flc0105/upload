@@ -38,15 +38,16 @@ public class FileController {
         this.appConfig = appConfig;
     }
 
-    @ApiOperation("文件_上传")
+    @ApiOperation("上传文件")
     @Log
+    @Permission // 即使允许的状态下也只能在/public目录上传
     @PostMapping("/upload")
     public Result<?> upload(@RequestParam("files") MultipartFile[] files, @RequestParam("currentDirectory") Optional<String> currentDirectory, HttpServletRequest request) throws Exception {
         String value = currentDirectory.orElse("/");
         return fileService.upload(files, value, CookieUtil.getCookie("token", request));
     }
 
-    @ApiOperation("文件_创建目录")
+    @ApiOperation("创建目录")
     @Log
     @Permission
     @PostMapping("/mkdir")
@@ -54,7 +55,7 @@ public class FileController {
         return fileService.mkdir(relativePath);
     }
 
-    @ApiOperation("文件_删除")
+    @ApiOperation("删除文件")
     @Log
     @Permission
     @PostMapping("/delete")
@@ -62,16 +63,16 @@ public class FileController {
         return fileService.delete(files.get("relativePath"));
     }
 
-    @ApiOperation("文件_移动")
+    @ApiOperation("移动文件")
     @Log
-    @Token
+    @Permission
     @PostMapping("/move")
     public Result<?> move(@RequestBody Map<String, Object> params) throws Exception {
         List<String> relativePath = ((List<?>) params.get("relativePath")).stream().map(String.class::cast).collect(Collectors.toList());
         return fileService.move(relativePath, String.valueOf(params.get("target")));
     }
 
-    @ApiOperation("文件_重命名")
+    @ApiOperation("重命名文件")
     @Log
     @Permission
     @PostMapping("/rename")
@@ -79,21 +80,22 @@ public class FileController {
         return fileService.rename(params.get("relativePath"), params.get("target"));
     }
 
-    @ApiOperation("文件_查询所有")
-//    @OperationLog
+    @ApiOperation("获取文件列表")
+    @Permission // 即使允许的情况下也不可以获取私密目录下的文件
     @PostMapping("/list")
     public Result<?> list(@RequestParam("currentDirectory") String currentDirectory, HttpServletRequest request) {
         return fileService.list(currentDirectory, CookieUtil.getCookie("token", request));
     }
 
-    @ApiOperation("文件_搜索")
+    @ApiOperation("搜索文件")
     @Log
+    @Permission // 即使允许的情况下也搜索不到私密目录下的文件
     @PostMapping("/search")
     public Result<?> search(@RequestParam("filter") String filter, @RequestParam("currentDirectory") String currentDirectory, HttpServletRequest request) {
         return fileService.search(filter, currentDirectory, CookieUtil.getCookie("token", request));
     }
 
-    @ApiOperation("文件_下载")
+    @ApiOperation("下载文件")
     @Log
     @Permission
     @RequestMapping(value = "/download", method = {RequestMethod.GET, RequestMethod.POST})
@@ -101,7 +103,7 @@ public class FileController {
         fileService.download(relativePath, response);
     }
 
-    @ApiOperation("文件_预览图片")
+    @ApiOperation("预览图片")
     @Log
     @Permission
     @RequestMapping(value = "/preview", method = {RequestMethod.GET, RequestMethod.POST})
@@ -113,7 +115,7 @@ public class FileController {
         }
     }
 
-    @ApiOperation("文件_预览文本")
+    @ApiOperation("预览文本文件")
     @Log
     @Permission
     @PostMapping("/read")
@@ -121,7 +123,7 @@ public class FileController {
         return fileService.read(relativePath);
     }
 
-    @ApiOperation("文件_查询详情")
+    @ApiOperation("获取文件详情")
     @Log
     @Permission
     @PostMapping("/info")
@@ -129,23 +131,23 @@ public class FileController {
         return fileService.getFileInfo(relativePath);
     }
 
-    @ApiOperation("文件_压缩")
+    @ApiOperation("压缩文件")
     @Log
-    @Permission
+    @Permission // 即使允许的情况下也会跳过私密目录下的文件
     @PostMapping("/zip")
     public Result<?> zip(@RequestBody Map<String, List<String>> files, HttpServletRequest request) throws Exception {
         return fileService.zip(files.get("relativePath"), CookieUtil.getCookie("token", request));
     }
 
-    @ApiOperation("文件_压缩并下载")
+    @ApiOperation("压缩并下载文件")
     @Log
-    @Permission
+    @Permission // 即使允许的情况下也会跳过私密目录下的文件
     @PostMapping("/zipAndDownload")
     public void zipAndDownload(@RequestBody Map<String, List<String>> files, HttpServletResponse response, HttpServletRequest request) throws Exception {
         fileService.zipAndDownload(files.get("relativePath"), response, CookieUtil.getCookie("token", request));
     }
 
-    @ApiOperation("文件_生成图片直链")
+    @ApiOperation("生成图片直链")
     @Log
     @Permission
     @PostMapping("/link")
@@ -153,9 +155,9 @@ public class FileController {
         return fileService.generateDirectLink(relativePath);
     }
 
-    @ApiOperation("文件_获取图片列表")
+    @ApiOperation("获取图片列表")
     @Log
-    @Permission
+    @Permission // TODO: 允许的情况下可以获取到私密目录的图片
     @GetMapping("/gallery")
     public Result<?> getImages(@RequestParam("relativePath") String relativePath) {
         return fileService.getImages(relativePath);

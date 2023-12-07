@@ -20,35 +20,40 @@ CREATE TABLE
     NOT EXISTS permission ( id INTEGER NOT NULL PRIMARY KEY autoincrement UNIQUE, path text NOT NULL, isAdmin INTEGER NOT NULL, DESC text );
 
 /*
-insert into permission values (null, "/paste/add", 0, "Paste_添加");
-insert into permission values (null, "/paste/delete", 1, "Paste_删除");
-insert into permission values (null, "/paste/update", 1, "Paste_修改");
-insert into permission values (null, "/paste/list", 0, "Paste_查询所有");
-insert into permission values (null, "/paste/get", 0, "Paste_根据id查询");
-insert into permission values (null, "/paste/last", 0, "Paste_查询最后添加");
-insert into permission values (null, "/paste/unlisted", 1, "Paste_查询私密");
-insert into permission values (null, "/file/mkdir", 1, "文件_创建目录");
-insert into permission values (null, "/file/delete", 1, "文件_删除");
-insert into permission values (null, "/file/move", 1, "文件_移动");
-insert into permission values (null, "/file/rename", 1, "文件_重命名");
-insert into permission values (null, "/file/download", 0, "文件_下载");
-insert into permission values (null, "/file/preview", 0, "文件_预览图片");
-insert into permission values (null, "/file/read", 0, "文件_预览文本");
-insert into permission values (null, "/file/info", 0, "文件_查询详情");
-insert into permission values (null, "/file/zip", 0, "文件_压缩");
-insert into permission values (null, "/file/zipAndDownload", 0, "文件_压缩并下载");
-insert into permission values (null, "/file/link", 1, "文件_生成图片直链");
-insert into permission values (null, "/token/deactivate", 1, "Token_停用");
-insert into permission values (null, "/shareCode/add", 1, "文件分享码_添加");
-insert into permission values (null, "/shareCode/delete", 1, "文件分享码_删除");
-insert into permission values (null, "/shareCode/get", 0, "文件分享码_查询");
-insert into permission values (null, "/shareCode/list", 1, "文件分享码_查询所有");
-insert into permission values (null, "/config/list", 1, "配置_查询");
-insert into permission values (null, "/config/update", 1, "配置_修改");
-insert into permission values (null, "/info", 1, "查询服务器信息");
-insert into permission values (null, "/logs/delete", 1, "日志_删除");
-insert into permission values (null, "/logs/page", 1, "日志_分页查询");
-insert into permission values (null, "/logs/list", 1, "日志_查询所有");
+insert into permission values (null, "/file/upload", 0, "上传文件");
+insert into permission values (null, "/file/mkdir", 1, "创建目录");
+insert into permission values (null, "/file/delete", 1, "删除文件");
+insert into permission values (null, "/file/move", 1, "移动文件");
+insert into permission values (null, "/file/rename", 1, "重命名文件");
+insert into permission values (null, "/file/list", 0, "获取文件列表");
+insert into permission values (null, "/file/search", 0, "搜索文件");
+insert into permission values (null, "/file/download", 0, "下载文件");
+insert into permission values (null, "/file/preview", 0, "预览图片");
+insert into permission values (null, "/file/read", 0, "预览文本文件");
+insert into permission values (null, "/file/info", 0, "获取文件详情");
+insert into permission values (null, "/file/zip", 0, "压缩文件");
+insert into permission values (null, "/file/zipAndDownload", 0, "压缩并下载文件");
+insert into permission values (null, "/file/link", 1, "生成图片直链");
+insert into permission values (null, "/file/gallery", 0, "获取图片列表");
+
+insert into permission values (null, "/paste/add", 0, "添加Paste");
+insert into permission values (null, "/paste/delete", 1, "删除Paste");
+insert into permission values (null, "/paste/update", 1, "修改Paste");
+insert into permission values (null, "/paste/list", 0, "获取Paste列表");
+insert into permission values (null, "/paste/get", 0, "查询Paste");
+insert into permission values (null, "/paste/last", 0, "查询最新Paste");
+insert into permission values (null, "/paste/unlisted", 1, "查询私密Paste列表");
+insert into permission values (null, "/paste/import", 1, "导入Paste");
+
+insert into permission values (null, "/log/list", 1, "获取日志列表");
+insert into permission values (null, "/log/page", 1, "分页查询日志");
+insert into permission values (null, "/log/delete", 1, "删除日志");
+insert into permission values (null, "/log/clear", 1, "清空日志");
+
+insert into permission values (null, "/shareCode/add", 1, "添加分享码");
+insert into permission values (null, "/shareCode/delete", 1, "删除分享码");
+insert into permission values (null, "/shareCode/get", 0, "获取分享码列表");
+insert into permission values (null, "/shareCode/list", 1, "查询分享码");
 */
 
 CREATE TABLE

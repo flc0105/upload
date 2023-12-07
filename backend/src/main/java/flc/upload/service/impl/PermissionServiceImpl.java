@@ -8,6 +8,8 @@ import flc.upload.service.PermissionService;
 import flc.upload.util.ResponseUtil;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class PermissionServiceImpl implements PermissionService {
     private final PermissionMapper permissionMapper;

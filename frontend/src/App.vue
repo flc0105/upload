@@ -64,7 +64,7 @@
               <a class="dropdown-item" href="/share">{{ $t("file_share") }}</a>
             </li>
             <li>
-              <a class="dropdown-item" href="/log">{{
+              <a class="dropdown-item" href="/operation_logs">{{
                 $t("operation_logs")
               }}</a>
             </li>

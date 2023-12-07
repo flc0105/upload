@@ -23,7 +23,7 @@ public class PermissionController {
     }
 
 
-    @ApiOperation("权限_修改")
+    @ApiOperation("修改权限")
     @Log
     @Token
     @PostMapping("/permission/update")
@@ -31,7 +31,7 @@ public class PermissionController {
         return permissionService.update(permission);
     }
 
-    @ApiOperation("权限_查询")
+    @ApiOperation("获取权限列表")
     @Log
     @Token
     @GetMapping("/permission/list")

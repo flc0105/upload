@@ -27,10 +27,8 @@
           <th>IP地址</th>
           <th>浏览器</th>
           <th>操作系统</th>
-          <th>请求参数</th>
           <th>是否成功</th>
           <th>具体消息</th>
-          <th>执行时间</th>
           <th>操作</th>
         </tr>
       </thead>
@@ -43,10 +41,8 @@
           <td>{{ log.ipAddress }}</td>
           <td>{{ log.browser }}</td>
           <td>{{ log.operatingSystem }}</td>
-          <td>{{ log.requestParameter }}</td>
           <td>{{ log.success }}</td>
           <td>{{ log.message }}</td>
-          <td>{{ log.executionTime }}</td>
           <td>
             <a class="link-primary me-1" @click="showDetail(log)">
               <i class="bi bi-info-circle"></i>
@@ -143,12 +139,12 @@ export default {
     page(page) {
       this.$root.loading = true;
       axios
-        .get("/logs/page?page=" + page)
+        .get("/log/page?current=" + page)
         .then((res) => {
           if (res.success) {
             var result = res.detail;
-            this.totalPages = result.totalPages;
-            this.currentPage = result.currentPage;
+            this.totalPages = result.pages;
+            this.currentPage = result.current;
             this.logs = result.records;
             console.log(this.logs);
           } else {
@@ -172,10 +168,15 @@ export default {
       }
       this.$root.loading = true;
       axios
-        .post("/logs/delete",  Qs.stringify({ id: id }))
+        .post("/log/delete",  Qs.stringify({ id: id }))
         .then((res) => {
           if (res.success) {
-            this.page(1);
+            if (this.currentPage) {
+              this.page(this.currentPage);
+            } else {
+              this.page(1);
+            }
+   
             this.$root.showModal(this.$t("success"), res.msg);
           } else {
             this.$root.showModal(this.$t("error"), res.msg);
@@ -195,7 +196,7 @@ export default {
       }
       this.$root.loading = true;
       axios
-        .post("/logs/deleteAll")
+        .post("/log/clear")
         .then((res) => {
           if (res.success) {
             this.page(1);
@@ -215,7 +216,7 @@ export default {
     exportLogs() {
       this.$root.loading = true;
       axios
-        .post("/logs/list")
+        .post("/log/list")
         .then((res) => {
           if (res.success) {
             var blob = new Blob([JSON.stringify(res.detail, null, 2)], {

@@ -25,7 +25,7 @@ public class PasteController {
         this.pasteService = pasteService;
     }
 
-    @ApiOperation("Paste_添加")
+    @ApiOperation("添加Paste")
     @Log
     @Permission
     @PostMapping("/add")
@@ -33,7 +33,7 @@ public class PasteController {
         return pasteService.add(paste);
     }
 
-    @ApiOperation("Paste_删除")
+    @ApiOperation("删除Paste")
     @Log
     @Permission
     @PostMapping("/delete")
@@ -41,7 +41,7 @@ public class PasteController {
         return pasteService.delete(id);
     }
 
-    @ApiOperation("Paste_修改")
+    @ApiOperation("修改Paste")
     @Log
     @Permission
     @PostMapping("/update")
@@ -49,8 +49,7 @@ public class PasteController {
         return pasteService.update(paste);
     }
 
-    @ApiOperation("Paste_查询所有")
-//    @Log
+    @ApiOperation("获取Paste列表")
     @Permission
     @GetMapping("/list")
     public Result<?> list() throws Exception {
@@ -58,7 +57,7 @@ public class PasteController {
         return pasteService.findAll();
     }
 
-    @ApiOperation("Paste_根据id查询")
+    @ApiOperation("查询Paste")
     @Log
     @Permission
     @GetMapping("/get")
@@ -66,16 +65,15 @@ public class PasteController {
         return pasteService.findById(id);
     }
 
-    @ApiOperation("Paste_根据id查询")
+    @ApiOperation("查询Paste")
     @Log
-//    @Permission
-    @GetMapping("/get/{id}")
+    @GetMapping("/get/{id}") // TODO: 没有任何权限校验
     public String getText(@PathVariable Integer id) throws Exception {
         Paste paste = (Paste) Objects.requireNonNull(pasteService.findById(id).getDetail(), InternationalizationUtil.translate("query.failure"));
         return paste.getText();
     }
 
-    @ApiOperation("Paste_查询最后添加")
+    @ApiOperation("查询最新Paste")
     @Log
     @Permission
     @GetMapping(value = "/last")
@@ -84,7 +82,7 @@ public class PasteController {
         return paste.getText();
     }
 
-    @ApiOperation("Paste_查询私密")
+    @ApiOperation("查询私密Paste列表")
     @Log
     @Permission
     @GetMapping("/private")
@@ -92,7 +90,7 @@ public class PasteController {
         return pasteService.findPrivate();
     }
 
-    @ApiOperation("Paste_导入")
+    @ApiOperation("导入Paste")
     @Log
     @Permission
     @PostMapping("/import")

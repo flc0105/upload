@@ -2,6 +2,7 @@ package flc.upload.controller;
 
 import flc.upload.annotation.Log;
 import flc.upload.annotation.Permission;
+import flc.upload.annotation.Token;
 import flc.upload.model.AppConfig;
 import flc.upload.model.Result;
 import flc.upload.util.*;
@@ -31,7 +32,7 @@ public class TokenController {
         this.appConfig = appConfig;
     }
 
-    @ApiOperation("Token_获取")
+    @ApiOperation("获取Token")
     @Log
     @PostMapping("/get")
     public Result<?> get(@RequestParam("password") String password, @RequestParam("remark") Optional<String> remark, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -45,9 +46,9 @@ public class TokenController {
         }
     }
 
-    @ApiOperation("Token_停用")
+    @ApiOperation("停用Token")
     @Log
-    @Permission
+    @Token
     @PostMapping("/deactivate")
     public Result<?> deactivate(@RequestParam String token) throws IllegalAccessException {
         Field field = Objects.requireNonNull(ReflectionUtil.getFieldByName("deactivatedTokens", appConfig.getClass()), InternationalizationUtil.translate("no.such.configuration"));

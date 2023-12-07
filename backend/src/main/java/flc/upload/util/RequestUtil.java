@@ -57,7 +57,7 @@ public class RequestUtil {
             if (userAgent.toLowerCase().contains("iphone")) {
                 os = "iOS";
             } else if (userAgent.toLowerCase().contains("mac")) {
-                os = "Mac";
+                os = "macOS";
             } else if (userAgent.toLowerCase().contains("windows")) {
                 os = "Windows";
             } else if (userAgent.toLowerCase().contains("android")) {

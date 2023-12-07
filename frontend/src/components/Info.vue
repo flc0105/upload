@@ -103,7 +103,7 @@ export default {
     list() {
       this.$root.loading = true;
       axios
-        .post("/info")
+        .post("/server/info")
         .then((res) => {
           if (res.success) {
             this.info = res.detail;

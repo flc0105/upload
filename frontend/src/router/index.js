@@ -53,7 +53,7 @@ const routes = [
     component: () => import("../components/Upload.vue"),
   },
   {
-    path: "/log",
+    path: "/operation_logs",
     meta: { title: "operation_logs" },
     component: () => import("../components/Log.vue"),
   },
