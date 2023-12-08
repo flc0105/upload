@@ -35,7 +35,6 @@ public class ShareCodeController {
         return shareCodeService.delete(code);
     }
 
-    @Log
     @ApiOperation("获取分享码列表")
     @Permission
     @PostMapping("/list")

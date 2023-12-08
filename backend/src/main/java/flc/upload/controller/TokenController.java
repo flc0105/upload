@@ -24,12 +24,12 @@ import java.util.Optional;
 @RestController
 public class TokenController {
 
-    private final AppConfig appConfig;
+//    private final AppConfig appConfig;
     @Value("${password}")
     private String password;
 
     public TokenController(AppConfig appConfig) {
-        this.appConfig = appConfig;
+//        this.appConfig = appConfig;
     }
 
     @ApiOperation("获取Token")
@@ -46,16 +46,16 @@ public class TokenController {
         }
     }
 
-    @ApiOperation("停用Token")
-    @Log
-    @Token
-    @PostMapping("/deactivate")
-    public Result<?> deactivate(@RequestParam String token) throws IllegalAccessException {
-        Field field = Objects.requireNonNull(ReflectionUtil.getFieldByName("deactivatedTokens", appConfig.getClass()), InternationalizationUtil.translate("no.such.configuration"));
-        field.setAccessible(true);
-        List<String> tokens = appConfig.getDeactivatedTokens();
-        tokens.add(token);
-        field.set(appConfig, tokens);
-        return ResponseUtil.buildSuccessResult("update.success");
-    }
+//    @ApiOperation("停用Token")
+//    @Log
+//    @Token
+//    @PostMapping("/deactivate")
+//    public Result<?> deactivate(@RequestParam String token) throws IllegalAccessException {
+//        Field field = Objects.requireNonNull(ReflectionUtil.getFieldByName("deactivatedTokens", appConfig.getClass()), InternationalizationUtil.translate("no.such.configuration"));
+//        field.setAccessible(true);
+//        List<String> tokens = appConfig.getDeactivatedTokens();
+//        tokens.add(token);
+//        field.set(appConfig, tokens);
+//        return ResponseUtil.buildSuccessResult("update.success");
+//    }
 }

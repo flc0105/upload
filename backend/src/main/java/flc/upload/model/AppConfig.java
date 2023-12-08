@@ -15,17 +15,15 @@ import java.util.List;
 @PropertySource("classpath:app-config.properties")
 public class AppConfig {
 
-    @Value("${cors.allowed-origins}")
-    @ApiModelProperty(value = "允许的跨域来源列表")
-    private List<String> corsAllowedOrigins;
+//    @Value("${deactivated.tokens}")
+//    @ApiModelProperty(value = "已停用的Token列表")
+//    private List<String> deactivatedTokens;
 
-    @Value("${deactivated.tokens}")
-    @ApiModelProperty(value = "已停用的Token列表")
-    private List<String> deactivatedTokens;
+//    @Value("${cors.allowed-origins}")
+//    @ApiModelProperty(value = "允许的跨域来源列表")
+//    private List<String> corsAllowedOrigins;
+//
 
-    @Value("${download.buffer-size}")
-    @ApiModelProperty(value = "下载缓冲区大小")
-    private int downloadBufferSize;
 
     @Value("${jwt.secret-key}")
     @ApiModelProperty(value = "JWT密钥")
@@ -35,45 +33,22 @@ public class AppConfig {
     @ApiModelProperty(value = "JWT过期时间（秒）")
     private int jwtExpirationTime;
 
-    @Value("${log.max-size}")
-    @ApiModelProperty(value = "日志最大数量")
-    private int logMaxSize;
+    @Value("${file.download.buffer-size}")
+    @ApiModelProperty(value = "下载缓冲区大小")
+    private int fileDownloadBufferSize;
 
-    @Value("${preview.max-file-size}")
+    @Value("${file.preview.max-size}")
     @ApiModelProperty(value = "预览最大文件大小")
-    private int previewMaxFileSize;
+    private int filePreviewMaxSize;
 
-    @Value("${preview.compress-image}")
-    @ApiModelProperty(value = "预览时是否压缩图像")
-    private boolean previewCompressImage;
+    @Value("${file.preview.compress-image}")
+    @ApiModelProperty(value = "预览图片时是否压缩")
+    private boolean filePreviewCompressImage;
 
-    @Value("#{'${private.directories}'.split(',')}")
-    @ApiModelProperty(value = "私有目录列表")
-    private List<String> privateDirectories;
-
-    public List<String> getCorsAllowedOrigins() {
-        return corsAllowedOrigins;
-    }
-
-    public void setCorsAllowedOrigins(List<String> corsAllowedOrigins) {
-        this.corsAllowedOrigins = corsAllowedOrigins;
-    }
-
-    public List<String> getDeactivatedTokens() {
-        return deactivatedTokens;
-    }
-
-    public void setDeactivatedTokens(List<String> deactivatedTokens) {
-        this.deactivatedTokens = deactivatedTokens;
-    }
-
-    public int getDownloadBufferSize() {
-        return downloadBufferSize;
-    }
-
-    public void setDownloadBufferSize(int downloadBufferSize) {
-        this.downloadBufferSize = downloadBufferSize;
-    }
+    //    @Value("#{'${file.private-dir}'.split(',')}")
+    @Value("${file.private-dir}")
+    @ApiModelProperty(value = "私密目录列表")
+    private List<String> filePrivateDir;
 
     public String getJwtSecretKey() {
         return jwtSecretKey;
@@ -91,35 +66,35 @@ public class AppConfig {
         this.jwtExpirationTime = jwtExpirationTime;
     }
 
-    public int getLogMaxSize() {
-        return logMaxSize;
+    public int getFileDownloadBufferSize() {
+        return fileDownloadBufferSize;
     }
 
-    public void setLogMaxSize(int logMaxSize) {
-        this.logMaxSize = logMaxSize;
+    public void setFileDownloadBufferSize(int fileDownloadBufferSize) {
+        this.fileDownloadBufferSize = fileDownloadBufferSize;
     }
 
-    public int getPreviewMaxFileSize() {
-        return previewMaxFileSize;
+    public int getFilePreviewMaxSize() {
+        return filePreviewMaxSize;
     }
 
-    public void setPreviewMaxFileSize(int previewMaxFileSize) {
-        this.previewMaxFileSize = previewMaxFileSize;
+    public void setFilePreviewMaxSize(int filePreviewMaxSize) {
+        this.filePreviewMaxSize = filePreviewMaxSize;
     }
 
-    public boolean isPreviewCompressImage() {
-        return previewCompressImage;
+    public boolean isFilePreviewCompressImage() {
+        return filePreviewCompressImage;
     }
 
-    public void setPreviewCompressImage(boolean previewCompressImage) {
-        this.previewCompressImage = previewCompressImage;
+    public void setFilePreviewCompressImage(boolean filePreviewCompressImage) {
+        this.filePreviewCompressImage = filePreviewCompressImage;
     }
 
-    public List<String> getPrivateDirectories() {
-        return privateDirectories;
+    public List<String> getFilePrivateDir() {
+        return filePrivateDir;
     }
 
-    public void setPrivateDirectories(List<String> privateDirectories) {
-        this.privateDirectories = privateDirectories;
+    public void setFilePrivateDir(List<String> filePrivateDir) {
+        this.filePrivateDir = filePrivateDir;
     }
 }

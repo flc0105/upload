@@ -108,7 +108,7 @@ public class FileController {
     @Permission
     @RequestMapping(value = "/preview", method = {RequestMethod.GET, RequestMethod.POST})
     public void preview(@RequestParam("relativePath") String relativePath, HttpServletResponse response) throws Exception {
-        if (appConfig.isPreviewCompressImage()) {
+        if (appConfig.isFilePreviewCompressImage()) {
             fileService.downloadCompressedImage(relativePath, response);
         } else {
             fileService.download(relativePath, response);

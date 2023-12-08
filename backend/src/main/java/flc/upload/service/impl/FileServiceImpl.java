@@ -153,7 +153,7 @@ public class FileServiceImpl implements FileService {
     public Result<?> list(String currentDirectory, String token) {
         List<Folder> folders = new ArrayList<>();
         List<flc.upload.model.File> files = new ArrayList<>();
-        if (appConfig.getPrivateDirectories().contains(currentDirectory)) {
+        if (appConfig.getFilePrivateDir().contains(currentDirectory)) {
             tokenManager.verify(token);
         }
         File[] list = new File(uploadPath, currentDirectory).listFiles();
@@ -185,7 +185,7 @@ public class FileServiceImpl implements FileService {
                 tokenManager.verify(token);
                 iterator = Files.walk(Paths.get(uploadPath, currentDirectory)).filter(matcher::matches).iterator();
             } catch (VerifyFailedException e) {
-                iterator = Files.walk(Paths.get(uploadPath, currentDirectory)).filter(matcher::matches).filter(p -> appConfig.getPrivateDirectories().stream().noneMatch(s -> FileUtil.relativize(uploadPath, p.toFile()).startsWith(s))).iterator();
+                iterator = Files.walk(Paths.get(uploadPath, currentDirectory)).filter(matcher::matches).filter(p -> appConfig.getFilePrivateDir().stream().noneMatch(s -> FileUtil.relativize(uploadPath, p.toFile()).startsWith(s))).iterator();
             }
         } catch (IOException e) {
             logger.error("搜索文件时出错：" + e.getLocalizedMessage());
@@ -241,7 +241,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public Result<?> read(String relativePath) throws Exception {
         File file = new File(uploadPath, relativePath);
-        if (file.length() > appConfig.getPreviewMaxFileSize()) {
+        if (file.length() > appConfig.getFilePreviewMaxSize()) {
             return ResponseUtil.buildErrorResult("file.is.too.large");
         }
         String charsetName = Optional.ofNullable(FileUtil.getFileEncode(file)).orElse(Charset.defaultCharset().name());
@@ -288,7 +288,7 @@ public class FileServiceImpl implements FileService {
         File zip = FileUtil.getFile(firstFile.getParent(), CommonUtil.generateUUID() + ".zip");
         try (FileOutputStream fos = new FileOutputStream(zip); ZipOutputStream zos = new ZipOutputStream(fos)) {
             for (String relativePath : files) {
-                if (appConfig.getPrivateDirectories().contains(relativePath)) {
+                if (appConfig.getFilePrivateDir().contains(relativePath)) {
                     try {
                         tokenManager.verify(token);
                     } catch (VerifyFailedException e) {

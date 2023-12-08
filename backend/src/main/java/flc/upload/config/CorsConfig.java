@@ -31,7 +31,8 @@ public class CorsConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(appConfig.getCorsAllowedOrigins()); // 设置允许的前端域名
+        config.setAllowedOrigins(Collections.singletonList("*"));
+//        config.setAllowedOrigins(appConfig.getCorsAllowedOrigins()); // 设置允许的前端域名
         config.setAllowedMethods(Collections.singletonList("*"));
         config.setAllowedHeaders(Collections.singletonList("*"));
         config.setAllowCredentials(true);

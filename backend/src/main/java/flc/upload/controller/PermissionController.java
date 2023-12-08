@@ -32,7 +32,6 @@ public class PermissionController {
     }
 
     @ApiOperation("获取权限列表")
-    @Log
     @Token
     @GetMapping("/permission/list")
     public Result<?> list() throws Exception {

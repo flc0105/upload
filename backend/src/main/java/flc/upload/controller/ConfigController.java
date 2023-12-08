@@ -36,13 +36,11 @@ public class ConfigController {
 
     public ConfigController(AppConfig appConfig, SqlMapper sqlMapper, ConfigurableApplicationContext context) {
         this.appConfig = appConfig;
-
         this.sqlMapper = sqlMapper;
         this.context = context;
     }
 
     @ApiOperation("获取配置列表")
-    @Log
     @Token
     @PostMapping("/config/list")
     public Result<?> listConfig() {
@@ -60,14 +58,6 @@ public class ConfigController {
         field.setAccessible(true);
         field.set(appConfig, value);
         return ResponseUtil.buildSuccessResult("update.success");
-    }
-
-    @ApiOperation("查询服务器信息")
-    @Log
-    @Token
-    @PostMapping("/server/info")
-    public Result<?> getServerInfo() {
-        return ResponseUtil.buildSuccessResult("query.success", ServerUtil.getServerInfo());
     }
 
     @ApiOperation("SQL查询")
@@ -94,7 +84,7 @@ public class ConfigController {
         return ResponseUtil.buildSuccessResult("execute.success", sqlMapper.executeStatement(sql));
     }
 
-    @ApiOperation("停止服务")
+    @ApiOperation("关闭服务器")
     @Token
     @PostMapping("/server/shutdown")
     public Result<?> shutdown() {
@@ -102,7 +92,7 @@ public class ConfigController {
         return ResponseUtil.buildSuccessResult("execute.success");
     }
 
-    @ApiOperation("重启服务")
+    @ApiOperation("重启服务器")
     @Token
     @PostMapping("/server/restart")
     public Result<?> restart() {
@@ -115,9 +105,16 @@ public class ConfigController {
         return ResponseUtil.buildSuccessResult("execute.success");
     }
 
+    @ApiOperation("查询服务器信息")
+    @Token
+    @PostMapping("/server/info")
+    public Result<?> getServerInfo() {
+        return ResponseUtil.buildSuccessResult("query.success", ServerUtil.getServerInfo());
+    }
+
     @Log
     @ApiOperation("执行命令")
-    @PostMapping("/shell")
+    @PostMapping("/server/execute")
     @Token
     public Result<?> executeCommand(@RequestParam String command) throws IOException, InterruptedException {
         return ResponseUtil.buildSuccessResult("execute.success", ServerUtil.executeCommand(command));

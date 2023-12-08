@@ -21,9 +21,9 @@ public class TokenManagerImpl implements TokenManager {
             throw new VerifyFailedException("no.permission");
         }
 
-        if (appConfig.getDeactivatedTokens().contains(token)) {
-            throw new VerifyFailedException("token.deactivated");
-        }
+//        if (appConfig.getDeactivatedTokens().contains(token)) {
+//            throw new VerifyFailedException("token.deactivated");
+//        }
 
         if (!JwtUtil.validateToken(token)) {
             throw new VerifyFailedException("token.verification.failed");
