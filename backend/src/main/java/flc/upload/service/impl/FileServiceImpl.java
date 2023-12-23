@@ -62,8 +62,9 @@ public class FileServiceImpl implements FileService {
                 logger.info("自动创建目录 {}：{}", dest.getParentFile(), dest.getParentFile().mkdirs());
             }
             if (dest.exists()) {
-                failures.add(file.getOriginalFilename() + " (" + InternationalizationUtil.translate("file.already.exists") + ")");
-                continue;
+                dest = FileUtil.getFile(uploadPath, currentDirectory, file.getOriginalFilename() + "_" + System.currentTimeMillis() + FileUtil.getFileExtension(dest));
+//                failures.add(file.getOriginalFilename() + " (" + InternationalizationUtil.translate("file.already.exists") + ")");
+//                continue;
             }
             try {
                 file.transferTo(dest);
