@@ -64,6 +64,7 @@
   "title": "标题",
   "text": "正文",
   "private": "私密",
+  "encrypted": "加密",
   "minutes": "分钟",
   "hours": "小时",
   "days": "天",

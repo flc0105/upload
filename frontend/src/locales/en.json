@@ -65,6 +65,7 @@
   "title": "Title",
   "text": "Text",
   "private": "Private",
+  "encrypted": "Encrypted",
   "minutes": "Minutes",
   "hours": "Hours",
   "days": "Days",

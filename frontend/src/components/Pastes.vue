@@ -10,12 +10,8 @@
   />
 
   <v-contextmenu ref="contextmenu">
-    <!-- <v-contextmenu-item @click="getTextFromClipboard()"
-      >Quick paste</v-contextmenu-item
-    > -->
 
     <v-contextmenu-item @click="list()">刷新</v-contextmenu-item>
-    <v-contextmenu-item @click="secretPaste()">加密发布</v-contextmenu-item>
 
     <v-contextmenu-item
       @click="
@@ -43,22 +39,54 @@
       v-model="text"
       @keyup.ctrl.enter="add()"
     ></textarea>
-    <div class="float-end mb-3 row g-3 align-middle">
-      <div class="col-auto">
-        <div class="form-check form-switch" style="padding: 0.375rem 0.75rem">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            role="switch"
-            id="isPrivate"
-            ref="isPrivate"
-          />
-          <label class="form-check-label" for="isPrivate">{{
-            $t("private")
-          }}</label>
-        </div>
-      </div>
 
+    <div class="float-start">
+      <button class="btn btn-outline-danger mb-3" v-if="selectedPastes.length!=0" @click="deleteSelectedPastes()">
+        {{ $t("delete") }}
+      </button>
+    </div>
+
+    <div class="row row-func align-middle float-end g-3 mb-3">
+      <!-- unlist switch -->
+      <div class="col-auto" style="margin-right: 20px;">
+      <div
+        class="form-check form-switch "
+        style="padding: 0.375rem 0.75rem"
+      >
+        <input
+          class="form-check-input"
+          type="checkbox"
+          role="switch"
+          id="isPrivate"
+          ref="isPrivate"
+        />
+        <label class="form-check-label" for="isPrivate">{{
+          $t("private")
+        }}</label>
+      </div></div>
+
+      <!-- encrypted switch -->
+      <div class="col-auto">
+      <div
+        class="form-check form-switch"
+        style="padding: 0.375rem 0.75rem"
+      >
+        <input
+          class="form-check-input"
+          type="checkbox"
+          role="switch"
+          id="isEncrypted"
+          ref="isEncrypted"
+        />
+        <label class="form-check-label" for="isEncrypted">
+          {{ $t("encrypted") }}
+        </label>
+      </div></div>
+
+      <!-- <div class=" d-md-none w-100"> -->
+    <!-- </div> -->
+
+      <!--select-->
       <div class="col-auto">
         <select class="form-select mb-2" ref="select">
           <option value="10" :selected="$root.isTokenMissing()">
@@ -74,13 +102,15 @@
           <!-- 只要有名为token的Cookie就默认选中永不过期，但不会去验证token -->
         </select>
       </div>
+      <!--select end-->
 
       <div class="col-auto">
-        <button class="btn btn-outline-primary mb-2 col-auto" @click="add()">
-          {{ $t("post") }}
-        </button>
-      </div>
+      <button class="btn btn-outline-primary mb-2" @click="add()">
+        {{ $t("post") }}
+      </button>
     </div>
+    </div>
+
     <ul class="list-group clear-both">
       <li
         class="list-group-item list-group-item-action cursor-pointer"
@@ -88,7 +118,7 @@
         :key="paste"
         @click="
           (event) =>
-            event.target.tagName !== 'A' && $router.push('/pastes/' + paste.id)
+            event.target.tagName !== 'A' && event.target.tagName !== 'INPUT' && $router.push('/pastes/' + paste.id)
         "
       >
         <div class="float-end">
@@ -104,7 +134,15 @@
           </a>
         </div>
         <div>
-          <p class="text-primary text-truncate mw-75">{{ paste.title }}</p>
+
+          <p class="text-primary text-truncate mw-75">
+            <input
+            type="checkbox"
+            v-model="selectedPastes"
+            :value="paste.id"
+            class="form-check-input"
+          />
+            {{ paste.title }}</p>
           <p class="text-truncate mw-75">
             <i>{{ paste.text }}</i>
           </p>
@@ -165,9 +203,39 @@ export default {
       pastes: [], //获取到的paste列表
       title: "", //标题输入框
       text: "", //正文输入框
+      selectedPastes: [], // Array to store selected paste ids
     };
   },
   methods: {
+    deleteSelectedPastes() {
+      if (!this.$root.hasToken(() => this.deleteSelectedPastes())) {
+        return;
+      }
+ // 创建一个 FormData 对象
+ const formData = new FormData();
+  
+  // 将要删除的 paste IDs 添加到 FormData 中
+  this.selectedPastes.forEach(id => {
+    formData.append('ids', id);
+  });
+
+  // 发送 POST 请求
+  sendRequest.call(
+    this,
+    "post",
+    "/paste/batchDelete",
+    formData,
+    (res) => {
+      this.$root.showModal(this.$t("success"), res.msg);
+      this.selectedPastes = []
+      this.list();
+    },
+    (err) => {
+      this.$root.showModal(this.$t("error"), err);
+    },
+    { headers: { 'Content-Type': 'multipart/form-data' } }
+  );
+    },
     secretPaste() {
       var encrypted = encrypt(this.text);
       console.log(encrypted);
@@ -201,53 +269,9 @@ export default {
           this.$root.showModal(this.$t("error"), err);
         }
       );
-
-      // var decrypted = decrypt(encrypted.data, encrypted.key);
-      // console.log(decrypted);
     },
 
-    // async getTextFromClipboard() {
-    //   try {
-    //     const text = await navigator.clipboard.readText();
-    //     // 在这里使用获取到的剪贴板文字进行进一步操作
-    //     console.log("剪贴板的文字:", text);
-    //     sendRequest.call(
-    //       this,
-    //       "post",
-    //       "/paste/add",
-    //       {
-    //         title: "From clipboard",
-    //         text: text,
-    //         expiredDate: null,
-    //         private: false,
-    //       },
-    //       (res) => {
-    //         this.list();
-    //         this.$root.showModal(
-    //           this.$t("success"),
-    //           location.protocol +
-    //             "//" +
-    //             location.host +
-    //             "/pastes/" +
-    //             res.detail.id
-    //         );
-    //       },
-    //       (err) => {
-    //         this.$root.showModal(this.$t("error"), err);
-    //       }
-    //     );
-    //   } catch (error) {
-    //     this.$root.showModal(this.$t("error"), error.message);
-    //   }
-    // },
-
     exportPastes() {
-      // this.$root.loading = true;
-      // var json = JSON.stringify(this.pastes, null, 2);
-      // var blob = new Blob([json], { type: "text/plain;charset=utf-8" });
-      // saveAs(blob, "pastes.json");
-      // this.$root.loading = false;
-
       var filteredPastes = this.pastes.map(function (paste) {
         return {
           title: paste.title,
@@ -321,10 +345,17 @@ export default {
 
     // 添加
     add() {
+
       if (this.text.trim().length === 0) {
         this.$root.showModal(this.$t("alert"), this.$t("text_cannot_be_empty"));
         return;
       }
+
+      if (this.$refs.isEncrypted.checked) {
+        this.secretPaste();
+        return;
+      }
+
       const data = {
         title: this.title.trim().length === 0 ? "未命名" : this.title,
         text: this.text,
@@ -399,3 +430,19 @@ export default {
   },
 };
 </script>
+<style>
+@media (max-width: 767px) {
+  .row-func {
+    width: 100%;
+  }
+
+  .row-func .col-auto {
+    width: 100%;
+  }
+
+  .row-func .col-auto *  {
+    margin-left: 0;
+  }
+
+}
+</style>

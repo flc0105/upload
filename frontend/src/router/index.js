@@ -17,7 +17,8 @@ const routes = [
     component: () => import("../components/Pastes.vue"),
   },
   {
-    path: "/pastes/:id(\\d+)",
+    // path: "/pastes/:id(\\d+)",
+    path: "/pastes/:id(-?\\d+)",
     meta: { title: "pastes" },
     component: () => import("../components/Paste.vue"),
   },
