@@ -74,9 +74,9 @@ public class ServerUtil {
             map.put("operating.system", System.getProperty("os.name"));
             map.put("os.version", System.getProperty("os.version"));
             map.put("os.arch", System.getProperty("os.arch"));
-            map.put("memory.usage", FileUtil.formatSize(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+//            map.put("memory.usage", FileUtil.formatSize(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
             map.put("total.memory", FileUtil.formatSize(Long.parseLong(ManagementFactory.getPlatformMBeanServer().getAttribute(new ObjectName("java.lang:type=OperatingSystem"), "TotalPhysicalMemorySize").toString())));
-            map.put("free.memory", FileUtil.formatSize(Long.parseLong(ManagementFactory.getPlatformMBeanServer().getAttribute(new ObjectName("java.lang:type=OperatingSystem"), "FreePhysicalMemorySize").toString())));
+//            map.put("free.memory", FileUtil.formatSize(Long.parseLong(ManagementFactory.getPlatformMBeanServer().getAttribute(new ObjectName("java.lang:type=OperatingSystem"), "FreePhysicalMemorySize").toString())));
 //            map.put("total.memory", FileUtil.formatSize(((OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getTotalPhysicalMemorySize()));
             File file = new File(uploadPath);
             if (file.exists()) {
@@ -142,8 +142,7 @@ public class ServerUtil {
     public static String normalizePath(String inputPath) {
         Path path = Paths.get(inputPath);
         Path normalizedPath = path.normalize();
-        String resolvedPath = normalizedPath.toAbsolutePath().toString();
-        return resolvedPath;
+        return normalizedPath.toAbsolutePath().toString();
     }
 
     public static String changeDirectory(String path) {

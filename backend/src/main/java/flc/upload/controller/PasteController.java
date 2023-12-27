@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Objects;
 
 @Api(tags = "Paste")
@@ -39,6 +40,14 @@ public class PasteController {
     @PostMapping("/delete")
     public Result<?> delete(Integer id) throws Exception {
         return pasteService.delete(id);
+    }
+
+    @ApiOperation("批量删除Paste")
+    @Log
+    @Permission
+    @PostMapping("/batchDelete")
+    public Result<?> batchDelete(@RequestParam List<Long> ids) throws Exception {
+        return pasteService.batchDelete(ids);
     }
 
     @ApiOperation("修改Paste")

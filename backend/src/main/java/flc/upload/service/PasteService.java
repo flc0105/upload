@@ -4,10 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import flc.upload.model.Paste;
 import flc.upload.model.Result;
 
+import java.util.List;
+
 public interface PasteService {
     Result<?> add(Paste paste) throws Exception;
 
     Result<?> delete(Integer id) throws Exception;
+
+    Result<?> batchDelete(List<Long> ids) throws Exception;
 
     Result<?> update(Paste paste) throws Exception;
 

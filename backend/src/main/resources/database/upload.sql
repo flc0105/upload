@@ -52,8 +52,8 @@ insert into permission values (null, "/log/clear", 1, "清空日志");
 
 insert into permission values (null, "/shareCode/add", 1, "添加分享码");
 insert into permission values (null, "/shareCode/delete", 1, "删除分享码");
-insert into permission values (null, "/shareCode/get", 0, "获取分享码列表");
-insert into permission values (null, "/shareCode/list", 1, "查询分享码");
+insert into permission values (null, "/shareCode/list", 1, "获取分享码列表");
+insert into permission values (null, "/shareCode/get", 0, "查询分享码");
 */
 
 CREATE TABLE

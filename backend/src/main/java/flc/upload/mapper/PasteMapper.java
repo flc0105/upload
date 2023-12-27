@@ -1,15 +1,17 @@
 package flc.upload.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import flc.upload.model.Bookmark;
 import flc.upload.model.Paste;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
 @Mapper
-public interface PasteMapper {
-    @Insert("insert into paste values(null,#{title},#{text},#{time},#{expiredDate},#{isPrivate})")
-    @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
-    Integer add(Paste paste) throws Exception;
+public interface PasteMapper extends BaseMapper<Paste> {
+//    @Insert("insert into paste values(null,#{title},#{text},#{time},#{expiredDate},#{isPrivate})")
+//    @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
+//    Integer add(Paste paste) throws Exception;
 
     @Delete("delete from paste where id=#{id}")
     Integer delete(Integer id) throws Exception;

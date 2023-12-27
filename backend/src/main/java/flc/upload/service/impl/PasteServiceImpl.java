@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import flc.upload.mapper.PasteMapper;
-import flc.upload.model.BookmarkVO;
 import flc.upload.model.Paste;
 import flc.upload.model.Result;
 import flc.upload.service.PasteService;
@@ -29,7 +28,7 @@ public class PasteServiceImpl implements PasteService {
 
     public Result<?> add(Paste paste) throws Exception {
         paste.setTime(CommonUtil.getCurrentDate());
-        if (pasteMapper.add(paste) != 0) {
+        if (pasteMapper.insert(paste) != 0) {
             return ResponseUtil.buildSuccessResult("add.success", paste);
         } else {
             return ResponseUtil.buildErrorResult("add.failure");
@@ -42,6 +41,16 @@ public class PasteServiceImpl implements PasteService {
         } else {
             return ResponseUtil.buildErrorResult("delete.failure");
         }
+    }
+
+    @Override
+    public Result<?> batchDelete(List<Long> ids) throws Exception {
+        if (pasteMapper.deleteBatchIds(ids) != 0) {
+            return ResponseUtil.buildSuccessResult("delete.success");
+        } else {
+            return ResponseUtil.buildErrorResult("delete.failure");
+        }
+
     }
 
     public Result<?> update(Paste paste) throws Exception {
@@ -89,7 +98,7 @@ public class PasteServiceImpl implements PasteService {
             paste.setPrivate(false);
             paste.setExpiredDate(null);
             try {
-                successCount += pasteMapper.add(paste);
+                successCount += pasteMapper.insert(paste);
             } catch (Exception e) {
                 logger.error("导入 Paste 时出错：{}, {}",paste, e.getLocalizedMessage());
             }

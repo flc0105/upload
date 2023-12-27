@@ -527,7 +527,7 @@ export default {
       this.$refs.btnExecute.innerHTML =
         "<span class='spinner-grow spinner-grow-sm' role='status' aria-hidden='true'></span>";
       axios
-        .post("/shell", Qs.stringify({ command: this.$refs.command.value }))
+        .post("/server/execute", Qs.stringify({ command: this.$refs.command.value }))
         .then((res) => {
           if (res.success) {
             this.$refs.executionResult.value = res.detail;
