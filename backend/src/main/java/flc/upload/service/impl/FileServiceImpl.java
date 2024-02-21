@@ -47,6 +47,15 @@ public class FileServiceImpl implements FileService {
         this.appConfig = appConfig;
     }
 
+    /**
+     * Service implementation for uploading files.
+     *
+     * @param files            Array of MultipartFile representing the files to be uploaded.
+     * @param currentDirectory String representing the current directory for upload.
+     * @param token            User token for authorization.
+     * @return Result containing the outcome of the upload operation.
+     * @throws Exception Throws an exception if an error occurs during the upload process.
+     */
     @Override
     public Result<?> upload(MultipartFile[] files, String currentDirectory, String token) throws Exception {
         if (!currentDirectory.startsWith("/public/")) {
@@ -59,12 +68,10 @@ public class FileServiceImpl implements FileService {
         for (MultipartFile file : files) {
             File dest = FileUtil.getFile(uploadPath, currentDirectory, file.getOriginalFilename());
             if (!dest.getParentFile().exists()) {
-                logger.info("自动创建目录 {}：{}", dest.getParentFile(), dest.getParentFile().mkdirs());
+                logger.info("Automatically creating directory {}: {}", dest.getParentFile(), dest.getParentFile().mkdirs());
             }
             if (dest.exists()) {
                 dest = FileUtil.getFile(uploadPath, currentDirectory, file.getOriginalFilename() + "_" + System.currentTimeMillis() + FileUtil.getFileExtension(dest));
-//                failures.add(file.getOriginalFilename() + " (" + InternationalizationUtil.translate("file.already.exists") + ")");
-//                continue;
             }
             try {
                 file.transferTo(dest);
@@ -79,6 +86,12 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    /**
+     * Service implementation for creating a new directory.
+     *
+     * @param relativePath String representing the relative path for the new directory.
+     * @return Result containing the outcome of the mkdir operation.
+     */
     @Override
     public Result<?> mkdir(String relativePath) {
         File directory = new File(uploadPath, relativePath);
@@ -92,6 +105,13 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    /**
+     * Service implementation for deleting files.
+     *
+     * @param files List of file paths to be deleted.
+     * @return Result containing the outcome of the delete operation.
+     * @throws Exception Throws an exception if an error occurs during the deletion process.
+     */
     @Override
     public Result<?> delete(List<String> files) throws Exception {
         if (files.isEmpty()) {
@@ -106,6 +126,13 @@ public class FileServiceImpl implements FileService {
         return ResponseUtil.buildSuccessResult("delete.success");
     }
 
+    /**
+     * Service implementation for moving files to a target directory.
+     *
+     * @param files  List of file paths to be moved.
+     * @param target String representing the target directory.
+     * @return Result containing the outcome of the move operation.
+     */
     @Override
     public Result<?> move(List<String> files, String target) {
         if (files.isEmpty()) {
@@ -133,6 +160,13 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    /**
+     * Service implementation for renaming a file.
+     *
+     * @param relativePath String representing the relative path of the file to be renamed.
+     * @param target       String representing the new name for the file.
+     * @return Result containing the outcome of the rename operation.
+     */
     @Override
     public Result<?> rename(String relativePath, String target) {
         File file = new File(uploadPath, relativePath);
@@ -150,11 +184,18 @@ public class FileServiceImpl implements FileService {
         return ResponseUtil.buildSuccessResult("rename.success");
     }
 
+    /**
+     * Service implementation for listing folders and files in a given directory.
+     *
+     * @param currentDirectory String representing the current directory.
+     * @param token            User token for authorization.
+     * @return Result containing a map with folders and files in the specified directory.
+     */
     @Override
     public Result<?> list(String currentDirectory, String token) {
         List<Folder> folders = new ArrayList<>();
         List<flc.upload.model.File> files = new ArrayList<>();
-        if (appConfig.getFilePrivateDir().contains(currentDirectory)) {
+        if (appConfig.getPrivateDirectories().contains(currentDirectory)) {
             tokenManager.verify(token);
         }
         File[] list = new File(uploadPath, currentDirectory).listFiles();
@@ -175,6 +216,14 @@ public class FileServiceImpl implements FileService {
         return ResponseUtil.buildSuccessResult("query.success", map);
     }
 
+    /**
+     * Service implementation for searching files in a directory based on a filter.
+     *
+     * @param filter           String representing the filter criteria for file names.
+     * @param currentDirectory String representing the current directory.
+     * @param token            User token for authorization.
+     * @return Result containing a map with folders and files matching the search criteria.
+     */
     @Override
     public Result<?> search(String filter, String currentDirectory, String token) {
         List<Folder> folders = new ArrayList<>();
@@ -186,10 +235,10 @@ public class FileServiceImpl implements FileService {
                 tokenManager.verify(token);
                 iterator = Files.walk(Paths.get(uploadPath, currentDirectory)).filter(matcher::matches).iterator();
             } catch (VerifyFailedException e) {
-                iterator = Files.walk(Paths.get(uploadPath, currentDirectory)).filter(matcher::matches).filter(p -> appConfig.getFilePrivateDir().stream().noneMatch(s -> FileUtil.relativize(uploadPath, p.toFile()).startsWith(s))).iterator();
+                iterator = Files.walk(Paths.get(uploadPath, currentDirectory)).filter(matcher::matches).filter(p -> appConfig.getPrivateDirectories().stream().noneMatch(s -> FileUtil.relativize(uploadPath, p.toFile()).startsWith(s))).iterator();
             }
         } catch (IOException e) {
-            logger.error("搜索文件时出错：" + e.getLocalizedMessage());
+            logger.error("Error occurred while searching for files: " + e.getLocalizedMessage());
         }
         if (iterator == null) {
             return ResponseUtil.buildErrorResult("access.failure");
@@ -212,7 +261,7 @@ public class FileServiceImpl implements FileService {
                     break;
                 }
             } catch (Exception e) {
-                logger.error("搜索文件时出错：" + e.getLocalizedMessage());
+                logger.error("Error occurred while searching for files: " + e.getLocalizedMessage());
             }
         }
         Map<String, List<?>> map = new HashMap<>();
@@ -221,6 +270,13 @@ public class FileServiceImpl implements FileService {
         return ResponseUtil.buildSuccessResult("query.success", map);
     }
 
+    /**
+     * Service implementation for downloading a file.
+     *
+     * @param relativePath String representing the relative path of the file to be downloaded.
+     * @param response     HttpServletResponse to handle the file download response.
+     * @throws Exception Throws an exception if an error occurs during the download process.
+     */
     @Override
     public void download(String relativePath, HttpServletResponse response) throws Exception {
         File file = new File(uploadPath, relativePath);
@@ -230,6 +286,13 @@ public class FileServiceImpl implements FileService {
         FileUtil.download(file, response);
     }
 
+    /**
+     * Service implementation for downloading a compressed image file.
+     *
+     * @param relativePath String representing the relative path of the image file to be downloaded.
+     * @param response     HttpServletResponse to handle the file download response.
+     * @throws Exception Throws an exception if an error occurs during the download process.
+     */
     @Override
     public void downloadCompressedImage(String relativePath, HttpServletResponse response) throws Exception {
         File file = new File(uploadPath, relativePath);
@@ -239,10 +302,17 @@ public class FileServiceImpl implements FileService {
         FileUtil.downloadCompressedImage(file, response);
     }
 
+    /**
+     * Service implementation for reading the contents of a text file.
+     *
+     * @param relativePath String representing the relative path of the text file to be read.
+     * @return Result containing the content of the text file.
+     * @throws Exception Throws an exception if an error occurs during the read process.
+     */
     @Override
     public Result<?> read(String relativePath) throws Exception {
         File file = new File(uploadPath, relativePath);
-        if (file.length() > appConfig.getFilePreviewMaxSize()) {
+        if (file.length() > appConfig.getPreviewMaxSize()) {
             return ResponseUtil.buildErrorResult("file.is.too.large");
         }
         String charsetName = Optional.ofNullable(FileUtil.getFileEncode(file)).orElse(Charset.defaultCharset().name());
@@ -252,6 +322,12 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    /**
+     * Service implementation for retrieving information about a file.
+     *
+     * @param relativePath String representing the relative path of the file.
+     * @return Result containing details about the file.
+     */
     @Override
     public Result<?> getFileInfo(String relativePath) {
         File file = new File(uploadPath, relativePath);
@@ -280,6 +356,14 @@ public class FileServiceImpl implements FileService {
         return ResponseUtil.buildSuccessResult("query.success", result);
     }
 
+    /**
+     * Service implementation for compressing a list of files into a ZIP archive.
+     *
+     * @param files List of file paths to be compressed.
+     * @param token User token for authorization.
+     * @return Result containing the outcome of the compression operation.
+     * @throws IOException Throws an exception if an I/O error occurs during the compression process.
+     */
     @Override
     public Result<?> zip(List<String> files, String token) throws IOException {
         if (files.isEmpty()) {
@@ -289,11 +373,11 @@ public class FileServiceImpl implements FileService {
         File zip = FileUtil.getFile(firstFile.getParent(), CommonUtil.generateUUID() + ".zip");
         try (FileOutputStream fos = new FileOutputStream(zip); ZipOutputStream zos = new ZipOutputStream(fos)) {
             for (String relativePath : files) {
-                if (appConfig.getFilePrivateDir().contains(relativePath)) {
+                if (appConfig.getPrivateDirectories().contains(relativePath)) {
                     try {
                         tokenManager.verify(token);
                     } catch (VerifyFailedException e) {
-                        logger.error("权限不足，跳过私密目录：" + relativePath);
+                        logger.error("Insufficient permissions, skipping private directory: " + relativePath);
                         continue;
                     }
                 }
@@ -301,7 +385,6 @@ public class FileServiceImpl implements FileService {
                 FileUtil.zipRecursively(zos, file, null);
             }
         }
-//        File zip = new File(zipName);
         if (zip.isFile()) {
             return ResponseUtil.buildSuccessResult("compress.success", FileUtil.relativize(uploadPath, zip));
         } else {
@@ -309,6 +392,14 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    /**
+     * Service implementation for compressing a list of files into a ZIP archive and initiating download.
+     *
+     * @param files    List of file paths to be compressed and downloaded.
+     * @param response HttpServletResponse to handle the file download response.
+     * @param token    User token for authorization.
+     * @throws Exception Throws an exception if an error occurs during the compression or download process.
+     */
     @Override
     public void zipAndDownload(List<String> files, HttpServletResponse response, String token) throws Exception {
         Result<?> result = zip(files, token);
@@ -316,13 +407,20 @@ public class FileServiceImpl implements FileService {
             File zip = new File(uploadPath, String.valueOf(result.getDetail()));
             if (zip.isFile()) {
                 FileUtil.download(zip, response);
-                logger.info("自动删除压缩文件 {}: {}", zip.getAbsoluteFile(), zip.delete());
+                logger.info("Automatically deleting compressed file {}: {}", zip.getAbsoluteFile(), zip.delete());
                 return;
             }
         }
         throw new BusinessException("compress.failure");
     }
 
+    /**
+     * Service implementation for generating a direct link for an image file.
+     *
+     * @param relativePath String representing the relative path of the image file.
+     * @return Result containing the generated direct link for the image.
+     * @throws IOException Throws an exception if an I/O error occurs during the link generation process.
+     */
     @Override
     public Result<?> generateDirectLink(String relativePath) throws IOException {
         File file = new File(uploadPath, relativePath);
@@ -339,6 +437,12 @@ public class FileServiceImpl implements FileService {
         return ResponseUtil.buildErrorResult("unsupported.file.type");
     }
 
+    /**
+     * Service implementation for retrieving a list of image files in a directory.
+     *
+     * @param relativePath String representing the relative path of the directory.
+     * @return Result containing a list of relative paths to image files.
+     */
     @Override
     public Result<?> getImages(String relativePath) {
         List<String> images = new ArrayList<>();

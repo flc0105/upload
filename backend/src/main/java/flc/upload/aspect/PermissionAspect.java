@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
 
 /**
- * 权限切面
+ * Aspect for handling permissions.
  */
 @Aspect
 @Component
@@ -39,9 +39,9 @@ public class PermissionAspect {
     }
 
     /**
-     * 在方法执行前进行权限检查
+     * Before advice to check permissions before method execution.
      *
-     * @throws Throwable 当无法获取到request信息时抛出异常
+     * @throws Throwable Throws an exception when unable to obtain request information.
      */
     @Before("@annotation(flc.upload.annotation.Permission)")
     public void before() throws Throwable {
@@ -53,11 +53,13 @@ public class PermissionAspect {
         try {
             result = Objects.requireNonNull(permissionManager.get(path));
         } catch (Exception e) {
-            logger.warn("无法获取到该接口的权限信息，默认放行：" + path);
+            // Log a warning and allow access by default if unable to retrieve permission information for the interface
+            logger.warn("Unable to retrieve permission information for this interface. Defaulting to allow access: " + path);
             return;
         }
 
         Permission permission = (Permission) result.getDetail();
+
         if (permission.getIsAdmin().equals(PermissionType.ADMIN.getValue())) {
             String token = CookieUtil.getCookie("token", request);
             tokenManager.verify(token);

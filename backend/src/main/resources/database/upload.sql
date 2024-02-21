@@ -38,6 +38,7 @@ insert into permission values (null, "/file/gallery", 0, "获取图片列表");
 
 insert into permission values (null, "/paste/add", 0, "添加Paste");
 insert into permission values (null, "/paste/delete", 1, "删除Paste");
+insert into permission values (null, "/paste/batchDelete", 1, "批量删除Paste");
 insert into permission values (null, "/paste/update", 1, "修改Paste");
 insert into permission values (null, "/paste/list", 0, "获取Paste列表");
 insert into permission values (null, "/paste/get", 0, "查询Paste");

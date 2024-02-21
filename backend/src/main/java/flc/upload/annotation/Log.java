@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 注解，用来标记需要被切入的方法
+ * Annotation to mark methods for logging.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

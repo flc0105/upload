@@ -20,6 +20,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
+/**
+ * Aspect for logging method execution.
+ */
 @Aspect
 @Component
 public class LogAspect {
@@ -31,23 +34,25 @@ public class LogAspect {
         this.operationLogManager = operationLogManager;
     }
 
+    /**
+     * Around advice for methods annotated with {@link Log}.
+     */
     @Around("@annotation(logAnnotation)")
     public Object around(ProceedingJoinPoint joinPoint, Log logAnnotation) throws Throwable {
-        // 获取方法的签名信息，包括方法名、参数类型等
+        // Get method signature information, including method name, parameter types, etc.
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 
-        // 获取当前方法对象
+        // Get the current method object
         Method method = signature.getMethod();
 
-        // 使用方法所在类的类名作为 Logger 的名称
+        // Use the class name of the method's declaring class as the Logger's name
         Logger logger = LoggerFactory.getLogger(method.getDeclaringClass());
 
-        // 获取请求的上下文信息
+        // Get request context information
         ServletRequestAttributes attributes = (ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes(), InternationalizationUtil.translate("get.request.information.failure"));
 
-        // 获取当前的 HttpServletRequest 对象
+        // Get the current HttpServletRequest object
         HttpServletRequest request = attributes.getRequest();
-        String token = CookieUtil.getCookie("token", request);
 
         OperationLog operationLog = new OperationLog();
         operationLog.setOperationTime(CommonUtil.getCurrentDate());
@@ -60,12 +65,11 @@ public class LogAspect {
         operationLog.setClassName(signature.getDeclaringTypeName());
         operationLog.setMethodName(method.getName());
         operationLog.setRequestParameter(ReflectionUtil.getMethodArguments(joinPoint));
-        operationLog.setToken(token);
         operationLog.setParameterType(request.getContentType());
 
         long startTime = System.nanoTime();
         try {
-            // 执行目标方法
+            // Execute the target method
             Object result = joinPoint.proceed();
             long endTime = System.nanoTime();
 
@@ -89,5 +93,4 @@ public class LogAspect {
             throw throwable;
         }
     }
-
 }

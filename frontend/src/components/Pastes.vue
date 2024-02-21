@@ -11,7 +11,9 @@
 
   <v-contextmenu ref="contextmenu">
 
-    <v-contextmenu-item @click="list()">刷新</v-contextmenu-item>
+    <v-contextmenu-item @click="list()">
+      {{ $t("refresh") }}
+    </v-contextmenu-item>
 
     <v-contextmenu-item
       @click="
@@ -41,16 +43,16 @@
     ></textarea>
 
     <div class="float-start">
-      <button class="btn btn-outline-danger mb-3" v-if="selectedPastes.length!=0" @click="deleteSelectedPastes()">
+      <button class="btn btn-outline-danger mb-3" v-if="selectedPastes.length!=0" @click="$root.showConfirm(() => deleteSelectedPastes())">
         {{ $t("delete") }}
       </button>
     </div>
 
-    <div class="row row-func align-middle float-end g-3 mb-3">
+    <div class="row align-middle float-end g-3 mb-3">
       <!-- unlist switch -->
       <div class="col-auto" style="margin-right: 20px;">
       <div
-        class="form-check form-switch "
+        class="form-check form-switch"
         style="padding: 0.375rem 0.75rem"
       >
         <input
@@ -82,9 +84,6 @@
           {{ $t("encrypted") }}
         </label>
       </div></div>
-
-      <!-- <div class=" d-md-none w-100"> -->
-    <!-- </div> -->
 
       <!--select-->
       <div class="col-auto">
@@ -421,7 +420,7 @@ export default {
     };
   },
   beforeRouteLeave(to, from, next) {
-    if (this.text.trim().length != 0) {
+    if (this.text!=undefined && this.text.trim().length != 0) {
       if (!window.confirm("Leave without saving?")) {
         return;
       }
@@ -430,19 +429,3 @@ export default {
   },
 };
 </script>
-<style>
-@media (max-width: 767px) {
-  .row-func {
-    width: 100%;
-  }
-
-  .row-func .col-auto {
-    width: 100%;
-  }
-
-  .row-func .col-auto *  {
-    margin-left: 0;
-  }
-
-}
-</style>

@@ -146,7 +146,7 @@ public class FileUtil {
         try (FileInputStream in = new FileInputStream(file);
              OutputStream out = response.getOutputStream()) {
             // Java 9: in.transferTo(out);
-            int bufferSize = Math.max(appConfig.getFileDownloadBufferSize(), 1024); // 根据配置获取合适的缓冲区大小
+            int bufferSize = Math.max(appConfig.getDownloadBufferSize(), 1024);
             byte[] buffer = new byte[bufferSize];
             int len;
             while ((len = in.read(buffer)) != -1) {

@@ -74,14 +74,10 @@ public class ServerUtil {
             map.put("operating.system", System.getProperty("os.name"));
             map.put("os.version", System.getProperty("os.version"));
             map.put("os.arch", System.getProperty("os.arch"));
-//            map.put("memory.usage", FileUtil.formatSize(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
             map.put("total.memory", FileUtil.formatSize(Long.parseLong(ManagementFactory.getPlatformMBeanServer().getAttribute(new ObjectName("java.lang:type=OperatingSystem"), "TotalPhysicalMemorySize").toString())));
-//            map.put("free.memory", FileUtil.formatSize(Long.parseLong(ManagementFactory.getPlatformMBeanServer().getAttribute(new ObjectName("java.lang:type=OperatingSystem"), "FreePhysicalMemorySize").toString())));
-//            map.put("total.memory", FileUtil.formatSize(((OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getTotalPhysicalMemorySize()));
             File file = new File(uploadPath);
             if (file.exists()) {
-                map.put("total.space", FileUtil.formatSize(file.getTotalSpace()));
-                map.put("free.space", FileUtil.formatSize(file.getFreeSpace()));
+                map.put("free.space", FileUtil.formatSize(file.getFreeSpace()) + " / " + FileUtil.formatSize(file.getTotalSpace()));
                 map.put("upload.path", file.getAbsolutePath());
                 map.put("directory.size", FileUtil.formatSize(FileUtil.calculateDirectorySize(file)));
                 map.put("number.of.managed.files", InternationalizationUtil.translate("file.folder.count", FileUtil.countFiles(file), FileUtil.countFolders(file)));

@@ -160,7 +160,7 @@ export default {
     },
     //修改文本
     update() {
-      if (this.text.trim().length === 0) {
+      if (this.text!=undefined && this.text.trim().length === 0) {
         this.$root.showModal("提示", "正文不能为空");
         return;
       }

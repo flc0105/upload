@@ -4,64 +4,90 @@
     <v-contextmenu-item @click="page(currentPage)">{{
       $t("refresh")
     }}</v-contextmenu-item>
-    <v-contextmenu-item @click="clearLogs()">{{
+    <v-contextmenu-item @click="$root.showConfirm(function () { clearLogs(); })">{{
       $t("clear")
     }}</v-contextmenu-item>
     <v-contextmenu-item @click="exportLogs()">{{
       $t("export")
     }}</v-contextmenu-item>
   </v-contextmenu>
-
-  <div
-    style="overflow-x: scroll; height: 470px"
-    v-contextmenu:contextmenu
-    v-show="show"
-  >
-    <table class="table table-hover" style="white-space: nowrap">
+<!-- 
+  <div style="overflow-x: scroll; min-height: 450px" v-contextmenu:contextmenu v-show="show">
+    <table class="table" style="white-space: nowrap">
       <thead>
         <tr>
           <th>操作时间</th>
           <th>接口名称</th>
           <th>请求地址</th>
-          <th>请求方式</th>
+          <th>请求方法</th>
+          <th>参数类型</th>
+          <th>类名</th>
+          <th>方法名</th>
           <th>IP地址</th>
           <th>浏览器</th>
           <th>操作系统</th>
+          <th>请求参数</th>
+          <th>token</th>
           <th>是否成功</th>
           <th>具体消息</th>
           <th>操作</th>
+          <th>执行时间</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="log in logs" :key="value">
-          <td>{{ log.operationTime }}</td>
-          <td>{{ log.apiName }}</td>
-          <td>{{ log.requestUrl }}</td>
-          <td>{{ log.requestMethod }}</td>
-          <td>{{ log.ipAddress }}</td>
-          <td>{{ log.browser }}</td>
-          <td>{{ log.operatingSystem }}</td>
-          <td>{{ log.success }}</td>
-          <td>{{ log.message }}</td>
+          <td :title="log.operationTime">{{ log.operationTime }}</td>
+          <td :title="log.apiName">{{ log.apiName }}</td>
+          <td :title="log.requestUrl">{{ log.requestUrl }}</td>
+          <td :title="log.requestMethod">{{ log.requestMethod }}</td>
+          <td :title="log.parameterType">{{ log.parameterType }}</td>
+          <td :title="log.className">{{ log.className }}</td>
+          <td :title="log.methodName">{{ log.methodName }}</td>
+          <td :title="log.ipAddress">{{ log.ipAddress }}</td>
+          <td :title="log.browser">{{ log.browser }}</td>
+          <td :title="log.operatingSystem">{{ log.operatingSystem }}</td>
+          <td :title="log.requestParameter">{{ log.requestParameter }}</td>
+          <td :title="log.token">{{ log.token }}</td>
+          <td :title="log.success">{{ log.success }}</td>
+          <td :title="log.message">{{ log.message }}</td>
+          <td :title="log.executionTime">{{ log.executionTime }}</td>
           <td>
-            <a class="link-primary me-1" @click="showDetail(log)">
-              <i class="bi bi-info-circle"></i>
-            </a>
-            <a
-              class="link-danger"
-              @click="
-                $root.showConfirm(function () {
-                  deleteLog(log.id);
-                })
-              "
-            >
+            <a class="link-danger" @click="
+              $root.showConfirm(function () {
+                deleteLog(log.id);
+              })
+              ">
               <i class="bi bi-trash"></i>
             </a>
           </td>
         </tr>
       </tbody>
     </table>
-  </div>
+  </div> -->
+
+  <div style="overflow-x: auto" v-contextmenu:contextmenu v-show="show">
+  <table class="table" style="white-space: nowrap" v-if="logs && logs.length > 0">
+    <thead>
+      <tr>
+        <th v-for="(key, index) in Object.keys(logs[0])" :key="index">{{ key }}</th>
+        <th>{{ $t("action") }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="(log, rowIndex) in logs" :key="rowIndex">
+        <td v-for="(value, key, cellIndex) in log" :key="cellIndex" :title="value">{{ value }}</td>
+        <td>
+          <a class="link-danger" @click="$root.showConfirm(function () { deleteLog(log.id); })">
+            <i class="bi bi-trash"></i>
+          </a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <p v-else>No logs available</p>
+</div>
+
+
 
   <nav aria-label="Page navigation example" v-show="show">
     <ul class="pagination justify-content-center mt-4">
@@ -70,19 +96,12 @@
       </li>
       <template v-for="page in totalPages" :key="page">
         <li class="page-item">
-          <a
-            class="page-link"
-            href="#"
-            @click="goToPage(page)"
-            :class="['page-link', { active: page == currentPage }]"
-            >{{ page }}</a
-          >
+          <a class="page-link" href="#" @click="goToPage(page)" :class="['page-link', { active: page == currentPage }]">{{
+            page }}</a>
         </li>
       </template>
       <li :class="['page-item', { disabled: currentPage == totalPages }]">
-        <a class="page-link" href="#" @click="goToPage(currentPage + 1)"
-          >Next</a
-        >
+        <a class="page-link" href="#" @click="goToPage(currentPage + 1)">Next</a>
       </li>
     </ul>
   </nav>
@@ -92,6 +111,7 @@
 th {
   text-align: center;
 }
+
 td {
   text-align: center;
   max-width: 200px;
@@ -158,17 +178,14 @@ export default {
           this.$root.loading = false;
         });
     },
-    showDetail(value) {
-      this.$root.showModal(this.$t("view"), value);
-    },
-    // 清空日志
+
     deleteLog(id) {
       if (!this.$root.hasToken(() => this.deleteLog(id))) {
         return;
       }
       this.$root.loading = true;
       axios
-        .post("/log/delete",  Qs.stringify({ id: id }))
+        .post("/log/delete", Qs.stringify({ id: id }))
         .then((res) => {
           if (res.success) {
             if (this.currentPage) {
@@ -176,7 +193,7 @@ export default {
             } else {
               this.page(1);
             }
-   
+
             this.$root.showModal(this.$t("success"), res.msg);
           } else {
             this.$root.showModal(this.$t("error"), res.msg);
@@ -216,7 +233,7 @@ export default {
     exportLogs() {
       this.$root.loading = true;
       axios
-        .post("/log/list")
+        .get("/log/list")
         .then((res) => {
           if (res.success) {
             var blob = new Blob([JSON.stringify(res.detail, null, 2)], {
@@ -240,7 +257,7 @@ export default {
       // saveAs(blob, new Date().getTime() + ".txt");
     },
   },
-  created() {},
+  created() { },
   mounted() {
     if (
       !this.$root.hasToken(() => {
