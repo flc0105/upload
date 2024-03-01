@@ -10,7 +10,6 @@
   />
 
   <v-contextmenu ref="contextmenu">
-
     <v-contextmenu-item @click="list()">
       {{ $t("refresh") }}
     </v-contextmenu-item>
@@ -43,47 +42,47 @@
     ></textarea>
 
     <div class="float-start">
-      <button class="btn btn-outline-danger mb-3" v-if="selectedPastes.length!=0" @click="$root.showConfirm(() => deleteSelectedPastes())">
+      <button
+        class="btn btn-outline-danger mb-3"
+        v-if="selectedPastes.length != 0"
+        @click="$root.showConfirm(() => deleteSelectedPastes())"
+      >
         {{ $t("delete") }}
       </button>
     </div>
 
     <div class="row align-middle float-end g-3 mb-3">
       <!-- unlist switch -->
-      <div class="col-auto" style="margin-right: 20px;">
-      <div
-        class="form-check form-switch"
-        style="padding: 0.375rem 0.75rem"
-      >
-        <input
-          class="form-check-input"
-          type="checkbox"
-          role="switch"
-          id="isPrivate"
-          ref="isPrivate"
-        />
-        <label class="form-check-label" for="isPrivate">{{
-          $t("private")
-        }}</label>
-      </div></div>
+      <div class="col-auto" style="margin-right: 20px">
+        <div class="form-check form-switch" style="padding: 0.375rem 0.75rem">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            role="switch"
+            id="isPrivate"
+            ref="isPrivate"
+          />
+          <label class="form-check-label" for="isPrivate">{{
+            $t("private")
+          }}</label>
+        </div>
+      </div>
 
       <!-- encrypted switch -->
       <div class="col-auto">
-      <div
-        class="form-check form-switch"
-        style="padding: 0.375rem 0.75rem"
-      >
-        <input
-          class="form-check-input"
-          type="checkbox"
-          role="switch"
-          id="isEncrypted"
-          ref="isEncrypted"
-        />
-        <label class="form-check-label" for="isEncrypted">
-          {{ $t("encrypted") }}
-        </label>
-      </div></div>
+        <div class="form-check form-switch" style="padding: 0.375rem 0.75rem">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            role="switch"
+            id="isEncrypted"
+            ref="isEncrypted"
+          />
+          <label class="form-check-label" for="isEncrypted">
+            {{ $t("encrypted") }}
+          </label>
+        </div>
+      </div>
 
       <!--select-->
       <div class="col-auto">
@@ -104,10 +103,10 @@
       <!--select end-->
 
       <div class="col-auto">
-      <button class="btn btn-outline-primary mb-2" @click="add()">
-        {{ $t("post") }}
-      </button>
-    </div>
+        <button class="btn btn-outline-primary mb-2" @click="add()">
+          {{ $t("post") }}
+        </button>
+      </div>
     </div>
 
     <ul class="list-group clear-both">
@@ -117,7 +116,10 @@
         :key="paste"
         @click="
           (event) =>
-            event.target.tagName !== 'A' && event.target.tagName !== 'INPUT' && $router.push('/pastes/' + paste.id)
+            event.target.tagName !== 'A' &&
+            event.target.tagName !== 'INPUT' &&
+            event.target.tagName !== 'LABEL' &&
+            $router.push('/pastes/' + paste.id)
         "
       >
         <div class="float-end">
@@ -133,15 +135,36 @@
           </a>
         </div>
         <div>
+          <!-- <p class="text-primary text-truncate mw-75">
 
-          <p class="text-primary text-truncate mw-75">
             <input
             type="checkbox"
             v-model="selectedPastes"
             :value="paste.id"
             class="form-check-input"
+            style="margin-right: 4px;"
           />
-            {{ paste.title }}</p>
+
+            {{ paste.title }}</p> -->
+
+          <div style="margin-bottom: 8px;">
+            <label
+              :key="paste.id"
+              class="text-primary text-truncate mw-75"
+              @click="toggleCheckbox(paste.id)"
+            >
+              <input
+                type="checkbox"
+                :id="'checkbox-' + paste.id"
+                v-model="selectedPastes"
+                :value="paste.id"
+                class="form-check-input"
+                style="margin-right: 4px"
+              />
+              {{ paste.title }}
+            </label>
+          </div>
+
           <p class="text-truncate mw-75">
             <i>{{ paste.text }}</i>
           </p>
@@ -210,30 +233,30 @@ export default {
       if (!this.$root.hasToken(() => this.deleteSelectedPastes())) {
         return;
       }
- // 创建一个 FormData 对象
- const formData = new FormData();
-  
-  // 将要删除的 paste IDs 添加到 FormData 中
-  this.selectedPastes.forEach(id => {
-    formData.append('ids', id);
-  });
+      // 创建一个 FormData 对象
+      const formData = new FormData();
 
-  // 发送 POST 请求
-  sendRequest.call(
-    this,
-    "post",
-    "/paste/batchDelete",
-    formData,
-    (res) => {
-      this.$root.showModal(this.$t("success"), res.msg);
-      this.selectedPastes = []
-      this.list();
-    },
-    (err) => {
-      this.$root.showModal(this.$t("error"), err);
-    },
-    { headers: { 'Content-Type': 'multipart/form-data' } }
-  );
+      // 将要删除的 paste IDs 添加到 FormData 中
+      this.selectedPastes.forEach((id) => {
+        formData.append("ids", id);
+      });
+
+      // 发送 POST 请求
+      sendRequest.call(
+        this,
+        "post",
+        "/paste/batchDelete",
+        formData,
+        (res) => {
+          this.$root.showModal(this.$t("success"), res.msg);
+          this.selectedPastes = [];
+          this.list();
+        },
+        (err) => {
+          this.$root.showModal(this.$t("error"), err);
+        },
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
     },
     secretPaste() {
       var encrypted = encrypt(this.text);
@@ -344,7 +367,6 @@ export default {
 
     // 添加
     add() {
-
       if (this.text.trim().length === 0) {
         this.$root.showModal(this.$t("alert"), this.$t("text_cannot_be_empty"));
         return;
@@ -420,7 +442,7 @@ export default {
     };
   },
   beforeRouteLeave(to, from, next) {
-    if (this.text!=undefined && this.text.trim().length != 0) {
+    if (this.text != undefined && this.text.trim().length != 0) {
       if (!window.confirm("Leave without saving?")) {
         return;
       }

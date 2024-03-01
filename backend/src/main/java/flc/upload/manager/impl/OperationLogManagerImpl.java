@@ -41,7 +41,7 @@ public class OperationLogManagerImpl implements OperationLogManager {
     @Override
     public List<OperationLog> list() {
         QueryWrapper<OperationLog> wrapper = new QueryWrapper<>();
-        wrapper.orderByAsc("operationTime");
+        wrapper.orderByDesc("operationTime");
         return operationLogMapper.selectList(wrapper);
     }
 
@@ -50,7 +50,7 @@ public class OperationLogManagerImpl implements OperationLogManager {
         Page<OperationLog> page = new Page<>(current, size);
 
         QueryWrapper<OperationLog> wrapper = new QueryWrapper<>();
-        wrapper.orderByAsc("operationTime");
+        wrapper.orderByDesc("operationTime");
 
         return operationLogMapper.selectPage(page, wrapper);
     }

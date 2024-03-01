@@ -118,10 +118,11 @@
     <table class="table table-hover table-borderless border shadow-sm">
       <tbody>
         <tr v-if="bookmarks.length == 0" class="text-muted text-center">
-          <!-- <tr v-if="page.length == 0" class="text-muted text-center">-->
+
           {{
             $t("folder_is_empty")
           }}
+
         </tr>
         <!-- <tr v-for="bookmark in page" :key="bookmark"> -->
         <tr v-for="bookmark in bookmarks" :key="bookmark">

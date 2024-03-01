@@ -54,6 +54,9 @@ public class LogAspect {
         // Get the current HttpServletRequest object
         HttpServletRequest request = attributes.getRequest();
 
+        String token = CookieUtil.getCookie("token", request);
+
+
         OperationLog operationLog = new OperationLog();
         operationLog.setOperationTime(CommonUtil.getCurrentDate());
         operationLog.setApiName(ReflectionUtil.getApiName(method));
@@ -65,6 +68,7 @@ public class LogAspect {
         operationLog.setClassName(signature.getDeclaringTypeName());
         operationLog.setMethodName(method.getName());
         operationLog.setRequestParameter(ReflectionUtil.getMethodArguments(joinPoint));
+        operationLog.setToken(String.valueOf(JwtUtil.getTokenInfo(token)));
         operationLog.setParameterType(request.getContentType());
 
         long startTime = System.nanoTime();
